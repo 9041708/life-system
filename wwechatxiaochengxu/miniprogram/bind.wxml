@@ -1,0 +1,7 @@
+<view class="container">
+	<view class="title">绑定已有账户</view>
+	<view class="desc">在电脑注册成功后，点击下方按钮扫码绑定即可。</view>
+	<button class="btn" type="primary" bindtap="handleScanBind" loading="{{binding}}" disabled="{{binding}}">扫码绑定</button>
+	<view class="tips">如果扫码失败，请在电脑端刷新二维码后重试。</view>
+	<view class="error" wx:if="{{message}}">{{message}}</view>
+</view>

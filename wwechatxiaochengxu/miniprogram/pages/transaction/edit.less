@@ -1,0 +1,305 @@
+/* miniprogram/pages/transaction/edit.less */
+
+.page {
+  padding: 24rpx;
+  box-sizing: border-box;
+  background-color: #f5f6f7;
+  min-height: 100vh;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  padding: 24rpx 24rpx 40rpx;
+  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, 0.06);
+}
+
+/* 收支切换，与 create 一致 */
+.type-switch {
+  display: flex;
+  padding: 8rpx;
+  border-radius: 999rpx;
+  background-color: #f3f4f6;
+  margin-bottom: 24rpx;
+}
+
+.type-btn {
+  flex: 1;
+  text-align: center;
+  padding: 18rpx 0;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.type-btn.active {
+  background-color: #22c55e;
+  color: #ffffff;
+}
+
+/* 表单通用 */
+.form-item {
+  margin-bottom: 24rpx;
+}
+
+.form-label {
+  font-size: 26rpx;
+  color: #6b7280;
+  margin-bottom: 8rpx;
+}
+
+.pill-input {
+  background-color: #f9fafb;
+  border-radius: 999rpx;
+  border: 1rpx solid #e5e7eb;
+  padding: 18rpx 24rpx;
+  font-size: 28rpx;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.text-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #111827;
+}
+
+.text-input::placeholder {
+  color: #9ca3af;
+}
+
+/* 日期 + 时间并排 */
+.form-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+.form-col {
+  flex: 1;
+}
+
+/* 备注 */
+.textarea-wrap {
+  background-color: #f9fafb;
+  border-radius: 24rpx;
+  border: 1rpx solid #e5e7eb;
+  padding: 16rpx 20rpx;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 72rpx;     /* 与创建页保持一致，初始更紧凑 */
+  font-size: 28rpx;
+  color: #111827;
+}
+
+.textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* 附件区域 */
+.attach-box {
+  display: flex;
+  align-items: center;
+}
+
+.attach-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.attach-tip {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.attach-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.attach-item {
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+}
+
+.attach-remove {
+  position: absolute;
+  right: -10rpx;
+  top: -10rpx;
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 30rpx;
+}
+
+.attach-add {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  border: 1rpx dashed #d1d5db;
+  background-color: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56rpx;
+  color: #9ca3af;
+}
+
+.attach-thumb {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  background-color: #f3f4f6;
+}
+
+.attach-actions {
+  margin-left: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.attach-link {
+  font-size: 26rpx;
+  color: #3b82f6;
+}
+
+.attach-link.danger {
+  color: #ef4444;
+}
+
+.attach-placeholder {
+  background-color: #f9fafb;
+  border-radius: 16rpx;
+  border: 1rpx dashed #d1d5db;
+  padding: 40rpx 24rpx;
+  font-size: 26rpx;
+  color: #9ca3af;
+}
+
+/* 底部按钮 */
+.footer {
+  margin-top: 16rpx;
+}
+
+.btn-save {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 999rpx;
+  background-color: #22c55e;
+  color: #ffffff;
+  font-size: 30rpx;
+}
+
+/* 账户选择弹层遮罩 */
+.account-sheet-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 999;
+}
+
+/* 底部弹出的面板 */
+.account-sheet {
+  width: 100%;
+  max-height: 70vh;
+  background: #ffffff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 16rpx 24rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.sheet-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 12rpx;
+}
+
+.sheet-scroll {
+  max-height: 52vh;
+}
+
+.sheet-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.sheet-icon {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 8rpx;
+  margin-right: 16rpx;
+}
+
+.sheet-main {
+  flex: 1;
+}
+
+.sheet-name {
+  font-size: 28rpx;
+  color: #111827;
+}
+
+.sheet-sub {
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.sheet-right {
+  margin-left: 12rpx;
+}
+
+.sheet-balance {
+  font-size: 28rpx;
+}
+
+.sheet-balance.positive {
+  color: #22c55e;
+}
+
+.sheet-balance.negative {
+  color: #ef4444;
+}
+
+.sheet-footer {
+  margin-top: 12rpx;
+}
+
+.sheet-cancel {
+  width: 100%;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+}
+
+/* 顶部 pill 内部布局（账户名 + 右侧“选择”） */
+.acc-pill-main {
+  flex: 1;
+}
+
+.acc-pill-arrow {
+  font-size: 26rpx;
+  color: #9ca3af;
+  margin-left: 16rpx;
+}

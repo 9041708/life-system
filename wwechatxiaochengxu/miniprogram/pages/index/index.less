@@ -1,0 +1,163 @@
+/** index.less **/
+
+page {
+  height: 100vh;
+  background: linear-gradient(180deg, #f3f4ff 0%, #f9fafb 40%, #ffffff 100%);
+}
+
+.page {
+  min-height: 100vh;
+  padding: 48rpx 32rpx;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  max-width: 640rpx;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 32rpx;
+  padding: 40rpx 32rpx 48rpx;
+  box-shadow: 0 18rpx 40rpx rgba(15, 23, 42, 0.12);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-name {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #111827;
+}
+
+.app-subtitle {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+/* 中间小圆 Logo */
+.logo-circle {
+  margin: 32rpx 0 40rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12rpx 24rpx rgba(34, 197, 94, 0.35);
+}
+
+.logo-text {
+  font-size: 52rpx;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* 登录按钮 */
+.btn-login {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 999rpx;
+  background-color: #07c160;
+  font-size: 30rpx;
+  color: #ffffff;
+}
+
+.btn-login::after {
+  /* 去掉按钮点击后的深色覆盖层过于明显的问题 */
+  border: none;
+}
+
+.hint {
+  margin-top: 24rpx;
+  font-size: 24rpx;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* 隐私弹窗遮罩与内容 */
+.privacy-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.privacy-dialog {
+  width: 82%;
+  max-width: 680rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 32rpx 28rpx 28rpx;
+  box-sizing: border-box;
+}
+
+.privacy-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111827;
+  text-align: center;
+}
+
+.privacy-content {
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.privacy-link-btn {
+  margin-top: 18rpx;
+  width: 100%;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.privacy-link-btn::after {
+  border: none;
+}
+
+.privacy-actions {
+  margin-top: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.privacy-btn {
+  flex: 1;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+}
+
+.privacy-btn::after {
+  border: none;
+}
+
+.privacy-btn.secondary {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.privacy-btn.primary {
+  background-color: #07c160;
+  color: #ffffff;
+}

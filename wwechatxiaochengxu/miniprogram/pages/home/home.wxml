@@ -1,0 +1,158 @@
+<view class="container page theme-{{theme}}">
+  <view class="title">三石记账 · 概览</view>
+
+  <view class="welcome" wx:if="{{user}}">
+    欢迎，{{user.nickname || user.username}}（ID：{{user.id}}）
+  </view>
+  <view class="welcome" wx:else>
+    未登录（可先浏览框架，记账/查看数据需登录）
+  </view>
+
+  <view class="sub">
+    当前账本：{{currentLedgerName}}
+    <text wx:if="{{currentLedgerRole}}">（{{currentLedgerRole}}）</text>
+    <text class="link" bindtap="onSwitchLedger" wx:if="{{isLoggedIn}}">切换</text>
+  </view>
+
+  <view class="sub">
+    当前月份：{{month.label}}
+  </view>
+
+  <!-- 资产总览：点击整张卡片跳转到账户列表 -->
+  <view class="card card-assets" bindtap="onViewAccounts">
+    <view class="card-header">资产总览</view>
+    <view class="asset-main">
+      <view class="asset-main-value">{{assets.netAssets}}</view>
+      <view class="asset-main-label">净资产</view>
+    </view>
+    <view class="asset-grid">
+      <view class="asset-item">
+        <text class="asset-label">总资产</text>
+        <text class="asset-value">{{assets.totalAssets}}</text>
+      </view>
+      <view class="asset-item">
+        <text class="asset-label">负债</text>
+        <text class="asset-value debt">{{assets.totalDebt}}</text>
+      </view>
+    </view>
+    <view class="asset-sub-grid">
+      <view class="asset-sub-item">
+        <text class="asset-label">资金账户</text>
+        <text class="asset-value">{{assets.financial}}</text>
+      </view>
+      <view class="asset-sub-item">
+        <text class="asset-label">储蓄账户</text>
+        <text class="asset-value">{{assets.saving}}</text>
+      </view>
+      <view class="asset-sub-item">
+        <text class="asset-label">应收款</text>
+        <text class="asset-value">{{assets.receivable}}</text>
+      </view>
+      <view class="asset-sub-item">
+        <text class="asset-label">其他</text>
+        <text class="asset-value">{{assets.other}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日收支：一行展示 -->
+  <view class="card card-today">
+    <view class="card-header">今日收支</view>
+    <view class="row row-today">
+      <text class="label">收入</text>
+      <text class="value income">{{today.income}}</text>
+
+      <text class="label label-gap">支出</text>
+      <text class="value expense">{{today.expense}}</text>
+    </view>
+  </view>
+
+  <!-- 本月收支 & 预算（整张卡可点击跳转预算列表） -->
+  <view class="card card-month budget-card" bindtap="onViewBudget">
+    <view class="card-header">本月收支 & 预算</view>
+
+    <view class="row">
+      <text class="label">收入</text>
+      <text class="value income">{{month.income}}</text>
+    </view>
+    <view class="row">
+      <text class="label">支出</text>
+      <text class="value expense">{{month.expense}}</text>
+    </view>
+
+    <view class="divider"></view>
+
+    <view class="row">
+      <text class="label">预算总额</text>
+      <text class="value">{{month.budgetTotal}}</text>
+    </view>
+    <view class="row">
+      <text class="label">已用预算</text>
+      <text class="value">{{month.budgetUsed}}</text>
+    </view>
+    <view class="row">
+      <text class="label">剩余额度</text>
+      <text class="value">{{month.budgetRemain}}</text>
+    </view>
+
+    <view class="budget-progress" wx:if="{{month.budgetTotalNumber > 0}}">
+      <view class="budget-bar-bg">
+        <view
+          class="budget-bar-fill {{month.budgetStatus === 'over' ? 'over' : ''}}"
+          style="width: {{month.budgetRatePercent}}%;"
+        ></view>
+      </view>
+      <view class="budget-progress-text">
+        已用 {{month.budgetRatePercent}}%
+      </view>
+    </view>
+
+    <!-- 预算提醒开关开启时才显示预警文案 -->
+    <view
+      class="budget-warning"
+      wx:if="{{budgetReminderEnabled && (month.budgetStatus === 'over' || month.budgetStatus === 'warn')}}"
+    >
+      <text wx:if="{{month.budgetStatus === 'over'}}">
+        本月预算已超支，请注意控制支出
+      </text>
+      <text wx:elif="{{month.budgetStatus === 'warn'}}">
+        本月已使用约 {{month.budgetRatePercent}}% 的预算，接近上限
+      </text>
+    </view>
+  </view>
+
+  <!-- 三个月内需要续费的订阅 -->
+  <view
+    class="card card-renewal"
+    wx:if="{{upcomingRenewals && upcomingRenewals.length > 0}}"
+    bindtap="onViewSubscriptions"
+  >
+    <view class="card-header">即将续费 <text class="card-header-sub">（点击查看全部）</text></view>
+    <view
+      class="renewal-item"
+      wx:for="{{upcomingRenewals}}"
+      wx:key="id"
+    >
+      <view class="renewal-main">
+        <view class="renewal-platform">{{item.platform}}</view>
+        <view class="renewal-sub">
+          <text class="renewal-price">¥{{item.priceDisplay}}</text>
+          <text class="renewal-expire {{item.expireLevel}}">{{item.daysLabel}}</text>
+        </view>
+      </view>
+      <view class="renewal-right">
+        <text wx:if="{{item.auto_renew}}" class="auto-renew-tag">自动续费</text>
+        <text wx:else class="renewal-expire-date">{{item.expire_date}}</text>
+      </view>
+    </view>
+    <view class="renewal-footer">三个月内需要续费的订阅（共{{upcomingRenewals.length}}个）</view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="action-area">
+    <view class="action-row">
+      <button class="action-btn" bindtap="onViewReport">报表分析</button>
+      <button class="action-btn" bindtap="onViewList">流水明细</button>
+    </view>
+  </view>
+</view>

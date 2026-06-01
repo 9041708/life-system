@@ -1,0 +1,85 @@
+<!-- miniprogram/pages/accounts/create.wxml -->
+<view class="page">
+  <view class="section">
+    <view class="label">账户大类</view>
+    <picker
+      mode="selector"
+      range="{{groups}}"
+      range-key="name"
+      value="{{groupIndex}}"
+      bindchange="onGroupChange"
+    >
+      <view class="picker-inner">
+        <text wx:if="{{groups.length > 0}}">
+          {{groups[groupIndex].name}}
+        </text>
+        <text wx:else>请选择账户大类</text>
+      </view>
+    </picker>
+  </view>
+
+  <view class="section">
+    <view class="label">账户名称</view>
+    <input
+      class="input"
+      placeholder="如：微信余额、招商信用卡"
+      value="{{name}}"
+      bindinput="onNameInput"
+    />
+  </view>
+
+  <view class="section">
+    <view class="label">账户号（可选）</view>
+    <input
+      class="input"
+      placeholder="如：卡号后四位"
+      value="{{accountNo}}"
+      bindinput="onAccountNoInput"
+    />
+  </view>
+
+  <!-- 账户图标（可选） -->
+  <view class="section" wx:if="{{iconLibrary.length > 0}}">
+    <view class="label">账户图标（可选）</view>
+    <view class="icon-grid">
+      <view
+        class="icon-item {{item.id === selectedIconId ? 'active' : ''}}"
+        wx:for="{{iconLibrary}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onIconSelect"
+      >
+        <image class="icon-img" src="{{item.file_url}}" mode="aspectFit" />
+      </view>
+    </view>
+    <view class="icon-actions">
+      <text class="icon-clear" bindtap="onClearIcon">不使用图标</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="label">初始余额（可正可负，默认为0）</view>
+    <input
+      class="input"
+      type="digit"
+      placeholder="例如 1000 或 -500"
+      value="{{initialBalance}}"
+      bindinput="onInitialBalanceInput"
+    />
+    <view class="form-tip">
+      若用于某个存钱目标，建议初始余额为 0；已有存入金额可在「记一笔收入」中记到该账户里。
+    </view>
+  </view>
+
+  <view class="footer">
+    <button
+      class="btn-save"
+      type="primary"
+      bindtap="onSubmit"
+      loading="{{submitting}}"
+      disabled="{{submitting}}"
+    >
+      保存
+    </button>
+  </view>
+</view>

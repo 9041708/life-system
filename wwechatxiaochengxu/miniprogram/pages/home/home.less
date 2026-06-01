@@ -1,0 +1,337 @@
+.container {
+  padding: 40rpx 0 20rpx;
+  background: transparent;
+}
+
+.title {
+  font-size: 34rpx;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+.welcome {
+  font-size: 30rpx;
+  text-align: center;
+}
+
+.sub {
+  font-size: 24rpx;
+  color: #888;
+  text-align: center;
+  margin-top: 6rpx;
+  margin-bottom: 24rpx;
+}
+
+.link {
+  margin-left: 12rpx;
+  color: #07c160;
+}
+
+/* 通用卡片 */
+.card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 24rpx 28rpx 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  margin: 0 24rpx 20rpx;
+}
+
+.card-header {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.card-header-link {
+  font-size: 24rpx;
+  color: #07c160;
+}
+
+/* 资产总览 */
+.card-assets {
+  margin: 0 24rpx 20rpx;
+  display: block;
+  width: 80%;
+  padding: 26rpx 32rpx 22rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.asset-main {
+  text-align: center;
+  margin-bottom: 16rpx;
+}
+
+.asset-main-value {
+  font-size: 45rpx;
+  font-weight: 600;
+}
+
+.asset-main-label {
+  font-size: 26rpx;
+  color: #888;
+  margin-top: 8rpx;
+}
+
+.asset-grid {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12rpx;
+}
+
+.asset-item {
+  flex: 1;
+}
+
+.asset-sub-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10rpx;
+}
+
+.asset-sub-item {
+  width: 50%;
+  margin-top: 8rpx;
+}
+
+.asset-label {
+  font-size: 24rpx;
+  color: #888;
+}
+
+.asset-value {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 500;
+  margin-top: 4rpx;
+}
+
+.asset-value.debt {
+  color: #e64340;
+}
+
+/* 今日收支一行 */
+.card-today {
+  margin: 0 24rpx 20rpx;
+  display: block;
+  width: 80%;
+}
+
+.row-today {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.label-gap {
+  margin-left: 24rpx;
+}
+
+/* 行 / 值通用样式 */
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.row:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  font-size: 26rpx;
+  color: #555;
+}
+
+.value {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.value.income {
+  color: #e64340;
+}
+
+.value.expense {
+  color: #07c160;
+}
+
+.divider {
+  height: 1px;
+  background: #f1f1f1;
+  margin: 14rpx 0 10rpx;
+}
+
+/* 本月收支 & 预算 */
+.card-month {
+  margin: 0 24rpx 20rpx;
+  display: block;
+  width: 80%;
+}
+
+/* 预算进度条 */
+.budget-progress {
+  margin-top: 14rpx;
+}
+
+.budget-bar-bg {
+  height: 8rpx;
+  border-radius: 8rpx;
+  background-color: #f0f0f0;
+  overflow: hidden;
+}
+
+.budget-bar-fill {
+  height: 100%;
+  background-color: #52c41a;
+  border-radius: 8rpx;
+}
+
+.budget-bar-fill.over {
+  background-color: #ff4d4f;
+}
+
+.budget-progress-text {
+  margin-top: 12rpx;
+  font-size: 25rpx;
+  color: #999;
+}
+
+.budget-warning {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #e64340;
+}
+
+/* 三个月内续费订阅卡片 */
+.card-renewal {
+  margin: 0 24rpx 20rpx;
+  display: block;
+  width: 80%;
+}
+
+.card-header-sub {
+  font-size: 22rpx;
+  color: #9ca3af;
+  font-weight: normal;
+  margin-left: 8rpx;
+}
+
+.renewal-item {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.renewal-item:last-child {
+  border-bottom: none;
+}
+
+.renewal-main {
+  flex: 1;
+}
+
+.renewal-platform {
+  font-size: 26rpx;
+  color: #111827;
+  font-weight: 500;
+}
+
+.renewal-sub {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 4rpx;
+}
+
+.renewal-price {
+  font-size: 22rpx;
+  color: #666;
+}
+
+.renewal-expire {
+  font-size: 22rpx;
+  color: #666;
+}
+
+.renewal-expire.warn {
+  color: #f59e0b;
+}
+
+.renewal-expire.danger {
+  color: #ef4444;
+}
+
+.renewal-right {
+  text-align: right;
+}
+
+.auto-renew-tag {
+  font-size: 20rpx;
+  padding: 2rpx 8rpx;
+  border-radius: 999rpx;
+  background-color: #fef0f0;
+  color: #e64340;
+}
+
+.renewal-expire-date {
+  font-size: 22rpx;
+  color: #9ca3af;
+}
+
+.renewal-footer {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* 底部快捷入口 */
+.action-area {
+  margin: 0 24rpx 40rpx;
+  padding: 0 0 40rpx;
+  width: 80%;
+  background: #f5f6f8;
+}
+
+.action-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+/* 通用按钮：圆润矩形，浅蓝底 */
+.action-btn {
+  flex: 1;
+  margin: 0 20rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 20rpx;
+  font-size: 30rpx;
+  padding: 0;
+  text-align: center;
+  box-sizing: border-box;
+  border: none;
+  background-color: #e6f3ff;
+  color: #24527a;
+  box-shadow: 0 6rpx 16rpx rgba(15, 23, 42, 0.06);
+
+  &::after {
+    border: none;
+  }
+}
+
+/* 主按钮：记一笔（绿底白字） */
+.action-primary {
+  background-color: #07c160;
+  color: #ffffff;
+}

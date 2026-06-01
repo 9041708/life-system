@@ -1,0 +1,163 @@
+<!-- miniprogram/pages/debt/list.wxml -->
+<view class="page theme-{{theme}}">
+  <view class="title">负债管理</view>
+
+  <view class="tabs">
+    <view class="tab {{activeTab === 'current' ? 'active' : ''}}" bindtap="onTabCurrent">当月应还</view>
+    <view class="tab {{activeTab === 'summary' ? 'active' : ''}}" bindtap="onTabSummary">汇总统计</view>
+    <view class="tab {{activeTab === 'config' ? 'active' : ''}}" bindtap="onTabConfig">负债配置</view>
+  </view>
+
+  <!-- 当月应还 -->
+  <block wx:if="{{activeTab === 'current'}}">
+    <view class="summary-bar">
+      <view class="summary-item">
+        <text class="summary-label">当月应还总额</text>
+        <text class="summary-value">{{totalAmount}}</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-label">已还金额</text>
+        <text class="summary-value green">{{paidAmount}}</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-label">剩余应还</text>
+        <text class="summary-value red">{{remainingAmount}}</text>
+      </view>
+    </view>
+
+    <scroll-view scroll-y="true" class="list">
+      <block wx:for="{{payments}}" wx:key="id">
+        <view class="payment-card">
+          <view class="payment-header">
+            <view class="payment-name">{{item.debt_name}}</view>
+            <view class="payment-status {{item.status}}">{{item.status_text}}</view>
+          </view>
+          <view class="payment-body">
+            <view class="row">
+              <text class="label">期数</text>
+              <text class="value">{{item.period_number}} / {{item.installment_count}}</text>
+            </view>
+            <view class="row">
+              <text class="label">应还日期</text>
+              <text class="value">{{item.due_date}}</text>
+            </view>
+            <view class="row">
+              <text class="label">应还金额</text>
+              <text class="value">{{item.amountDisplay}}</text>
+            </view>
+            <view class="row" wx:if="{{item.status === 'paid'}}">
+              <text class="label">实还金额</text>
+              <text class="value green">{{item.paidAmountDisplay}}</text>
+            </view>
+            <view class="row" wx:if="{{item.status === 'paid'}}">
+              <text class="label">还款日期</text>
+              <text class="value">{{item.paid_date}}</text>
+            </view>
+            <view class="row">
+              <text class="label">剩余期数</text>
+              <text class="value">{{item.remaining_periods}}</text>
+            </view>
+            <view class="row">
+              <text class="label">剩余金额</text>
+              <text class="value red">{{item.remainingAmountDisplay}}</text>
+            </view>
+          </view>
+          <view class="payment-actions" wx:if="{{item.status !== 'paid'}}">
+            <button class="btn-mark-paid" size="mini" bindtap="onMarkPaid" data-payment="{{item}}">标记还款</button>
+          </view>
+          <view class="payment-actions" wx:if="{{item.status === 'paid'}}">
+            <button class="btn-undo" size="mini" bindtap="onUndoPaid" data-payment="{{item}}">回退还款</button>
+          </view>
+        </view>
+      </block>
+      <view class="empty" wx:if="{{!loading && payments.length === 0}}">暂无当月应还记录</view>
+      <view class="loading" wx:if="{{loading}}">加载中…</view>
+    </scroll-view>
+  </block>
+
+  <!-- 汇总统计 -->
+  <block wx:if="{{activeTab === 'summary'}}">
+    <view class="grand-total">
+      <view class="grand-label">已还进度</view>
+      <view class="grand-value">{{progressPercent}}%</view>
+      <view class="grand-sub">{{paidPeriods}} / {{totalPeriods}} 期</view>
+    </view>
+    <scroll-view scroll-y="true" class="list">
+      <block wx:for="{{summary}}" wx:key="id">
+        <view class="summary-card">
+          <view class="summary-card-header">{{item.name}}</view>
+          <view class="summary-card-body">
+            <view class="row">
+              <text class="label">总本金</text>
+              <text class="value">{{item.totalPrincipalDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">总利息</text>
+              <text class="value">{{item.totalInterestDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">总应还</text>
+              <text class="value">{{item.totalAmountDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">已还</text>
+              <text class="value green">{{item.totalPaidDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">剩余</text>
+              <text class="value red">{{item.remainingAmountDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">进度</text>
+              <text class="value">{{item.progressPercent}}%</text>
+            </view>
+          </view>
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: {{item.progressPercent}}%;"></view>
+          </view>
+        </view>
+      </block>
+      <view class="empty" wx:if="{{!loading && summary.length === 0}}">暂无负债记录</view>
+      <view class="loading" wx:if="{{loading}}">加载中…</view>
+    </scroll-view>
+  </block>
+
+  <!-- 负债配置 -->
+  <block wx:if="{{activeTab === 'config'}}">
+    <view class="tips">在 PC 端管理负债配置，小程序端仅支持查看和还款操作</view>
+    <scroll-view scroll-y="true" class="list">
+      <block wx:for="{{configs}}" wx:key="id">
+        <view class="config-card">
+          <view class="config-header">{{item.name}}</view>
+          <view class="config-body">
+            <view class="row">
+              <text class="label">总本金</text>
+              <text class="value">{{item.totalPrincipalDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">总利息</text>
+              <text class="value">{{item.totalInterestDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">期数</text>
+              <text class="value">{{item.installment_count}}</text>
+            </view>
+            <view class="row">
+              <text class="label">已还期数</text>
+              <text class="value">{{item.paid_periods}}</text>
+            </view>
+            <view class="row">
+              <text class="label">剩余金额</text>
+              <text class="value red">{{item.remainingAmountDisplay}}</text>
+            </view>
+          </view>
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: {{item.progressPercent}}%;"></view>
+          </view>
+        </view>
+      </block>
+      <view class="empty" wx:if="{{!loading && configs.length === 0}}">暂无负债配置</view>
+      <view class="loading" wx:if="{{loading}}">加载中…</view>
+    </scroll-view>
+  </block>
+</view>

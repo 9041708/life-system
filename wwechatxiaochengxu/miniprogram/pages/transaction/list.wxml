@@ -1,0 +1,239 @@
+<!-- miniprogram/pages/transaction/list.wxml -->
+<view class="page">
+
+<!-- 类型筛选 -->
+<view class="filter-bar">
+  <view
+    class="filter-item {{typeFilter === 'all' ? 'active' : ''}}"
+    data-type="all"
+    bindtap="onTypeFilterTap"
+  >全部</view>
+  <view
+    class="filter-item {{typeFilter === 'expense' ? 'active' : ''}}"
+    data-type="expense"
+    bindtap="onTypeFilterTap"
+  >支出</view>
+  <view
+    class="filter-item {{typeFilter === 'income' ? 'active' : ''}}"
+    data-type="income"
+    bindtap="onTypeFilterTap"
+  >收入</view>
+</view>
+
+<!-- 展开 / 收起高级筛选 -->
+<view class="filter-toggle" bindtap="onToggleFilters">
+  <text>{{filtersExpanded ? '收起筛选' : '展开筛选'}}</text>
+  <text class="arrow">{{filtersExpanded ? '︿' : '﹀'}}</text>
+</view>
+
+<!-- 高级筛选区域：分类 / 项目 / 账户 / 时间段 / 搜索 -->
+<view wx:if="{{filtersExpanded}}">
+  <!-- 分类 / 项目 / 账户：三项同一行展示 -->
+  <view class="filter-row3">
+    <picker
+      mode="selector"
+      range="{{categories}}"
+      range-key="name"
+      value="{{categoryIndex}}"
+      bindchange="onCategoryChange"
+    >
+      <view class="filter-picker">
+        <text wx:if="{{categories.length > 0}}">
+          {{categories[categoryIndex].name}}
+        </text>
+        <text wx:else>全部分类</text>
+      </view>
+    </picker>
+
+    <picker
+      mode="selector"
+      range="{{items}}"
+      range-key="name"
+      value="{{itemIndex}}"
+      bindchange="onItemChange"
+    >
+      <view class="filter-picker">
+        <text wx:if="{{items.length > 0}}">
+          {{items[itemIndex].name}}
+        </text>
+        <text wx:else>全部项目</text>
+      </view>
+    </picker>
+
+    <picker
+      mode="selector"
+      range="{{accounts}}"
+      range-key="name"
+      value="{{accountIndex}}"
+      bindchange="onAccountChange"
+    >
+      <view class="filter-picker">
+        <text wx:if="{{accounts.length > 0}}">
+          {{accounts[accountIndex].name}}
+        </text>
+        <text wx:else>全部账户</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 时间段 -->
+  <view class="filter-date">
+    <picker mode="date" value="{{dateFrom}}" bindchange="onDateFromChange">
+      <view class="date-picker">
+        <text wx:if="{{dateFrom}}">{{dateFrom}}</text>
+        <text wx:else>开始日期</text>
+      </view>
+    </picker>
+    <picker mode="date" value="{{dateTo}}" bindchange="onDateToChange">
+      <view class="date-picker">
+        <text wx:if="{{dateTo}}">{{dateTo}}</text>
+        <text wx:else>结束日期</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 搜索：备注 + 金额区间 -->
+  <view class="search-bar">
+    <input
+      class="search-input"
+      type="text"
+      placeholder="按备注关键字搜索"
+      value="{{keyword}}"
+      bindinput="onKeywordInput"
+    />
+  </view>
+  <view class="search-row">
+    <view class="search-half">
+      <input
+        class="search-amount-input"
+        type="digit"
+        placeholder="最小金额"
+        value="{{amountMin}}"
+        bindinput="onAmountMinInput"
+      />
+    </view>
+    <view class="search-half">
+      <input
+        class="search-amount-input"
+        type="digit"
+        placeholder="最大金额"
+        value="{{amountMax}}"
+        bindinput="onAmountMaxInput"
+      />
+    </view>
+    <button class="search-btn" bindtap="onSearchSubmit">搜索</button>
+  </view>
+</view>
+
+<!-- 汇总 -->
+<view class="summary">
+  <view class="summary-item">
+    <text class="label">本页收入：</text>
+    <text class="income">+{{summary.income}}</text>
+  </view>
+  <view class="summary-item">
+    <text class="label">本页支出：</text>
+    <text class="expense">-{{summary.expense}}</text>
+  </view>
+</view>
+
+<!-- 列表操作提示 -->
+<view class="list-hint">
+  点击条目可直接编辑，长按可删除
+</view>
+
+<!-- 列表（点按编辑，长按删除） -->
+<view class="list">
+  <view
+    class="tx-item"
+    wx:for="{{transactions}}"
+    wx:key="id"
+    data-tx="{{item}}"
+    bindtap="onItemTap"
+    bindlongpress="onItemLongPress"
+  >
+    <view class="tx-left">
+      <!-- 标题行：分类/项目 + 图标 -->
+      <view class="tx-title">
+        <!-- 优先显示分类图标，没有则用项目图标 -->
+        <image
+          wx:if="{{item._categoryIconUrl}}"
+          class="tx-icon"
+          src="{{item._categoryIconUrl}}"
+          mode="aspectFit"
+        />
+        <image
+          wx:elif="{{item._itemIconUrl}}"
+          class="tx-icon"
+          src="{{item._itemIconUrl}}"
+          mode="aspectFit"
+        />
+        <text class="tx-title-text">
+          {{item.category_name || (item.type === 'income' ? '收入' : (item.type === 'expense' ? '支出' : '转账'))}}
+          <text wx:if="{{item.item_name}}"> · {{item.item_name}}</text>
+        </text>
+      </view>
+
+      <view class="tx-remark" wx:if="{{item.remark}}">
+        {{item.remark}}
+      </view>
+
+      <!-- 图片缩略图：点击预览大图 -->
+      <view class="tx-attach" wx:if="{{item.attachment_url}}">
+        <image
+          class="tx-thumb"
+          src="{{item.attachment_url}}"
+          mode="aspectFill"
+          catchtap="onPreviewAttachment"
+          data-url="{{item.attachment_url}}"
+          data-urls="{{item.attachment_urls}}"
+        />
+        <view
+          wx:if="{{item.attachment_urls && item.attachment_urls.length > 1}}"
+          class="tx-thumb-badge"
+        >
+          +{{item.attachment_urls.length - 1}}
+        </view>
+      </view>
+
+      <!-- 日期时间 -->
+      <view class="tx-sub">
+        {{item._date}} {{item._time}}
+      </view>
+
+      <!-- 账户（图标跟着账户名） -->
+      <view
+        class="tx-sub tx-account-line"
+        wx:if="{{item.from_account_name || item.to_account_name}}"
+      >
+        <image
+          wx:if="{{item._accountIconUrl}}"
+          class="tx-icon-small"
+          src="{{item._accountIconUrl}}"
+          mode="aspectFit"
+        />
+        <text>
+          <text wx:if="{{item.from_account_name}}">{{item.from_account_name}}</text>
+          <text wx:if="{{item.to_account_name}}">→{{item.to_account_name}}</text>
+        </text>
+      </view>
+    </view>
+
+    <view class="tx-right">
+      <text class="tx-amount {{item.type === 'income' ? 'income' : 'expense'}}">
+        {{item.type === 'income' ? '+' : (item.type === 'expense' ? '-' : '')}}{{item.amount}}
+      </text>
+    </view>
+  </view>
+
+  <view class="load-more" wx:if="{{loading}}">
+    加载中…
+  </view>
+  <view class="load-more" wx:if="{{!loading && !hasMore && transactions.length > 0}}">
+    没有更多了
+  </view>
+  <view class="empty" wx:if="{{!loading && transactions.length === 0}}">
+    暂无记录
+  </view>
+</view>
+</view>

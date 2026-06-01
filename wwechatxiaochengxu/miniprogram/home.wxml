@@ -1,0 +1,15 @@
+<!--home.wxml-->
+<view class="page">
+	<view wx:if="{{updateReady}}" class="update-banner ready">
+		<text>检测到新版本，已为你准备更新</text>
+		<button class="update-btn" size="mini" bindtap="onApplyUpdate">重启更新</button>
+	</view>
+	<view wx:elif="{{hasUpdate}}" class="update-banner">
+		<text>检测到新版本，正在准备更新…</text>
+	</view>
+
+	<!-- 你的首页内容 -->
+	<view class="content">
+		<!-- TODO: 首页具体内容 -->
+	</view>
+</view>

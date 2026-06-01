@@ -1,0 +1,29 @@
+<view class="container">
+  <view class="title">绑定已有账号</view>
+
+  <view class="form-item">
+    <input class="input" placeholder="用户名或邮箱" value="{{account}}" bindinput="onAccountInput" />
+  </view>
+
+  <view class="form-item password-row">
+    <input
+      class="input"
+      placeholder="密码"
+      password="{{passwordHidden}}"
+      value="{{password}}"
+      bindinput="onPasswordInput"
+    />
+    <text class="toggle" bindtap="onTogglePassword">
+      {{passwordHidden ? '显示' : '隐藏'}}
+    </text>
+  </view>
+
+  <button class="btn" type="primary" loading="{{loading}}" bindtap="onBind">
+    绑定并登录
+  </button>
+
+  <view class="sub-actions">
+    <text>还没有账号？</text>
+    <text class="link" bindtap="onGoRegister">去注册一个</text>
+  </view>
+</view>

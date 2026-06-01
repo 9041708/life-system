@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="title">更新日志</view>
+  <view class="notice">
+    提示：本页更新日志与 PC 端同步，但小程序发布和审核存在一定延迟。功能与文案以 PC 端为准；小程序端将在审核通过后陆续生效。
+  </view>
+
+  <block wx:for="{{entries}}" wx:key="version">
+    <view class="version-block">
+      <view class="version-title">{{item.title}}</view>
+      <view class="version-items">
+        <view
+          class="version-item"
+          wx:for="{{item.items}}"
+          wx:key="index"
+        >
+          • {{item}}
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view class="footer">
+    <view class="footer-version">当前版本：{{appVersion}}</view>
+    <view class="footer-dev">
+      <view>开发者：SanS三石</view>
+      <view>联系方式：请通过小程序内「问题反馈」功能联系开发者</view>
+    </view>
+  </view>
+</view>

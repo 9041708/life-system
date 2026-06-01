@@ -1,0 +1,69 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/index/index",
+    "pages/bind/bind",
+    "pages/register/register",
+    "pages/transaction/create",
+    "pages/transaction/list",
+    "pages/accounts/list",
+    "pages/accounts/create",
+    "pages/categories/list",
+    "pages/items/list",
+    "pages/icons/list",
+    "pages/login/qr-confirm",
+    "pages/budget/list",
+    "pages/budget/edit",
+    "pages/report/index",
+    "pages/settings/index",
+    "pages/transaction/edit",
+    "pages/changelog/index",
+    "pages/feedback/index",
+    "pages/goals/list",
+    "pages/assets/list",
+    "pages/subscriptions/list",
+    "pages/debt/list",
+    "pages/reimbursement/list"
+  ],
+  "window": {
+    "navigationBarTitleText": "三石记账"
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#2c7dfa",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "总览",
+        "iconPath": "assets/tabbar/overview.png",
+        "selectedIconPath": "assets/tabbar/overview-active.png"
+      },
+      {
+        "pagePath": "pages/budget/list",
+        "text": "订阅/资产",
+        "iconPath": "assets/tabbar/goal.png",
+        "selectedIconPath": "assets/tabbar/goal-active.png"
+      },
+      {
+        "pagePath": "pages/transaction/create",
+        "text": "记一笔",
+        "iconPath": "assets/tabbar/plus.png",
+        "selectedIconPath": "assets/tabbar/plus-active.png"
+      },
+      {
+        "pagePath": "pages/accounts/list",
+        "text": "管理",
+        "iconPath": "assets/tabbar/manage.png",
+        "selectedIconPath": "assets/tabbar/manage-active.png"
+      },
+      {
+        "pagePath": "pages/settings/index",
+        "text": "我的",
+        "iconPath": "assets/tabbar/mine.png",
+        "selectedIconPath": "assets/tabbar/mine-active.png"
+      }
+    ]
+  }
+}

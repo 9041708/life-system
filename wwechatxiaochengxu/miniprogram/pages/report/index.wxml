@@ -1,0 +1,264 @@
+<!-- miniprogram/pages/report/index.wxml -->
+<view class="page">
+
+  <!-- 顶部子页标签：总览 / 分类 / 项目 -->
+  <view class="report-tabs">
+    <view
+      class="tab-item {{activeTab === 'overview' ? 'active' : ''}}"
+      data-tab="overview"
+      bindtap="onTabChange"
+    >总览</view>
+    <view
+      class="tab-item {{activeTab === 'category' ? 'active' : ''}}"
+      data-tab="category"
+      bindtap="onTabChange"
+    >分类</view>
+    <view
+      class="tab-item {{activeTab === 'item' ? 'active' : ''}}"
+      data-tab="item"
+      bindtap="onTabChange"
+    >项目</view>
+  </view>
+
+  <!-- 时间轴：年 / 季 / 月 + 区间选择 + 自定义筛选 -->
+  <view class="mode-bar">
+    <view
+      class="mode-item {{mode === 'year' ? 'active' : ''}}"
+      data-mode="year"
+      bindtap="onModeTap"
+    >年</view>
+    <view
+      class="mode-item {{mode === 'quarter' ? 'active' : ''}}"
+      data-mode="quarter"
+      bindtap="onModeTap"
+    >季</view>
+    <view
+      class="mode-item {{mode === 'month' ? 'active' : ''}}"
+      data-mode="month"
+      bindtap="onModeTap"
+    >月</view>
+  </view>
+
+  <view class="period-bar">
+    <view class="nav-btn" bindtap="onPrevPeriod">＜</view>
+    <view class="period-center">
+      <view class="period-title">{{periodTitle}}</view>
+      <view class="period-range">{{dateFrom}} ～ {{dateTo}}</view>
+    </view>
+    <view class="nav-btn" bindtap="onNextPeriod">＞</view>
+    <view class="filter-btn" bindtap="onOpenFilter">筛选</view>
+  </view>
+
+  <!-- 总览子页 -->
+  <block wx:if="{{activeTab === 'overview'}}">
+    <!-- 汇总卡片：支出 / 收入 / 结余 + 笔数 -->
+    <view class="summary">
+      <view class="summary-row first">
+        <view class="summary-col">
+          <view class="label">支出</view>
+          <view class="value expense">{{totalExpense}}</view>
+        </view>
+        <view class="summary-col">
+          <view class="label">收入</view>
+          <view class="value income">{{totalIncome}}</view>
+        </view>
+        <view class="summary-col">
+          <view class="label">结余</view>
+          <view class="value {{totalNet > 0 ? 'net-positive' : (totalNet < 0 ? 'net-negative' : '')}}">{{totalNet}}</view>
+        </view>
+      </view>
+      <view class="summary-row second">
+        <view class="summary-col">
+          <view class="label">支出笔数</view>
+          <view class="value expense">{{totalExpenseCount}}</view>
+        </view>
+        <view class="summary-col">
+          <view class="label">收入笔数</view>
+          <view class="value income">{{totalIncomeCount}}</view>
+        </view>
+        <view class="summary-col">
+          <view class="label">总笔数</view>
+          <view class="value">{{totalCount}}</view>
+        </view>
+      </view>
+
+      <view class="summary-row third" wx:if="{{compareLastYear}}">
+        <view class="summary-col">
+          <view class="label">去年同期支出</view>
+          <view class="value expense">{{totalExpenseLast}}</view>
+        </view>
+        <view class="summary-col">
+          <view class="label">去年同期收入</view>
+          <view class="value income">{{totalIncomeLast}}</view>
+        </view>
+        <view class="summary-col">
+          <view class="label">去年同期结余</view>
+          <view class="value {{totalNetLast > 0 ? 'net-positive' : (totalNetLast < 0 ? 'net-negative' : '')}}">{{totalNetLast}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 趋势柱状图 -->
+    <view class="chart-card">
+      <view class="chart-header">
+        <view class="chart-title">收支趋势</view>
+        <view class="chart-header-right">
+          <view class="chart-avg" wx:if="{{chartBars.length > 0}}">
+            均值：{{chartAverage}}
+          </view>
+          <view class="compare-toggle">
+            <text class="compare-label">对比去年</text>
+            <switch checked="{{compareLastYear}}" bindchange="onToggleCompare" />
+          </view>
+        </view>
+      </view>
+      <view class="chart-body" wx:if="{{chartBars.length > 0}}">
+        <view class="chart-bars">
+          <view
+            class="chart-bar"
+            wx:for="{{chartBars}}"
+            wx:key="index"
+          >
+            <view class="bar-wrapper">
+              <view class="bar-group">
+                <view class="bar current {{chartMode}}" style="height: {{item.heightNow}}rpx;"></view>
+                <view wx:if="{{compareLastYear}}" class="bar last {{chartMode}}" style="height: {{item.heightLast}}rpx;"></view>
+              </view>
+            </view>
+            <view class="bar-label">{{item.label}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="empty" wx:if="{{chartBars.length === 0 && !loading}}">
+        当前时间范围内暂无记录
+      </view>
+      <view class="loading" wx:if="{{loading}}">加载中…</view>
+
+      <view class="chart-mode-tabs">
+        <view
+          class="chart-mode-item {{chartMode === 'expense' ? 'active' : ''}}"
+          data-mode="expense"
+          bindtap="onChartModeTap"
+        >支出</view>
+        <view
+          class="chart-mode-item {{chartMode === 'income' ? 'active' : ''}}"
+          data-mode="income"
+          bindtap="onChartModeTap"
+        >收入</view>
+        <view
+          class="chart-mode-item {{chartMode === 'net' ? 'active' : ''}}"
+          data-mode="net"
+          bindtap="onChartModeTap"
+        >结余</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 分类子页 -->
+  <block wx:elif="{{activeTab === 'category'}}">
+    <view class="section-header">
+      <view class="section-title">按分类统计</view>
+      <view class="type-toggle">
+        <view
+          class="type-item {{categoryType === 'expense' ? 'active' : ''}}"
+          data-type="expense"
+          bindtap="onCategoryTypeChange"
+        >支出</view>
+        <view
+          class="type-item {{categoryType === 'income' ? 'active' : ''}}"
+          data-type="income"
+          bindtap="onCategoryTypeChange"
+        >收入</view>
+      </view>
+    </view>
+
+    <view class="cat-list">
+      <view
+        class="cat-item"
+        wx:for="{{categoryStats}}"
+        wx:key="name"
+      >
+        <view class="cat-left">
+          <view class="cat-name">{{item.name}}</view>
+          <view class="cat-sub">占比 {{item.percent}}%</view>
+        </view>
+        <view class="cat-right">
+          <text class="cat-amount">{{item.amount}}</text>
+        </view>
+      </view>
+
+      <view class="empty" wx:if="{{!loading && categoryStats.length === 0}}">
+        当前时间范围内暂无记录
+      </view>
+      <view class="loading" wx:if="{{loading}}">
+        加载中…
+      </view>
+    </view>
+  </block>
+
+  <!-- 项目子页 -->
+  <block wx:elif="{{activeTab === 'item'}}">
+    <view class="section-header">
+      <view class="section-title">按项目统计</view>
+      <view class="type-toggle">
+        <view
+          class="type-item {{itemType === 'expense' ? 'active' : ''}}"
+          data-type="expense"
+          bindtap="onItemTypeChange"
+        >支出</view>
+        <view
+          class="type-item {{itemType === 'income' ? 'active' : ''}}"
+          data-type="income"
+          bindtap="onItemTypeChange"
+        >收入</view>
+      </view>
+    </view>
+
+    <view class="cat-list">
+      <view
+        class="cat-item"
+        wx:for="{{itemStats}}"
+        wx:key="name"
+      >
+        <view class="cat-left">
+          <view class="cat-name">{{item.name}}</view>
+          <view class="cat-sub">占比 {{item.percent}}%</view>
+        </view>
+        <view class="cat-right">
+          <text class="cat-amount">{{item.amount}}</text>
+        </view>
+      </view>
+
+      <view class="empty" wx:if="{{!loading && itemStats.length === 0}}">
+        当前时间范围内暂无记录
+      </view>
+      <view class="loading" wx:if="{{loading}}">
+        加载中…
+      </view>
+    </view>
+  </block>
+
+  <!-- 自定义时间筛选面板 -->
+  <view class="filter-mask" wx:if="{{showFilterPanel}}">
+    <view class="filter-panel">
+      <view class="filter-title">自定义时间</view>
+      <view class="filter-row">
+        <view class="filter-label">开始日期</view>
+        <picker mode="date" value="{{customFrom}}" bindchange="onPickCustomFrom">
+          <view class="picker-value">{{customFrom || '请选择'}}</view>
+        </picker>
+      </view>
+      <view class="filter-row">
+        <view class="filter-label">结束日期</view>
+        <picker mode="date" value="{{customTo}}" bindchange="onPickCustomTo">
+          <view class="picker-value">{{customTo || '请选择'}}</view>
+        </picker>
+      </view>
+      <view class="filter-actions">
+        <button class="btn-secondary" bindtap="onCloseFilter">取消</button>
+        <button class="btn-primary" bindtap="onConfirmFilter">确定</button>
+      </view>
+    </view>
+  </view>
+
+</view>

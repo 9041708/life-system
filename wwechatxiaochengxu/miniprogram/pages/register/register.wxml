@@ -1,0 +1,87 @@
+<view class="container">
+	<view class="title">注册新账号</view>
+
+	<!-- 微信头像昵称填写能力：头像选择按钮 -->
+	<view class="form-item avatar-row">
+		<button
+			class="avatar-btn"
+			open-type="chooseAvatar"
+			bind:chooseavatar="onChooseAvatar"
+		>
+			<image
+				class="avatar-img"
+				mode="aspectFill"
+				src="{{avatarPreview || defaultAvatar}}"
+			/>
+			<text class="avatar-text">选择微信头像</text>
+		</button>
+	</view>
+
+	<view class="form-item">
+		<input
+			class="input"
+			placeholder="用户名（用于登录）"
+			value="{{username}}"
+			bindinput="onUsernameInput"
+		/>
+	</view>
+
+	<view class="form-item">
+		<input
+			class="input"
+			type="nickname"
+			placeholder="昵称（显示名称）"
+			value="{{nickname}}"
+			bindinput="onNicknameInput"
+		/>
+	</view>
+
+	<view class="form-item">
+		<input
+			class="input"
+			placeholder="邮箱（用于找回密码）"
+			value="{{email}}"
+			bindinput="onEmailInput"
+		/>
+	</view>
+
+	<view class="form-item password-row">
+		<input
+			class="input"
+			placeholder="设置登录密码"
+			password="{{passwordHidden}}"
+			value="{{password}}"
+			bindinput="onPasswordInput"
+		/>
+		<text class="toggle" bindtap="onTogglePassword">
+			{{passwordHidden ? '显示' : '隐藏'}}
+		</text>
+	</view>
+
+	<view class="form-item password-row">
+		<input
+			class="input"
+			placeholder="再次输入密码"
+			password="{{passwordConfirmHidden}}"
+			value="{{passwordConfirm}}"
+			bindinput="onPasswordConfirmInput"
+		/>
+		<text class="toggle" bindtap="onTogglePasswordConfirm">
+			{{passwordConfirmHidden ? '显示' : '隐藏'}}
+		</text>
+	</view>
+
+	<button
+		class="btn"
+		type="primary"
+		loading="{{loading}}"
+		bindtap="onSubmit"
+	>
+		注册并登录
+	</button>
+
+	<view class="sub-actions">
+		<text>已有账号？</text>
+		<text class="link" bindtap="onGoBind">去绑定登录</text>
+	</view>
+</view>

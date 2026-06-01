@@ -1,0 +1,357 @@
+<!-- miniprogram/pages/transaction/create.wxml -->
+<view class="page theme-{{theme}}">
+  <view class="card">
+    <!-- 顶部快捷入口：负债管理 / 报销管理 -->
+    <view class="quick-nav">
+      <view class="quick-nav-btn" bindtap="onDebt">
+        <text class="quick-nav-icon">💳</text>
+        <text class="quick-nav-text">负债管理</text>
+      </view>
+      <view class="quick-nav-btn" bindtap="onReimbursement">
+        <text class="quick-nav-icon">📋</text>
+        <text class="quick-nav-text">报销管理</text>
+      </view>
+    </view>
+
+    <!-- 收支 / 转账切换 -->
+    <view class="type-switch">
+      <view
+        class="type-btn {{type === 'expense' ? 'active' : ''}}"
+        data-type="expense"
+        bindtap="onTypeTap"
+      >
+        支出
+      </view>
+      <view
+        class="type-btn {{type === 'income' ? 'active' : ''}}"
+        data-type="income"
+        bindtap="onTypeTap"
+      >
+        收入
+      </view>
+      <view
+        wx:if="{{transferEnabled}}"
+        class="type-btn {{type === 'transfer' ? 'active' : ''}}"
+        data-type="transfer"
+        bindtap="onTypeTap"
+      >
+        转账
+      </view>
+    </view>
+
+    <!-- 分类：点击打开弹层 -->
+    <view class="form-item">
+      <view class="form-label">分类</view>
+      <view class="pill-input" bindtap="onOpenCategorySheet">
+        <view class="acc-pill-main">
+          <text wx:if="{{categoryIndex >= 0}}">
+            {{categories[categoryIndex].name}}
+          </text>
+          <text wx:else>请选择分类</text>
+        </view>
+        <text class="acc-pill-arrow">选择</text>
+      </view>
+    </view>
+
+    <!-- 项目：点击打开弹层 -->
+    <view class="form-item">
+      <view class="form-label">项目（可选）</view>
+      <view class="pill-input" bindtap="onOpenItemSheet">
+        <view class="acc-pill-main">
+          <block wx:if="{{categoryIndex < 0}}">
+            <text>请先选择分类</text>
+          </block>
+          <block wx:elif="{{itemIndex >= 0}}">
+            <text>{{items[itemIndex].name}}</text>
+          </block>
+          <block wx:else>
+            <text>不选项目</text>
+          </block>
+        </view>
+        <text class="acc-pill-arrow">选择</text>
+      </view>
+    </view>
+
+    <!-- 账户：支出 / 收入 / 转账 -->
+    <block wx:if="{{type !== 'transfer'}}">
+      <view class="form-item">
+        <view class="form-label">
+          {{ type === 'expense' ? '支出账户' : '收入账户' }}
+        </view>
+        <view class="pill-input" bindtap="onOpenAccountSheet" data-role="single">
+          <view class="acc-pill-main">
+            <text wx:if="{{accountIndex >= 0}}">
+              {{accounts[accountIndex].name}}
+            </text>
+            <text wx:else>请选择账户</text>
+          </view>
+          <text class="acc-pill-arrow">选择</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 转账：需要同时选择转出账户与转入账户 -->
+    <block wx:elif="{{type === 'transfer'}}">
+      <view class="form-item">
+        <view class="form-label">转出账户</view>
+        <view class="pill-input" bindtap="onOpenAccountSheet" data-role="from">
+          <view class="acc-pill-main">
+            <text wx:if="{{fromAccountIndex >= 0}}">
+              {{accounts[fromAccountIndex].name}}
+            </text>
+            <text wx:else>请选择转出账户</text>
+          </view>
+          <text class="acc-pill-arrow">选择</text>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">转入账户</view>
+        <view class="pill-input" bindtap="onOpenAccountSheet" data-role="to">
+          <view class="acc-pill-main">
+            <text wx:if="{{toAccountIndex >= 0}}">
+              {{accounts[toAccountIndex].name}}
+            </text>
+            <text wx:else>请选择转入账户</text>
+          </view>
+          <text class="acc-pill-arrow">选择</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 金额 -->
+    <view class="form-item">
+      <view class="form-label">金额</view>
+      <view class="pill-input">
+        <input
+          class="text-input"
+          type="digit"
+          placeholder="请输入金额"
+          value="{{amount}}"
+          bindinput="onAmountInput"
+        />
+      </view>
+    </view>
+
+    <!-- 日期 + 时间 -->
+    <view class="form-item form-row">
+      <view class="form-col">
+        <view class="form-label">日期</view>
+        <picker mode="date" value="{{date}}" bindchange="onDateChange">
+          <view class="pill-input">
+            <text>{{date}}</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-col">
+        <view class="form-label">时间</view>
+        <picker mode="time" value="{{time}}" bindchange="onTimeChange">
+          <view class="pill-input">
+            <text>{{time}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-item">
+      <view class="form-label">备注</view>
+      <view class="textarea-wrap">
+        <textarea
+          class="textarea"
+          placeholder="可以写点备注"
+          value="{{remark}}"
+          bindinput="onRemarkInput"
+          maxlength="200"
+          auto-height="true"
+        />
+      </view>
+    </view>
+
+    <!-- 图片附件 -->
+    <view class="form-item">
+      <view class="form-label">图片附件</view>
+
+      <view class="attach-top">
+        <text class="attach-tip">最多 5 张</text>
+        <text
+          wx:if="{{attachments.length > 0}}"
+          class="attach-link danger"
+          bindtap="onClearAttachments"
+        >
+          清空
+        </text>
+      </view>
+
+      <view class="attach-grid" wx:if="{{attachments.length > 0}}">
+        <view
+          class="attach-item"
+          wx:for="{{attachments}}"
+          wx:key="index"
+        >
+          <image
+            class="attach-thumb"
+            src="{{item.url}}"
+            mode="aspectFill"
+            data-index="{{index}}"
+            bindtap="onPreviewAttachment"
+          />
+          <view
+            class="attach-remove"
+            data-index="{{index}}"
+            bindtap="onRemoveAttachment"
+          >
+            ×
+          </view>
+        </view>
+
+        <view
+          wx:if="{{attachments.length < 5}}"
+          class="attach-add"
+          bindtap="onPickImagePlaceholder"
+        >
+          +
+        </view>
+      </view>
+
+      <view
+        wx:else
+        class="attach-placeholder"
+        bindtap="onPickImagePlaceholder"
+      >
+        点击这里，拍照 / 选图上传
+      </view>
+    </view>
+
+    <!-- 提交按钮 -->
+    <view class="footer">
+      <button
+        class="btn-save"
+        type="primary"
+        bindtap="onSubmit"
+        loading="{{submitting}}"
+        disabled="{{submitting}}"
+      >
+        保存
+      </button>
+    </view>
+  </view>
+
+  <!-- 账户选择弹层 -->
+  <view
+    class="account-sheet-mask"
+    wx:if="{{showAccountSheet}}"
+    bindtap="onCloseAccountSheet"
+  >
+    <view class="account-sheet" catchtap="noop">
+      <view class="sheet-title">选择账户</view>
+
+      <scroll-view scroll-y="true" class="sheet-scroll">
+        <view
+          class="sheet-item"
+          wx:for="{{accounts}}"
+          wx:key="id"
+          data-index="{{index}}"
+          bindtap="onSelectAccount"
+        >
+          <image
+            wx:if="{{item.icon_url}}"
+            class="sheet-icon"
+            src="{{item.icon_url}}"
+            mode="aspectFit"
+          />
+          <view class="sheet-main">
+            <view class="sheet-name">
+              {{item.name}}
+              <text
+                wx:if="{{item.is_default == 1}}"
+                class="badge-default"
+              >
+                默认
+              </text>
+            </view>
+            <view class="sheet-sub">
+              <text wx:if="{{item.group_name}}">{{item.group_name}}</text>
+              <text wx:if="{{item.account_no}}"> · {{item.account_no}}</text>
+            </view>
+          </view>
+          <view class="sheet-right">
+            <text
+              class="sheet-balance {{item._positive ? 'positive' : 'negative'}}"
+            >
+              {{item._balanceDisplay}}
+            </text>
+          </view>
+        </view>
+      </scroll-view>
+
+    </view>
+  </view>
+
+  <!-- 分类选择弹层 -->
+  <view
+    class="account-sheet-mask"
+    wx:if="{{showCategorySheet}}"
+    bindtap="onCloseCategorySheet"
+  >
+    <view class="account-sheet" catchtap="noop">
+      <view class="sheet-title">选择分类</view>
+
+      <scroll-view scroll-y="true" class="sheet-scroll">
+        <view
+          class="sheet-item"
+          wx:for="{{categories}}"
+          wx:key="id"
+          data-index="{{index}}"
+          bindtap="onSelectCategory"
+        >
+          <image
+            wx:if="{{item.icon_url}}"
+            class="sheet-icon"
+            src="{{item.icon_url}}"
+            mode="aspectFit"
+          />
+          <view class="sheet-main">
+            <view class="sheet-name">
+              {{item.name}}
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+    </view>
+  </view>
+
+  <!-- 项目选择弹层 -->
+  <view
+    class="account-sheet-mask"
+    wx:if="{{showItemSheet}}"
+    bindtap="onCloseCategorySheet"
+  >
+    <view class="account-sheet" catchtap="noop">
+      <view class="sheet-title">选择项目</view>
+
+      <scroll-view scroll-y="true" class="sheet-scroll">
+        <view
+          class="sheet-item"
+          wx:for="{{items}}"
+          wx:key="id"
+          data-index="{{index}}"
+          bindtap="onSelectItem"
+        >
+          <image
+            wx:if="{{item.icon_url}}"
+            class="sheet-icon"
+            src="{{item.icon_url}}"
+            mode="aspectFit"
+          />
+          <view class="sheet-main">
+            <view class="sheet-name">
+              {{item.name}}
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+    </view>
+  </view>
+</view>

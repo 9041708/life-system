@@ -1,0 +1,144 @@
+/* miniprogram/pages/accounts/list.less */
+
+.page {
+  padding: 16rpx 24rpx 32rpx;
+  box-sizing: border-box;
+}
+
+/* 汇总卡片 */
+.summary {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
+  margin-bottom: 20rpx;
+  font-size: 26rpx;
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+
+    .label {
+      color: #666;
+    }
+
+    .value {
+      color: #333;
+      font-weight: 500;
+    }
+  }
+}
+
+/* 列表 */
+.list {
+  margin-top: 8rpx;
+}
+
+/* 操作提示文案 */
+.tip-text {
+  margin: 6rpx 0 10rpx;
+  font-size: 24rpx;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+.acc-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+/* 账户图标 */
+.acc-icon {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 8rpx;
+  margin-right: 16rpx;
+}
+
+.acc-left {
+  flex: 1;
+}
+
+.acc-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.badge-default {
+  margin-left: 12rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  background-color: #07c160;
+  color: #fff;
+}
+
+.acc-sub {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.acc-right {
+  margin-left: 16rpx;
+  display: flex;
+  align-items: center;
+}
+
+.acc-balance {
+  font-size: 30rpx;
+}
+
+.acc-balance.positive {
+  color: #07c160;
+}
+
+.acc-balance.negative {
+  color: #e64340;
+}
+
+.empty,
+.loading {
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 底部新增按钮 */
+.footer {
+  margin-top: 24rpx;
+}
+
+.btn-add {
+  width: 50%;
+  margin: 0 auto;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  padding: 10rpx 0;
+}
+
+/* 管理子菜单（仅保留账户/分类/项目） */
+.manage-subtab {
+  margin-top: 20rpx;
+  display: flex;
+  background-color: #ffffff;
+  border-radius: 999rpx;
+  padding: 6rpx;
+}
+
+.manage-subtab-item {
+  flex: 1;
+  text-align: center;
+  padding: 10rpx 0;
+  font-size: 24rpx;
+  color: #6b7280;
+  border-radius: 999rpx;
+}
+
+.manage-subtab-item.manage-active {
+  background-color: #07c160;
+  color: #ffffff;
+}
