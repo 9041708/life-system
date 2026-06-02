@@ -712,13 +712,17 @@ class DiscuzService
             $text = strip_tags($html);
             $text = preg_replace('/\s+/', ' ', trim($text));
 
-            // 筛选 @提及/帖子引用/回复 通知
+            // 筛选 @提及/帖子引用/回复/评论 通知
             $isMention = (stripos($text, '@') !== false && stripos($text, '回复') !== false)
                 || stripos($text, '引用了你的帖子') !== false
                 || stripos($text, '回复了你的帖子') !== false
+                || stripos($text, '回复了你的回复') !== false
+                || stripos($text, '评论了你的') !== false
                 || stripos($text, '在帖子中提到了你') !== false
                 || stripos($text, '在回复中提到了你') !== false
-                || stripos($text, '有人@') !== false;
+                || stripos($text, '有人@') !== false
+                || stripos($text, '新回复') !== false
+                || stripos($text, '新的回帖') !== false;
 
             if (!$isMention) continue;
 
@@ -791,13 +795,15 @@ class DiscuzService
             if (!$thread['ok']) continue;
 
             // 检查是否涉及钱财相关，如是则统一回复抱歉
-            if (self::isMoneyRelated(($thread['title'] ?? '') . ' ' . ($thread['content'] ?? ''))) {
+            $fullContext = ($thread['title'] ?? '') . ' ' . ($thread['content'] ?? '') . ' ' . ($mention['content'] ?? '');
+            if (self::isMoneyRelated($fullContext)) {
                 $message = '抱歉，目前不支持涉及钱财相关问题的自动回复。';
             } else {
-                // AI 生成回复内容，失败则跳过不回复
-                $message = self::generateAiReply($thread['title'], $thread['content']);
+                // AI 生成回复内容，带入 @提及的上下文信息
+                $contextContent = ($mention['content'] ?? '') ? "【对方的回复】" . $mention['content'] . "\n\n【帖子内容】" . ($thread['content'] ?? '') : ($thread['content'] ?? '');
+                $message = self::generateAiReply($thread['title'], $contextContent);
                 if (empty($message)) {
-                    $message = self::generateAiReply($thread['title'], $thread['content'], true);
+                    $message = self::generateAiReply($thread['title'], $contextContent, true);
                 }
                 if (empty($message)) continue;
             }
@@ -1169,13 +1175,14 @@ class DiscuzService
         }
 
         $systemPrompt = $retrying
-            ? '你是资深论坛用户，擅长针对帖子内容发表观点或提问。回复要自然，必须围绕帖子具体内容，禁止说空话套话。'
-            : '你是论坛活跃用户，回复必须紧扣帖子内容：表达赞同/反对观点、补充信息、提出疑问或分享经验。严禁使用"感谢分享""学到了""写得好"等空洞模板。';
+            ? '你是一个真实论坛用户。你必须针对帖子的核心内容发表观点。回复要自然口语化，像普通网友打字。禁止说空话套话。可以表达赞同/反对，可以补充信息，可以提问。'
+            : '你是一个真实论坛用户。你必须阅读并理解帖子内容，抓住核心话题，给出有实质性内容的回复。使用自然的口语，不要书面化。可以表达自己的观点、分享相关经验、或者提出有深度的问题。严禁使用"感谢分享""学到了""写得好""收藏了"等空洞模板。每条回复都是独特的，针对当前帖子。';
 
-        $prompt = "请根据以下帖子内容生成一条回复（50-150字），要求：\n";
-        $prompt .= "1. 必须针对帖子具体内容，不能泛泛而谈\n";
-        $prompt .= "2. 要有实质观点、补充信息、相关经验或提出问题\n";
-        $prompt .= "3. 语气自然像真人发帖，不要AI感\n\n";
+        $prompt = "请根据以下帖子内容生成一条论坛回复（60-200字），要求：\n";
+        $prompt .= "1. 仔细阅读帖子内容，提取核心话题，围绕核心展开\n";
+        $prompt .= "2. 有实质观点或补充信息，像真实网友在交流\n";
+        $prompt .= "3. 语气自然，口语化，不要AI味道\n";
+        $prompt .= "4. 可以适当提问引导对话继续\n\n";
         $prompt .= "【帖子标题】{$title}\n";
         $prompt .= "【帖子内容】{$content}\n\n";
         $prompt .= "直接输出回复内容，不要加引号、前缀或任何说明文字。";
@@ -1227,16 +1234,26 @@ class DiscuzService
      */
     public static function isMoneyRelated(string $text): bool
     {
+        $text = mb_strtolower($text);
         $moneyKeywords = [
             '借钱', '贷款', '还钱', '欠钱', '借款', '借钱吗',
             '转账', '汇款', '打钱', '给钱', '要钱',
-            '投资', '理财', '股票', '基金', '期货', '外汇',
+            '投资', '理财', '股票', '基金', '期货', '外汇', '炒股',
             '赚钱', '挣钱', '发财', '暴富', '躺赚',
             '兼职', '刷单', '佣金', '返利', '分红',
             '支付宝转', '微信转', '银行卡号', '账号打',
-            '资金盘', '传销', '虚拟币', '数字货币', '比特币',
-            '代还', '套现', '信用卡还', '花呗还', '白条还',
+            '资金盘', '传销', '代还', '套现',
+            '信用卡还', '花呗还', '白条还',
+            '网贷', '高利贷', '利息', '本金',
+            '赌', '博彩', '彩票', '下注',
+            '比特币', '以太坊', '数字货币', '加密货币',
+            '欠条', '借条', '收条',
         ];
+        // 论坛虚拟币不拦截
+        $forumTerms = ['论坛币', '金币', '积分', '铜币', '银币', '威望', '贡献', '元宝'];
+        foreach ($forumTerms as $term) {
+            $text = str_replace($term, '', $text);
+        }
         foreach ($moneyKeywords as $keyword) {
             if (mb_stripos($text, $keyword) !== false) {
                 return true;

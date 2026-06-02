@@ -230,17 +230,10 @@ body.theme-dark #replyProgressText { background: rgba(15, 23, 42, 0.35); }
                         <div class="col-md-4 mb-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="enable_mention_reply" id="acc_enable_mention_reply">
-                                <label class="form-check-label" for="acc_enable_mention_reply">@提及自动回复</label>
+                                <label class="form-check-label" for="acc_enable_mention_reply">@提及自动回复 (AI)</label>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">@回复模式</label>
-                            <select class="form-select" name="mention_reply_mode" id="acc_mention_reply_mode">
-                                <option value="ai">AI 智能回复</option>
-                                <option value="random">随机语录</option>
-                                <option value="custom">自定义内容</option>
-                            </select>
-                        </div>
+                        <div class="col-md-4 mb-3"></div>
                         <div class="col-md-4 mb-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="enable_signin" id="acc_enable_signin">
@@ -274,16 +267,8 @@ body.theme-dark #replyProgressText { background: rgba(15, 23, 42, 0.35); }
                         </div>
                     </div>
                     <hr>
-                    <h6>回帖设置</h6>
+                    <h6>回帖设置 (AI 智能回复)</h6>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">回帖模式</label>
-                            <select class="form-select" name="reply_mode" id="acc_reply_mode" onchange="toggleReplyMode()">
-                                <option value="random">随机鸡汤</option>
-                                <option value="custom">自定义内容</option>
-                                <option value="smart">智能回复(AI)</option>
-                            </select>
-                        </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">手动回帖间隔(秒)</label>
                             <input type="number" class="form-control" name="reply_interval" id="acc_reply_interval" value="10" min="5" max="300">
@@ -298,10 +283,6 @@ body.theme-dark #replyProgressText { background: rgba(15, 23, 42, 0.35); }
                             <label class="form-label">AI回帖标识</label>
                             <input type="text" class="form-control" name="ai_reply_flag" id="acc_ai_reply_flag" value="[AI回帖]">
                         </div>
-                    </div>
-                    <div class="mb-3" id="customReplyGroup" style="display:none">
-                        <label class="form-label">自定义回帖内容 <small class="text-muted">(每条一行，随机选择)</small></label>
-                        <textarea class="form-control" name="custom_reply" id="acc_custom_reply" rows="5" placeholder="第一条回帖内容&#10;第二条回帖内容&#10;第三条回帖内容"></textarea>
                     </div>
                 </form>
             </div>
@@ -419,7 +400,6 @@ function openAccountModal(id) {
     document.getElementById('acc_password').required = true;
     document.getElementById('acc_password').type = 'password';
     document.getElementById('btnTogglePwd').textContent = '显示';
-    document.getElementById('customReplyGroup').style.display = 'none';
 
     if (id) {
         document.getElementById('acc_action').value = 'update';
@@ -450,18 +430,14 @@ function openAccountModal(id) {
                 document.getElementById('acc_enable_notice').checked = !!parseInt(a.enable_notice);
                 document.getElementById('acc_notice_interval').value = a.notice_interval || 15;
                 document.getElementById('acc_enable_mention_reply').checked = !!parseInt(a.enable_mention_reply);
-                document.getElementById('acc_mention_reply_mode').value = a.mention_reply_mode || 'ai';
                 document.getElementById('acc_enable_signin').checked = !!parseInt(a.enable_signin);
                 document.getElementById('acc_enable_autoreply').checked = !!parseInt(a.enable_autoreply);
-                document.getElementById('acc_reply_mode').value = a.reply_mode || 'random';
-                document.getElementById('acc_custom_reply').value = a.custom_reply || '';
                 document.getElementById('acc_ai_reply_flag').value = a.ai_reply_flag || '[AI回帖]';
                 document.getElementById('acc_signin_time').value = (a.signin_time || '08:00:00').substring(0, 5);
                 document.getElementById('acc_signin_url').value = a.signin_url || '';
                 document.getElementById('acc_reply_time').value = (a.reply_time || '09:00:00').substring(0, 5);
                 document.getElementById('acc_reply_interval').value = a.reply_interval || 10;
                 document.getElementById('acc_auto_reply_interval').value = a.auto_reply_interval || 30;
-                toggleReplyMode();
             } else {
                 showToast(d.error || '加载账号信息失败', 'error');
             }
@@ -475,11 +451,6 @@ function openAccountModal(id) {
 
 function openEditModal(id) {
     openAccountModal(id);
-}
-
-function toggleReplyMode() {
-    var mode = document.getElementById('acc_reply_mode').value;
-    document.getElementById('customReplyGroup').style.display = mode === 'custom' ? 'block' : 'none';
 }
 
 function saveAccount() {

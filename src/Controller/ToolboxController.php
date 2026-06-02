@@ -287,11 +287,10 @@ class ToolboxController
             'enable_notice' => isset($_POST['enable_notice']) ? 1 : 0,
             'notice_interval' => max(5, min(1440, (int)($_POST['notice_interval'] ?? 15))),
             'enable_mention_reply' => isset($_POST['enable_mention_reply']) ? 1 : 0,
-            'mention_reply_mode' => $_POST['mention_reply_mode'] ?? 'ai',
             'enable_signin' => isset($_POST['enable_signin']) ? 1 : 0,
             'enable_autoreply' => isset($_POST['enable_autoreply']) ? 1 : 0,
-            'reply_mode' => $_POST['reply_mode'] ?? 'random',
-            'custom_reply' => trim($_POST['custom_reply'] ?? ''),
+            'reply_mode' => 'ai',
+            'custom_reply' => '',
             'ai_reply_flag' => trim($_POST['ai_reply_flag'] ?? '[AI回帖]'),
             'signin_time' => $_POST['signin_time'] ?? '08:00',
             'signin_url' => trim($_POST['signin_url'] ?? ''),
@@ -457,9 +456,7 @@ class ToolboxController
                 $tid = $thread['tid'];
             }
 
-            // 获取回帖内容
-            $replyMode = $account['reply_mode'] ?? 'random';
-            $customReply = $account['custom_reply'] ?? '';
+            // AI 生成回帖内容
             $aiFlag = $account['ai_reply_flag'] ?? '[AI回帖]';
             
             $message = '';

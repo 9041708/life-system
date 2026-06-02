@@ -21,7 +21,11 @@ $appVersion = Config::get('app.version', 'v2.0.0');
             <li><strong>后台任务完善：</strong>调度器守护进程和 shutdown 定时任务现均包含 @提及回复和备份检查执行，不再仅依赖外部 cron 触发。</li>
             <li><strong>修复备份不执行：</strong>之前备份仅通过外部 cron 触发，现内置到调度器循环中，面板状态页可实时查看执行记录。</li>
             <li><strong>修复 @提及不回复：</strong>调度器内部任务循环遗漏了 @提及回复处理，现已补全。</li>
-            <li><strong>文档完善：</strong>新增 README.md 部署文档、CHANGELOG.md 更新日志，config.example.php 配置模板含完整注释。</li>
+            <li><strong>论坛助手 UI 精简：</strong>编辑卡片去掉回帖模式选择（随机/自定义）、@回复模式选择，统一为 AI 智能回复。所有自动回帖和 @提及回复均使用 AI 生成。</li>
+            <li><strong>钱财检测优化：</strong>完善关键词库至 30+ 词（新增赌、诈骗、欠条等），同时排除论坛虚拟币（金币/积分/铜币等），避免误拦截正常论坛讨论。</li>
+            <li><strong>AI 提示词增强：</strong>优化 System Prompt，要求 AI 理解帖子核心、口语化表达、自然交流，更像真人回复。</li>
+            <li><strong>@回复链式对话：</strong>@提及回复时传入对方的回复内容作为上下文，使 AI 能延续对话。新增"回复了你的回复""评论了你的"等通知检测模式，覆盖更多回复场景。</li>
+            <li><strong>文档完善：</strong>新增 README.md 部署文档、CHANGELOG.md 更新日志，config.php 配置模板含完整注释。</li>
         </ul>
 
         <h3 class="h6">v2.0.3</h3>
