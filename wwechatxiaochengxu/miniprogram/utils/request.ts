@@ -1,5 +1,5 @@
-// utils/request.ts
-const BASE_URL = "https://9041708.cn:555/public/api.php";
+﻿// utils/request.ts
+const BASE_URL = "https://your-domain.com/public/api.php";
 
 interface RequestOptions {
   route: string;

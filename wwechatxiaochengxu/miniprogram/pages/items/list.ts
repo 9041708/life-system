@@ -1,4 +1,4 @@
-// miniprogram/pages/items/list.ts
+﻿// miniprogram/pages/items/list.ts
 import { request } from "../../utils/request";
 const { initShare, buildShareAppMessage, buildShareTimeline } = require('../../utils/share');
 
@@ -244,7 +244,7 @@ Page({
         this.setData({ uploadingIcon: true });
         wx.showLoading({ title: "上传中...", mask: true });
 
-        const BASE_URL = "https://9041708.cn:555/public/api.php";
+        const BASE_URL = "https://your-domain.com/public/api.php";
         wx.uploadFile({
           url: BASE_URL + "?route=icon-library/upload",
           filePath,

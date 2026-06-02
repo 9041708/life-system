@@ -1,4 +1,4 @@
-// miniprogram/pages/transaction/create.ts
+﻿// miniprogram/pages/transaction/create.ts
 const requestApi = require('../../utils/request');
 
 function two(n: number): string {
@@ -27,7 +27,7 @@ type Attachment = {
 
 function uploadAttachment(filePath: string, token: string): Promise<Attachment> {
   return new Promise((resolve, reject) => {
-    const BASE_URL = 'https://9041708.cn:555/public/api.php';
+    const BASE_URL = 'https://your-domain.com/public/api.php';
     wx.uploadFile({
       url: BASE_URL + '?route=transactions/upload-attachment',
       filePath,

@@ -1,4 +1,4 @@
-// miniprogram/pages/settings/index.ts
+﻿// miniprogram/pages/settings/index.ts
 import { request } from '../../utils/request';
 const { initShare, buildShareAppMessage, buildShareTimeline } = require('../../utils/share');
 
@@ -278,7 +278,7 @@ Page({
       }, 15000);
 
       const token = wx.getStorageSync('token') || '';
-      const uploadUrl = 'https://9041708.cn:555/public/api.php?route=settings/upload-avatar';
+      const uploadUrl = 'https://your-domain.com/public/api.php?route=settings/upload-avatar';
       await new Promise((resolve, reject) => {
         wx.uploadFile({
           url: uploadUrl,
@@ -417,7 +417,7 @@ Page({
       }, 15000);
 
       const token = wx.getStorageSync('token') || '';
-      const uploadUrl = 'https://9041708.cn:555/public/api.php?route=settings/upload-avatar';
+      const uploadUrl = 'https://your-domain.com/public/api.php?route=settings/upload-avatar';
       await new Promise((resolve, reject) => {
         wx.uploadFile({
           url: uploadUrl,

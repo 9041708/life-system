@@ -1,4 +1,4 @@
-const BASE_URL = "https://9041708.cn:555/public/api.php";
+﻿const BASE_URL = "https://your-domain.com/public/api.php";
 
 function request(options) {
   const { route, method = "POST", data = {} } = options;
