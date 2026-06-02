@@ -1,0 +1,56 @@
+<!-- miniprogram/pages/goals/list.wxml -->
+<view class="page">
+  <!-- 头部说明与新增按钮 -->
+  <view class="header">
+    <view class="title">我的小目标</view>
+    <button class="btn-add" type="primary" size="mini" bindtap="onAddGoal">新建目标</button>
+  </view>
+
+  <!-- 目标列表 -->
+  <view class="list">
+    <view
+      class="goal-item"
+      wx:for="{{goals}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onEditGoal"
+    >
+      <view class="goal-main">
+        <view class="goal-title-row">
+          <view class="goal-title">{{item.title}}</view>
+          <view class="goal-status" wx:if="{{item.status === 'done'}}">已完成</view>
+          <view class="goal-status archived" wx:elif="{{item.status === 'archived'}}">已归档</view>
+        </view>
+        <view class="goal-line">
+          <text>目标 {{item.targetAmountDisplay}}</text>
+          <text> 已完成 {{item.savedAmountDisplay}}</text>
+        </view>
+        <view class="goal-deadline" wx:if="{{item.deadline}}">
+          截止日期：{{item.deadline}}
+        </view>
+        <view class="goal-progress" wx:if="{{item.target_amount > 0}}">
+          <view class="goal-progress-bg">
+            <view
+              class="goal-progress-fill"
+              style="width: {{item.barPercent}}%;"
+            ></view>
+          </view>
+          <view class="goal-progress-text">
+            已完成 {{item.percent}}%
+          </view>
+        </view>
+      </view>
+      <view class="goal-actions" catchtap="onActionsTap" data-id="{{item.id}}">
+        <text class="action-text">更多</text>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{!loading && goals.length === 0}}">
+      还没有设置小目标，点击右上角"新建目标"试试。
+    </view>
+
+    <view class="loading" wx:if="{{loading}}">
+      加载中…
+    </view>
+  </view>
+</view>

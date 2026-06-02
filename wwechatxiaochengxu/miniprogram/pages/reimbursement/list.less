@@ -1,0 +1,233 @@
+/* miniprogram/pages/reimbursement/list.less */
+
+.page {
+  padding: 24rpx 24rpx 40rpx;
+  background: #f5f6f8;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 24rpx;
+}
+
+.tabs {
+  display: flex;
+  background: #ffffff;
+  border-radius: 999rpx;
+  padding: 6rpx;
+  margin-bottom: 20rpx;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  color: #6b7280;
+  border-radius: 999rpx;
+}
+
+.tab.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.overview-bar {
+  display: flex;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.overview-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.overview-label {
+  font-size: 22rpx;
+  color: #9ca3af;
+  margin-bottom: 6rpx;
+}
+
+.overview-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #111827;
+}
+
+.overview-value.green {
+  color: #07c160;
+}
+
+.overview-value.red {
+  color: #e64340;
+}
+
+.list {
+  max-height: calc(100vh - 300rpx);
+}
+
+.reimb-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.reimb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.reimb-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #111827;
+  flex: 1;
+}
+
+.reimb-status-badge {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: #fef0f0;
+  color: #e64340;
+}
+
+.reimb-status-badge.pending {
+  background: #fef0f0;
+  color: #e64340;
+}
+
+.reimb-status-badge.approved {
+  background: #f0f9f4;
+  color: #07c160;
+}
+
+.reimb-status-badge.reimbursed {
+  background: #f0f9f4;
+  color: #07c160;
+}
+
+.reimb-body .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  margin-bottom: 6rpx;
+}
+
+.reimb-body .label {
+  color: #6b7280;
+}
+
+.reimb-body .value {
+  color: #111827;
+}
+
+.reimb-body .value.green {
+  color: #07c160;
+}
+
+.reimb-body .value.red {
+  color: #e64340;
+}
+
+.footer {
+  margin-top: 16rpx;
+}
+
+.btn-add {
+  width: 100%;
+}
+
+/* 统计 */
+.stat-overview {
+  display: flex;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  color: #9ca3af;
+  margin-bottom: 6rpx;
+}
+
+.stat-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #111827;
+}
+
+.stat-value.green {
+  color: #07c160;
+}
+
+.stat-value.red {
+  color: #e64340;
+}
+
+.stat-section-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 12rpx;
+  margin-top: 8rpx;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  margin-bottom: 10rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.03);
+}
+
+.stat-month {
+  flex: 1;
+  font-size: 24rpx;
+  color: #111827;
+}
+
+.stat-count {
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-right: 16rpx;
+}
+
+.stat-amount {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #111827;
+}
+
+.empty,
+.loading {
+  text-align: center;
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-top: 24rpx;
+}

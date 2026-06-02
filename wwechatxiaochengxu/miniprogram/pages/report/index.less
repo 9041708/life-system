@@ -1,0 +1,429 @@
+/* miniprogram/pages/report/index.less */
+
+.page {
+  padding: 16rpx 24rpx 32rpx;
+  box-sizing: border-box;
+}
+
+/* 顶部子页标签 */
+.report-tabs {
+  display: flex;
+  margin-bottom: 20rpx;
+}
+
+.report-tabs .tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  position: relative;
+}
+
+.report-tabs .tab-item.active {
+  color: #07c160;
+  font-weight: 600;
+}
+
+.report-tabs .tab-item.active::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 0;
+  height: 6rpx;
+  background-color: #07c160;
+  border-radius: 999rpx;
+}
+
+/* 模式切换 */
+.mode-bar {
+  display: flex;
+  margin-bottom: 16rpx;
+
+  .mode-item {
+    flex: 1;
+    text-align: center;
+    padding: 12rpx 0;
+    border-radius: 999rpx;
+    font-size: 26rpx;
+    color: #666;
+    border: 1rpx solid #ddd;
+    margin: 0 6rpx;
+  }
+
+  .mode-item.active {
+    background-color: #07c160;
+    color: #fff;
+    border-color: #07c160;
+  }
+}
+
+.period-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 12rpx 16rpx;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
+  font-size: 24rpx;
+}
+
+.period-bar .nav-btn {
+  width: 60rpx;
+  text-align: center;
+  color: #666;
+}
+
+.period-bar .period-center {
+  flex: 1;
+  text-align: center;
+}
+
+.period-title {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.period-range {
+  margin-top: 4rpx;
+  color: #999;
+}
+
+.period-bar .filter-btn {
+  margin-left: 12rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid #ddd;
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 汇总卡片 */
+.summary {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
+  margin-bottom: 20rpx;
+  font-size: 26rpx;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.summary-row.second {
+  margin-bottom: 0;
+}
+
+.summary-row.third {
+  margin-top: 8rpx;
+}
+
+.summary-col {
+  flex: 1;
+  text-align: center;
+}
+
+.summary-col .label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.summary-col .value {
+  margin-top: 6rpx;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.summary-col .value.income {
+  color: #e64340; /* 收入：红色 */
+}
+
+.summary-col .value.expense {
+  color: #07c160; /* 支出：绿色 */
+}
+
+.summary-col .value.net-positive {
+  color: #e64340; /* 结余为正：红色 */
+}
+
+.summary-col .value.net-negative {
+  color: #07c160; /* 结余为负：绿色 */
+}
+
+.section-title {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12rpx 0;
+}
+
+.type-toggle {
+  display: flex;
+  border-radius: 999rpx;
+  background-color: #f5f5f5;
+  padding: 4rpx;
+}
+
+.type-item {
+  padding: 6rpx 20rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.type-item.active {
+  background-color: #ffffff;
+  border-radius: 999rpx;
+  color: #07c160;
+}
+
+/* 分类列表 */
+.cat-list {
+  margin-top: 4rpx;
+}
+
+.cat-item {
+  display: flex;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.cat-left {
+  flex: 1;
+}
+
+.cat-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.cat-sub {
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.cat-right {
+  margin-left: 16rpx;
+  display: flex;
+  align-items: center;
+}
+
+.cat-amount {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.cat-amount.income {
+  color: #e64340;  /* 收入：红色 */
+}
+
+.cat-amount.expense {
+  color: #07c160;  /* 支出：绿色 */
+}
+
+.empty,
+.loading {
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 趋势柱状图 */
+.chart-card {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx 8rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
+  margin-bottom: 24rpx;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.chart-title {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.chart-avg {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.chart-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.compare-toggle {
+  display: flex;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.compare-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-right: 8rpx;
+}
+
+.chart-body {
+  height: 260rpx;
+  margin-bottom: 8rpx;
+}
+
+.chart-bars {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.chart-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bar-wrapper {
+  width: 22rpx;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bar-group {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.bar {
+  width: 8rpx;
+  background-color: #ff6b81;
+  border-radius: 999rpx 999rpx 0 0;
+}
+
+.bar.current {
+  margin-right: 2rpx;
+}
+
+.bar.last {
+  margin-left: 2rpx;
+  opacity: 0.45;
+}
+
+.bar.expense {
+  background-color: #07c160; /* 支出：绿色 */
+}
+
+.bar.income {
+  background-color: #e64340; /* 收入：红色 */
+}
+
+.bar.net {
+  background-color: #3b82f6; /* 结余：蓝色 */
+}
+
+.bar-label {
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: #999;
+}
+
+.chart-mode-tabs {
+  display: flex;
+  margin-top: 4rpx;
+}
+
+.chart-mode-item {
+  flex: 1;
+  text-align: center;
+  padding: 10rpx 0;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.chart-mode-item.active {
+  color: #07c160;
+  font-weight: 600;
+}
+
+/* 自定义筛选面板 */
+.filter-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 99;
+}
+
+.filter-panel {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.filter-title {
+  font-size: 30rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.filter-label {
+  width: 160rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.picker-value {
+  flex: 1;
+  padding: 10rpx 14rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid #eee;
+  font-size: 26rpx;
+  color: #333;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12rpx;
+}
+
+.btn-secondary,
+.btn-primary {
+  min-width: 160rpx;
+  margin-left: 16rpx;
+}

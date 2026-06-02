@@ -1,0 +1,73 @@
+<!-- miniprogram/pages/accounts/list.wxml -->
+<view class="page theme-{{theme}}">
+
+<!-- 汇总 -->
+<view class="summary">
+  <view class="summary-row">
+    <text class="label">账户总余额：</text>
+    <text class="value">{{totalBalance}}</text>
+  </view>
+</view>
+
+<!-- 操作提示 -->
+<view class="tip-text">
+  编辑账户或删除账户（仅未使用账户可删除）请前往 PC 端操作
+</view>
+
+<!-- 列表 -->
+<view class="list">
+  <view
+    class="acc-item"
+    wx:for="{{accounts}}"
+    wx:key="id"
+  >
+    <!-- 账户图标 -->
+    <image
+      wx:if="{{item.icon_url}}"
+      class="acc-icon"
+      src="{{item.icon_url}}"
+      mode="aspectFit"
+    />
+
+    <view class="acc-left">
+      <view class="acc-name">
+        {{item.name}}
+        <text wx:if="{{item.is_default == 1}}" class="badge-default">默认</text>
+      </view>
+      <view class="acc-sub">
+        <text wx:if="{{item.group_name}}">{{item.group_name}}</text>
+        <text wx:if="{{item.account_no}}"> · {{item.account_no}}</text>
+      </view>
+    </view>
+
+    <view class="acc-right">
+      <text
+        class="acc-balance {{item._positive ? 'positive' : 'negative'}}"
+      >
+        {{item._balanceDisplay}}
+      </text>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && accounts.length === 0}}">
+    暂无账户
+  </view>
+  <view class="loading" wx:if="{{loading}}">
+    加载中…
+  </view>
+</view>
+
+<!-- 管理子菜单：账户 / 分类 / 项目 -->
+<view class="manage-subtab">
+  <view class="manage-subtab-item manage-active" bindtap="onNavAccounts">账户列表</view>
+  <view class="manage-subtab-item" bindtap="onNavCategories">分类管理</view>
+  <view class="manage-subtab-item" bindtap="onNavItems">项目管理</view>
+</view>
+
+<!-- 底部新增按钮 -->
+<view class="footer">
+  <button class="btn-add" type="primary" bindtap="onAddAccount">
+    新增账户
+  </button>
+</view>
+</view>

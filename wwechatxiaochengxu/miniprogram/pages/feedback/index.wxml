@@ -1,0 +1,207 @@
+<!-- pages/feedback/index.wxml -->
+<view class="page">
+  <!-- 顶部标题 + 我要反馈 -->
+  <view class="header">
+    <view class="title-wrap">
+      <text class="title">问题反馈 & FAQ</text>
+      <text class="subtitle">提交问题或建议，查看常见问答。</text>
+    </view>
+    <button class="btn-feedback" size="mini" bindtap="onOpenFormDialog">我要反馈</button>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="search-bar">
+    <input
+      class="search-input"
+      placeholder="按问题 / 回复 / 用户搜索"
+      confirm-type="search"
+      bindinput="onSearchInput"
+      value="{{searchKeyword}}"
+    />
+  </view>
+
+  <!-- 列表区域 -->
+  <view class="list-wrapper">
+    <block wx:if="{{!loading && (!feedbacks || !feedbacks.length)}}">
+      <view class="empty-text">
+        当前还没有任何反馈记录，欢迎点击上方“我要反馈”提交你的第一个问题。
+      </view>
+    </block>
+
+    <block wx:if="{{feedbacks && feedbacks.length}}">
+      <block wx:for="{{feedbacks}}" wx:key="id">
+        <view class="fb-item" data-index="{{index}}" bindtap="onTapFeedback">
+          <view class="fb-top-row">
+            <view class="fb-badge">{{item._categoryLabel}}</view>
+            <text class="fb-user">来自 {{item.user_nickname}}</text>
+            <text class="fb-time">{{item._date}} {{item._time}}</text>
+            <text class="fb-status fb-status-{{item.status}}">{{item._statusLabel}}</text>
+          </view>
+          <view class="fb-content">
+            {{item.content}}
+          </view>
+          <view class="fb-reply-line" wx:if="{{item.admin_reply}}">
+            <text class="fb-reply-label">系统回复：</text>
+            <text class="fb-reply-text" number-of-lines="1">
+              {{item.admin_reply}}
+            </text>
+          </view>
+        </view>
+      </block>
+    </block>
+  </view>
+
+  <!-- “我要反馈”弹窗 -->
+  <view wx:if="{{showFormDialog}}" class="dialog-mask" bindtap="onCloseFormDialog">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">提交问题反馈</view>
+
+      <view class="dialog-body">
+        <view class="form-row">
+          <text class="form-label">反馈类型</text>
+          <picker
+            mode="selector"
+            range="{{categoryOptions}}"
+            range-key="label"
+            value="{{categoryIndex}}"
+            bindchange="onCategoryChange"
+          >
+            <view class="picker-inner">
+              <text>{{categoryOptions[categoryIndex].label}}</text>
+            </view>
+          </picker>
+        </view>
+
+        <view class="form-row form-row-textarea">
+          <text class="form-label">问题描述</text>
+          <textarea
+            class="textarea"
+            placeholder="请尽量详细描述你遇到的问题或建议…"
+            value="{{content}}"
+            bindinput="onContentInput"
+          />
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">相关截图（最多 3 张）</text>
+          <view class="img-list">
+            <block wx:for="{{imageUrls}}" wx:key="*this">
+              <view class="img-item">
+                <image
+                  class="img-thumb"
+                  src="{{item}}"
+                  mode="aspectFill"
+                  data-url="{{item}}"
+                  bindtap="onPreviewImage"
+                />
+                <view
+                  class="img-remove"
+                  data-index="{{index}}"
+                  bindtap="onRemoveImage"
+                >×</view>
+              </view>
+            </block>
+            <view
+              class="img-add"
+              wx:if="{{images.length < 3}}"
+              bindtap="onPickImage"
+            >
+              <text class="img-add-plus">+</text>
+              <text class="img-add-text">添加图片</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="dialog-footer">
+        <button
+          class="btn btn-secondary"
+          size="mini"
+          bindtap="onCloseFormDialog"
+          disabled="{{submitting}}"
+        >取消</button>
+        <button
+          class="btn btn-primary"
+          size="mini"
+          bindtap="onSubmit"
+          loading="{{submitting}}"
+        >提交</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 反馈详情弹窗 -->
+  <view wx:if="{{showDetailDialog}}" class="dialog-mask" bindtap="onCloseDetailDialog">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">反馈详情</view>
+
+      <view class="dialog-body" wx:if="{{detailFeedback}}">
+        <view class="detail-row">
+          <text class="detail-label">类型：</text>
+          <text class="detail-value">
+            {{detailFeedback._categoryLabel || detailFeedback.category}}
+          </text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">状态：</text>
+          <text class="detail-value">
+            {{detailFeedback._statusLabel || detailFeedback.status}}
+          </text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">时间：</text>
+          <text class="detail-value">
+            {{detailFeedback.created_at}}
+          </text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">提问用户：</text>
+          <text class="detail-value">
+            {{detailFeedback.user_nickname}}
+          </text>
+        </view>
+
+        <view class="detail-section">
+          <view class="detail-section-title">问题内容</view>
+          <text class="detail-content">
+            {{detailFeedback.content}}
+          </text>
+        </view>
+
+        <view class="detail-section" wx:if="{{detailFeedback.admin_reply}}">
+          <view class="detail-section-title">系统回复</view>
+          <text class="detail-content">
+            {{detailFeedback.admin_reply}}
+          </text>
+        </view>
+
+        <view class="detail-section" wx:if="{{detailFeedback.images && detailFeedback.images.length}}">
+          <view class="detail-section-title">相关截图</view>
+          <view class="img-list">
+            <block wx:for="{{detailFeedback.images}}" wx:key="path">
+              <view
+                class="img-item"
+                data-url="{{item.url}}"
+                bindtap="onPreviewDetailImage"
+              >
+                <image
+                  class="img-thumb"
+                  src="{{item.url}}"
+                  mode="aspectFill"
+                />
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
+
+      <view class="dialog-footer">
+        <button
+          class="btn btn-primary"
+          size="mini"
+          bindtap="onCloseDetailDialog"
+        >关闭</button>
+      </view>
+    </view>
+  </view>
+</view>

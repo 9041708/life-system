@@ -1,0 +1,103 @@
+<view class="page">
+  <view class="title">资产管理</view>
+
+  <view class="summary">
+    <view class="summary-row">
+      <text class="label">在服役资产数：</text>
+      <text class="value">{{summary.assetCount}}</text>
+    </view>
+    <view class="summary-row">
+      <text class="label">总价值：</text>
+      <text class="value">{{summary.totalValue}}</text>
+    </view>
+    <view class="summary-row">
+      <text class="label">合计日均成本：</text>
+      <text class="value">{{summary.totalDailyCost}}</text>
+    </view>
+  </view>
+
+  <view class="tips">长按资产可编辑、转手或删除，底部可新增。</view>
+
+  <view class="tabs">
+    <view class="tab {{activeTab === 'active' ? 'active' : ''}}" bindtap="onTabActive">在服役中</view>
+    <view class="tab {{activeTab === 'transferred' ? 'active' : ''}}" bindtap="onTabTransferred">已转手</view>
+  </view>
+
+  <scroll-view scroll-y="true" class="list">
+    <block wx:if="{{activeTab === 'active'}}">
+      <block wx:for="{{assetsActive}}" wx:key="id">
+        <view class="asset-card" bindlongpress="onAssetLongPress" data-asset="{{item}}">
+          <view class="asset-header">
+            <image wx:if="{{item.icon_url}}" class="icon" src="{{item.icon_url}}" mode="aspectFit" />
+            <view class="asset-title">{{item.name}}</view>
+          </view>
+          <view class="asset-body">
+            <view class="row">
+              <text class="label">到手日期</text>
+              <text class="value">{{item.acquired_date || '--'}}</text>
+            </view>
+            <view class="row">
+              <text class="label">使用天数</text>
+              <text class="value">{{item.use_days}} 天</text>
+            </view>
+            <view class="row">
+              <text class="label">到手价格</text>
+              <text class="value">{{item._valueDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">日均成本</text>
+              <text class="value">{{item._dailyDisplay}}</text>
+            </view>
+            <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+          </view>
+        </view>
+      </block>
+      <view class="empty" wx:if="{{!loading && assetsActive.length === 0}}">暂无在服役资产</view>
+    </block>
+
+    <block wx:if="{{activeTab === 'transferred'}}">
+      <block wx:for="{{assetsTransferred}}" wx:key="id">
+        <view class="asset-card" bindlongpress="onAssetLongPress" data-asset="{{item}}">
+          <view class="asset-header">
+            <image wx:if="{{item.icon_url}}" class="icon" src="{{item.icon_url}}" mode="aspectFit" />
+            <view class="asset-title">{{item.name}}</view>
+          </view>
+          <view class="asset-body">
+            <view class="row">
+              <text class="label">到手日期</text>
+              <text class="value">{{item.acquired_date || '--'}}</text>
+            </view>
+            <view class="row">
+              <text class="label">转手日期</text>
+              <text class="value">{{item.transfer_date || '--'}}</text>
+            </view>
+            <view class="row">
+              <text class="label">使用天数</text>
+              <text class="value">{{item.use_days}} 天</text>
+            </view>
+            <view class="row">
+              <text class="label">到手价格</text>
+              <text class="value">{{item._valueDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">转手价格</text>
+              <text class="value">{{item._transferPriceDisplay}}</text>
+            </view>
+            <view class="row">
+              <text class="label">日均成本</text>
+              <text class="value">{{item._dailyDisplay}}</text>
+            </view>
+            <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+          </view>
+        </view>
+      </block>
+      <view class="empty" wx:if="{{!loading && assetsTransferred.length === 0}}">暂无已转手资产</view>
+    </block>
+
+    <view class="loading" wx:if="{{loading}}">加载中…</view>
+  </scroll-view>
+
+  <view class="footer">
+    <button class="btn-add" type="primary" bindtap="onAddAsset">新增资产</button>
+  </view>
+</view>

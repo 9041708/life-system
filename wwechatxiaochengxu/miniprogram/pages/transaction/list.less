@@ -1,0 +1,283 @@
+/* miniprogram/pages/transaction/list.less */
+
+.page {
+  padding: 16rpx 24rpx 32rpx;
+  box-sizing: border-box;
+}
+
+/* 顶部类型筛选：全部 / 支出 / 收入 */
+.filter-bar {
+  display: flex;
+  margin-bottom: 16rpx;
+
+  .filter-item {
+    flex: 1;
+    text-align: center;
+    padding: 14rpx 0;
+    border-radius: 999rpx;
+    font-size: 26rpx;
+    color: #666;
+    border: 1rpx solid #ddd;
+    margin: 0 6rpx;
+  }
+
+  .filter-item.active {
+    background-color: #07c160;
+    color: #fff;
+    border-color: #07c160;
+  }
+}
+
+/* 展开/收起按钮 */
+.filter-toggle {
+  margin: 4rpx 6rpx 8rpx;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.filter-toggle .arrow {
+  margin-left: 6rpx;
+  font-size: 26rpx;
+}
+
+/* 分类 / 项目 行、账户行共用 */
+.filter-row2,
+.filter-row3 {
+  display: flex;
+  margin-bottom: 16rpx;
+
+  .filter-picker {
+    flex: 1;
+    margin: 0 4rpx;         /* 三个一行，间距稍小 */
+    padding: 18rpx 20rpx;   /* 行高略高一点 */
+    border-radius: 12rpx;
+    background-color: #f7f7f7;
+    font-size: 26rpx;
+    color: #333;
+  }
+}
+
+/* 时间段：开始日期 / 结束日期 */
+.filter-date {
+  display: flex;
+  margin-bottom: 20rpx;
+
+  .date-picker {
+    flex: 1;
+    margin: 0 6rpx;
+    padding: 16rpx 20rpx;
+    border-radius: 12rpx;
+    background-color: #f7f7f7;
+    font-size: 26rpx;
+    color: #333;
+  }
+}
+
+/* 汇总卡片 */
+.summary {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
+  margin-bottom: 20rpx;
+  font-size: 26rpx;
+
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6rpx;
+
+    .label {
+      color: #666;
+    }
+
+    .income {
+      color: #07c160;
+    }
+
+    .expense {
+      color: #e64340;
+    }
+  }
+}
+
+/* 列表本体 */
+.list {
+  margin-top: 8rpx;
+}
+
+.tx-item {
+  display: flex;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.tx-left {
+  flex: 1;
+}
+
+.tx-title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  font-size: 28rpx;
+  color: #333;
+}
+
+.tx-title-text {
+  display: inline-flex;
+  align-items: center;
+}
+
+.tx-icon {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 12rpx;
+  border-radius: 8rpx;
+}
+
+.tx-icon-small {
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 6rpx;
+  border-radius: 6rpx;
+}
+
+.tx-account-line {
+  display: flex;
+  align-items: center;
+}
+
+.tx-sub {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.tx-remark {
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.tx-attach {
+  margin-top: 6rpx;
+  position: relative;
+  display: inline-block;
+}
+
+.tx-thumb {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 8rpx;
+}
+
+.tx-thumb-badge {
+  position: absolute;
+  right: -8rpx;
+  top: -8rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 20rpx;
+}
+
+.tx-right {
+  margin-left: 16rpx;
+  display: flex;
+  align-items: center;
+}
+
+.tx-amount {
+  font-size: 30rpx;
+}
+
+.tx-amount.income {
+  color: #07c160;
+}
+
+.tx-amount.expense {
+  color: #e64340;
+}
+
+/* 底部状态 */
+.load-more,
+.empty {
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 搜索栏整体 */
+.search-bar,
+.search-row {
+  margin: 12rpx 0;
+}
+
+/* 关键字输入框：更高一些 */
+.search-input {
+  width: 100%;
+  padding: 0 30rpx;          /* 仅左右留白，避免撑高不明显 */
+  height: 80rpx;             /* 明确设置输入框高度 */
+  line-height: 80rpx;
+  border-radius: 999rpx;
+  background-color: #ffffff;
+  border: 1rpx solid #dddddd;
+  font-size: 26rpx;          /* 文字更清晰 */
+  box-sizing: border-box;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+/* 金额区间 + 按钮 */
+.search-row {
+  display: flex;
+  align-items: center;
+}
+
+.search-half {
+  flex: 1;
+  margin-right: 8rpx;
+}
+
+.search-amount-input {
+  width: 100%;
+  padding: 0 30rpx;
+  height: 80rpx;             /* 与搜索框保持一致高度 */
+  line-height: 80rpx;
+  border-radius: 999rpx;
+  background-color: #ffffff;
+  border: 1rpx solid #dddddd;
+  font-size: 24rpx;          /* 金额输入文字稍大 */
+  box-sizing: border-box;
+}
+
+.search-amount-input::placeholder {
+  color: #9ca3af;
+}
+
+.search-btn {
+  padding: 0 22rpx;
+  height: 75rpx;
+  line-height: 75rpx;
+  border-radius: 999rpx;
+  background-color: #07c160;
+  color: #ffffff;
+  font-size: 30rpx;
+  border: none;
+}
+
+/* 列表操作提示 */
+.list-hint {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #999999;
+}
