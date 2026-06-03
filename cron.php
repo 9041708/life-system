@@ -6,11 +6,11 @@
  *   控制面板 → 任务计划 → 新增 → 计划的任务 → 用户自定义的脚本
  *   计划：重复执行，每 5 分钟
  *   任务设置 → 运行命令：
- *     php /volume1/web/ssjizhang.cn_ceshi/cron.php
+ *     php /path/to/life-system/cron.php
  * 
  * 确保后台调度器常驻（不需要页面访问触发）：
  *   触发任务 → 开机触发 → 运行命令：
- *     bash /volume1/web/ssjizhang.cn_ceshi/start_scheduler.sh
+ *     bash /path/to/life-system/start_scheduler.sh
  */
 
 declare(strict_types=1);

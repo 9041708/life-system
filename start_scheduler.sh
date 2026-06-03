@@ -1,9 +1,9 @@
 #!/bin/bash
 # 论坛助手调度器 - 开机自启脚本
 # 群晖NAS: 控制面板 → 任务计划 → 新增 → 触发任务 → 用户自定义的脚本 → 开机触发
-# 运行命令: bash /volume1/web/ssjizhang.cn_ceshi/start_scheduler.sh
+# 运行命令: bash /path/to/life-system/start_scheduler.sh
 
-BASE_DIR="/volume1/web/ssjizhang.cn_ceshi"
+BASE_DIR="/path/to/life-system"
 PID_FILE="$BASE_DIR/logs/scheduler.pid"
 LOG_FILE="$BASE_DIR/logs/scheduler_spawn.log"
 PHP_BIN="/usr/bin/php"

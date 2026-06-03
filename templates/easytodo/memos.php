@@ -296,7 +296,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title>
-<link rel="stylesheet" href="https://9041708.cn:555/assets/css/editormd.min.css">
+<link rel="stylesheet" href="/assets/css/editormd.min.css">
 <style>
 body { margin: 0; padding: 40px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fafafa; }
 .editor-md-preview { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
@@ -428,7 +428,7 @@ ${html}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title>
-<link rel="stylesheet" href="https://9041708.cn:555/assets/css/editormd.min.css">
+<link rel="stylesheet" href="/assets/css/editormd.min.css">
 <style>
 body { margin: 0; padding: 40px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fafafa; }
 .editor-md-preview { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
@@ -458,7 +458,7 @@ ${html}
         if (!editor) return;
         var printWindow = window.open('', '_blank');
         var html = editor.getHTML();
-        printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${currentTitle || '备忘录'}</title><link rel="stylesheet" href="https://9041708.cn:555/assets/css/editormd.min.css"><style>body{margin:30px;font-family:-apple-system,sans-serif}.CodeMirror{height:auto!important}pre{background:#f6f8fa;padding:16px;border-radius:6px}.editor-preview{width:800px;margin:0 auto}</style></head><body><div class="editor-preview">${html}</div></body></html>`);
+        printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${currentTitle || '备忘录'}</title><link rel="stylesheet" href="/assets/css/editormd.min.css"><style>body{margin:30px;font-family:-apple-system,sans-serif}.CodeMirror{height:auto!important}pre{background:#f6f8fa;padding:16px;border-radius:6px}.editor-preview{width:800px;margin:0 auto}</style></head><body><div class="editor-preview">${html}</div></body></html>`);
         printWindow.document.close();
         setTimeout(function() { printWindow.print(); }, 500);
         closeExportPanel();

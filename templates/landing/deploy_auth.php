@@ -304,7 +304,7 @@ $messages = $messages ?? [];
                         <label class="form-label">说明</label>
                         <p class="small text-muted mb-1">· 更换授权前，我们会先核验此邮箱下是否有首次授权记录。</p>
                         <p class="small text-muted mb-1">· 授权码离线超过 7 天系统会自动停用，需重新联系获取授权码。</p>
-                        <p class="small text-muted mb-0">· 授权相关问题可直接发送邮件至 <strong>9041708@qq.com</strong> 或 QQ：<strong>9041708</strong> 进行咨询。</p>
+                        <p class="small text-muted mb-0">· 授权相关问题可直接发送邮件至 <strong>admin@example.com</strong> 进行咨询。</p>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">提交授权申请</button>
                 </form>

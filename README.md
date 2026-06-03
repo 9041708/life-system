@@ -54,6 +54,8 @@ SanS 是一个集记账、效率工具、论坛助手于一体的综合性个人
 
 ## 快速开始
 
+> **重要提示**：部署前请务必修改 `config/config.php` 中的 `site_url` 和所有硬编码域名为你自己的域名。搜索全局替换 `YOUR_DOMAIN` 和 `your-domain.com` 为实际域名。
+
 ### 1. 克隆项目
 
 ```bash
@@ -212,7 +214,7 @@ server {
 
 **群晖 DSM：** 控制面板 → 任务计划 → 新增 → 用户自定义脚本 → 每 5 分钟执行一次：
 ```bash
-php /volume1/web/ssjizhang/cron.php
+php /path/to/life-system/cron.php
 ```
 
 **Linux crontab：**

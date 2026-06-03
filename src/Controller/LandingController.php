@@ -151,7 +151,7 @@ class LandingController
         try {
             LicenseRequest::create($email, $domain, $type, $period, $payProofRelative, $note);
         } catch (\Throwable $e) {
-            $fallbackError = '系统在保存授权申请时出现异常，请稍后重试，或直接发送邮件至 9041708@qq.com 进行人工处理。';
+            $fallbackError = '系统在保存授权申请时出现异常，请稍后重试，或联系管理员进行人工处理。';
             header('Location: /public/index.php?route=deploy-auth&error=' . urlencode($fallbackError));
             exit;
         }
@@ -160,7 +160,7 @@ class LandingController
         $system = SystemSetting::get();
         $adminEmail = (string)($system['license_admin_email'] ?? '');
         if ($adminEmail === '') {
-            $adminEmail = '9041708@qq.com';
+            $adminEmail = 'admin@example.com';
         }
 
         $typeLabel = $type === 'first' ? '首次授权' : '更换授权';
@@ -260,7 +260,7 @@ class LandingController
         $system = SystemSetting::get();
         $adminEmail = (string)($system['license_admin_email'] ?? '');
         if ($adminEmail === '') {
-            $adminEmail = '9041708@qq.com';
+            $adminEmail = 'admin@example.com';
         }
 
         $subject = '新的部署授权留言';

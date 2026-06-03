@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 ini_set('log_errors', '1');
-ini_set('error_log', '/volume1/web/ssjizhang.cn_ceshi/runtime/php_error.log');
+ini_set('error_log', '/path/to/life-system/runtime/php_error.log');
 
 
 // Front controller
