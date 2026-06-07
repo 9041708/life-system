@@ -980,17 +980,18 @@ class DiscuzService
             $pdo = \App\Service\Database::getConnection();
             $tids = [];
             $stmt = $pdo->prepare(
-                "SELECT detail, created_at FROM forum_action_logs
+                "                 SELECT target_info, created_at FROM forum_action_logs
                  WHERE account_id = ? AND action_type = 'reply'
                  ORDER BY created_at DESC LIMIT 200"
             );
             $stmt->execute([$this->accountId]);
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $tids = [];
             foreach ($rows as $row) {
-                $detail = $row['detail'] ?? '';
-                if (preg_match('/帖子#(\d+)/', $detail, $m)) {
+                $target = $row['target_info'] ?? $row['detail'] ?? '';
+                if (preg_match('/帖子#(\d+)/', $target, $m)) {
                     $tids[] = (int)$m[1];
-                } elseif (preg_match('/tid[:\s=](\d+)/i', $detail, $m)) {
+                } elseif (preg_match('/tid[:\s=](\d+)/i', $target, $m)) {
                     $tids[] = (int)$m[1];
                 }
             }
@@ -1025,7 +1026,7 @@ class DiscuzService
         try {
             $pdo = \App\Service\Database::getConnection();
             $stmt = $pdo->prepare(
-                "SELECT detail, created_at FROM forum_action_logs
+                "                 SELECT target_info, created_at FROM forum_action_logs
                  WHERE account_id = ? AND action_type = 'reply'
                    AND created_at > DATE_SUB(NOW(), INTERVAL 48 HOUR)
                  ORDER BY created_at DESC LIMIT 20"
@@ -1035,10 +1036,10 @@ class DiscuzService
 
             $tids = [];
             foreach ($rows as $row) {
-                $detail = $row['detail'] ?? '';
-                if (preg_match('/帖子#(\d+)/', $detail, $m)) {
+                $target = $row['target_info'] ?? $row['detail'] ?? '';
+                if (preg_match('/帖子#(\d+)/', $target, $m)) {
                     $tids[] = (int)$m[1];
-                } elseif (preg_match('/tid[:\s=](\d+)/i', $detail, $m)) {
+                } elseif (preg_match('/tid[:\s=](\d+)/i', $target, $m)) {
                     $tids[] = (int)$m[1];
                 }
             }
