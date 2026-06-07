@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `forum_accounts` (
     `last_signin` DATE DEFAULT NULL,
     `last_reply` DATETIME DEFAULT NULL COMMENT '上次自动回帖时间',
     `last_notice_check` DATETIME DEFAULT NULL,
+    `last_mention_reply` DATETIME DEFAULT NULL COMMENT '上次@提及回复时间',
     `cookie_data` TEXT COMMENT '登录Cookie缓存',
     `cookie_expire` DATETIME DEFAULT NULL COMMENT 'Cookie过期时间',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,

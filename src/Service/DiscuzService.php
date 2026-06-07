@@ -12,13 +12,22 @@ class DiscuzService
     private int $accountId;
     private int $userId;
     private int $timeout = 15;
+    private string $forumUsername = '';
+    private bool $enableBonus = false;
 
     public function __construct(int $userId, array $account)
     {
         $this->userId = $userId;
         $this->accountId = (int)$account['id'];
         $this->forumUrl = rtrim($account['forum_url'], '/');
+        $this->forumUsername = $account['username'] ?? '';
+        $this->enableBonus = !empty($account['enable_bonus']);
         $this->cookieFile = sys_get_temp_dir() . '/forum_cookie_' . $account['id'] . '.txt';
+    }
+
+    public function isBonusEnabled(): bool
+    {
+        return $this->enableBonus;
     }
 
     /**
@@ -685,25 +694,36 @@ class DiscuzService
      */
     public function getMentionNotices(): array
     {
-        $mentions = [];
+        return $this->getReplyNotifications();
+    }
 
-        // 访问通知页面
+    /**
+     * 获取通知详情页面，提取所有被回复/引用/提及的通知
+     * 返回包含帖子链接和回复内容片段的列表
+     */
+    public function getReplyNotifications(): array
+    {
+        $notices = [];
+
         $result = $this->httpGet('/home.php?mod=space&do=notice');
-        if (!$result['ok']) return $mentions;
+        if (!$result['ok']) return $notices;
 
         $body = $result['body'];
 
-        // 提取所有通知项
         $items = [];
 
-        // 方式1: Discuz 通知列表 li.bbda
         if (preg_match_all('/<li[^>]*class="[^"]*bbda[^"]*"[^>]*>(.*?)<\/li>/si', $body, $matches)) {
             $items = $matches[1];
         }
 
-        // 方式2: 通知区域 ul
         if (empty($items) && preg_match('/<ul[^>]*class="[^"]*notif[^"]*"[^>]*>(.*?)<\/ul>/si', $body, $nm)) {
             if (preg_match_all('/<li[^>]*>(.*?)<\/li>/si', $nm[1], $matches)) {
+                $items = $matches[1];
+            }
+        }
+
+        if (empty($items)) {
+            if (preg_match_all('/<tr[^>]*>(.*?)<\/tr>/si', $body, $matches)) {
                 $items = $matches[1];
             }
         }
@@ -712,21 +732,23 @@ class DiscuzService
             $text = strip_tags($html);
             $text = preg_replace('/\s+/', ' ', trim($text));
 
-            // 筛选 @提及/帖子引用/回复/评论 通知
-            $isMention = (stripos($text, '@') !== false && stripos($text, '回复') !== false)
+            $isReply = (stripos($text, '@') !== false && stripos($text, '回复') !== false)
                 || stripos($text, '引用了你的帖子') !== false
                 || stripos($text, '回复了你的帖子') !== false
                 || stripos($text, '回复了你的回复') !== false
                 || stripos($text, '评论了你的') !== false
                 || stripos($text, '在帖子中提到了你') !== false
                 || stripos($text, '在回复中提到了你') !== false
+                || stripos($text, '在你的帖子') !== false
+                || stripos($text, '在你的回复') !== false
                 || stripos($text, '有人@') !== false
                 || stripos($text, '新回复') !== false
-                || stripos($text, '新的回帖') !== false;
+                || stripos($text, '新的回帖') !== false
+                || (stripos($text, '回复') !== false && stripos($text, '你的') !== false)
+                || (stripos($text, '发起了') === false && preg_match('/.*在.*回复了你/', $text) === 1);
 
-            if (!$isMention) continue;
+            if (!$isReply) continue;
 
-            // 提取帖子链接（tid）
             $tid = 0;
             if (preg_match('/(?:thread|t)-(\d+)-/si', $html, $lm)) {
                 $tid = (int)$lm[1];
@@ -738,7 +760,6 @@ class DiscuzService
 
             if ($tid <= 0) continue;
 
-            // 提取时间
             $time = '';
             if (preg_match('/(\d+\s*(?:秒|分钟|小时|天)前|刚刚)/', $html, $tm)) {
                 $time = $tm[1];
@@ -746,17 +767,16 @@ class DiscuzService
                 $time = $tm[1];
             }
 
-            $mentions[] = [
+            $notices[] = [
                 'tid' => $tid,
-                'content' => mb_substr($text, 0, 100),
+                'content' => mb_substr($text, 0, 200),
                 'time' => $time,
             ];
         }
 
-        // 去重（按tid）
         $seen = [];
         $unique = [];
-        foreach ($mentions as $m) {
+        foreach ($notices as $m) {
             if (!isset($seen[$m['tid']])) {
                 $seen[$m['tid']] = true;
                 $unique[] = $m;
@@ -767,48 +787,128 @@ class DiscuzService
     }
 
     /**
-     * 处理 @提及自动回复
-     * 获取通知中的 @提及，对每个帖子生成 AI 回复并提交
+     * 获取帖子的最新回复内容（用于跟踪回复）
+     */
+    public function getThreadLatestReplyContent(int $tid): array
+    {
+        $page = $this->httpGet("/forum.php?mod=viewthread&tid=$tid");
+        if (!$page['ok']) {
+            return ['ok' => false, 'content' => ''];
+        }
+
+        $body = $page['body'];
+
+        $posts = [];
+        $postPattern = '/<div[^>]*class="[^"]*postbox[^"]*"[^>]*>(.*?)<\/div>/si';
+        if (preg_match_all($postPattern, $body, $matches)) {
+            $posts = $matches[1];
+        }
+
+        if (empty($posts)) {
+            $postPattern2 = '/<div[^>]*class="[^"]*pstl[^"]*"[^>]*>(.*?)<\/div>/si';
+            if (preg_match_all($postPattern2, $body, $matches)) {
+                $posts = $matches[1];
+            }
+        }
+
+        if (empty($posts)) {
+            $postPattern3 = '/<table[^>]*summary="[^"]*pid[^"]*"[^>]*>(.*?)<\/table>/si';
+            if (preg_match_all($postPattern3, $body, $matches)) {
+                $posts = $matches[1];
+            }
+        }
+
+        if (empty($posts)) {
+            $postPattern4 = '/<div[^>]*class="[^"]*postcontent[^"]*"[^>]*>(.*?)<\/div>/si';
+            if (preg_match_all($postPattern4, $body, $matches)) {
+                $posts = $matches[1];
+            }
+        }
+
+        if (empty($posts)) {
+            $postPattern5 = '/<div[^>]*class="[^"]*t_f[^"]*"[^>]*>(.*?)<\/div>/si';
+            if (preg_match_all($postPattern5, $body, $matches)) {
+                $posts = $matches[1];
+                if (!empty($posts)) {
+                    array_shift($posts);
+                }
+            }
+        }
+
+        if (empty($posts)) {
+            return ['ok' => false, 'content' => ''];
+        }
+
+        $lastPost = end($posts);
+
+        $content = strip_tags($lastPost);
+        $content = preg_replace('/\s+/', ' ', trim($content));
+
+        $author = '';
+        $authorUid = 0;
+        if (preg_match('/<a[^>]*href="[^"]*?uid=(\d+)[^"]*"[^>]*>(.*?)<\/a>/si', $lastPost, $am)) {
+            $authorUid = (int)$am[1];
+            $author = strip_tags($am[2]);
+        } elseif (preg_match('/<a[^>]*class="[^"]*xi2[^"]*"[^>]*>(.*?)<\/a>/si', $lastPost, $am)) {
+            $author = strip_tags($am[1]);
+        }
+
+        if (strlen($content) < 5) {
+            return ['ok' => false, 'content' => ''];
+        }
+
+        return ['ok' => true, 'content' => $content, 'author' => $author, 'author_uid' => $authorUid];
+    }
+
+    /**
+     * 处理被回复通知：检测到有人回复助手后，阅读回复内容，生成拟人化的再次回复
      */
     public function handleMentionReplies(): array
     {
+        return $this->handleFollowUpReplies();
+    }
+
+    /**
+     * 处理被回复通知：检测到有人回复助手后，阅读回复内容，生成跟踪回复
+     */
+    public function handleFollowUpReplies(): array
+    {
         $results = [];
 
-        // 获取已回复的帖子（去重用）
         $repliedTids = $this->getRepliedTids();
 
-        // 获取 @提及通知
-        $mentions = $this->getMentionNotices();
-        if (empty($mentions)) {
-            return ['ok' => true, 'message' => '暂无新的@提及通知', 'replied' => 0];
+        $notifications = $this->getReplyNotifications();
+        if (empty($notifications)) {
+            return ['ok' => true, 'message' => '暂无新的互动通知', 'replied' => 0];
         }
 
         $replied = 0;
-        foreach ($mentions as $mention) {
-            $tid = $mention['tid'];
+        foreach ($notifications as $notice) {
+            $tid = $notice['tid'];
 
-            // 跳过已回复的帖子
             if (in_array($tid, $repliedTids)) continue;
 
-            // 获取帖子内容
             $thread = $this->getThreadContent($tid);
             if (!$thread['ok']) continue;
 
-            // 检查是否涉及钱财相关，如是则统一回复抱歉
-            $fullContext = ($thread['title'] ?? '') . ' ' . ($thread['content'] ?? '') . ' ' . ($mention['content'] ?? '');
+            $latestReply = $this->getThreadLatestReplyContent($tid);
+            $replyContent = $latestReply['ok'] ? $latestReply['content'] : ($notice['content'] ?? '');
+            $replyAuthor = $latestReply['author'] ?? '';
+            $replyAuthorUid = $latestReply['author_uid'] ?? 0;
+
+            if ($this->isSelfPost($replyAuthor, $replyAuthorUid)) continue;
+
+            $fullContext = ($thread['title'] ?? '') . ' ' . ($thread['content'] ?? '') . ' ' . $replyContent;
             if (self::isMoneyRelated($fullContext)) {
                 $message = '抱歉，目前不支持涉及钱财相关问题的自动回复。';
             } else {
-                // AI 生成回复内容，带入 @提及的上下文信息
-                $contextContent = ($mention['content'] ?? '') ? "【对方的回复】" . $mention['content'] . "\n\n【帖子内容】" . ($thread['content'] ?? '') : ($thread['content'] ?? '');
-                $message = self::generateAiReply($thread['title'], $contextContent);
+                $message = self::generateFollowUpReply($thread['title'], $thread['content'], $replyContent, $replyAuthor);
                 if (empty($message)) {
-                    $message = self::generateAiReply($thread['title'], $contextContent, true);
+                    $message = self::generateFollowUpReply($thread['title'], $thread['content'], $replyContent, $replyAuthor, true);
                 }
                 if (empty($message)) continue;
             }
 
-            // 提交回复
             $replyResult = $this->reply($tid, $message);
             $results[] = [
                 'tid' => $tid,
@@ -819,37 +919,63 @@ class DiscuzService
 
             if ($replyResult['ok']) {
                 $replied++;
-                // 记录已回复
                 $this->recordReplied($tid);
+                if ($this->enableBonus) {
+                    $this->claimTreasureEgg($tid);
+                }
             }
 
-            // 回复间隔，避免频率限制
-            usleep(2000000); // 2秒
+            usleep(2000000);
         }
+
+        ForumAccount::updateLastMentionReply($this->accountId);
 
         return [
             'ok' => true,
-            'message' => "处理 {$replied} 条@提及回复",
+            'message' => "处理 {$replied} 条互动跟踪回复",
             'replied' => $replied,
             'details' => $results,
         ];
     }
 
     /**
+     * 判断是否是助手自己发的帖子
+     */
+    private function isSelfPost(string $authorName, int $authorUid): bool
+    {
+        if (!empty($this->forumUsername) && !empty($authorName)) {
+            if (mb_strtolower(trim($authorName)) === mb_strtolower(trim($this->forumUsername))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 获取已回复帖子TID列表（从日志中提取）
+     * 从多种detail格式中提取TID
      */
     private function getRepliedTids(): array
     {
         try {
             $pdo = \App\Service\Database::getConnection();
+            $tids = [];
             $stmt = $pdo->prepare(
-                "SELECT DISTINCT CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(detail, '#', -1), ' ', 1) AS UNSIGNED) AS tid
-                 FROM forum_action_logs
-                 WHERE account_id = ? AND type = 'reply' AND detail LIKE '%帖子#%'
+                "SELECT detail, created_at FROM forum_action_logs
+                 WHERE account_id = ? AND type = 'reply'
                  ORDER BY created_at DESC LIMIT 200"
             );
             $stmt->execute([$this->accountId]);
-            return array_filter(array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'tid'));
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                $detail = $row['detail'] ?? '';
+                if (preg_match('/帖子#(\d+)/', $detail, $m)) {
+                    $tids[] = (int)$m[1];
+                } elseif (preg_match('/tid[:\s=](\d+)/i', $detail, $m)) {
+                    $tids[] = (int)$m[1];
+                }
+            }
+            return array_unique(array_filter($tids));
         } catch (\Throwable $e) {
             return [];
         }
@@ -858,17 +984,102 @@ class DiscuzService
     /**
      * 记录已回复帖子
      */
-    private function recordReplied(int $tid): void
+    private function recordReplied(int $tid, string $label = '跟踪自动回复'): void
     {
         try {
             \App\Model\ForumActionLog::create(
                 $this->userId,
                 $this->accountId,
                 'reply',
-                '@提及自动回复',
+                $label,
                 "帖子#{$tid}"
             );
         } catch (\Throwable $e) {}
+    }
+
+    /**
+     * 直接检查已回复帖子的最新回复（不依赖通知系统）
+     * 只检查最近48小时内回复过的帖子，每次最多2个，避免给论坛造成压力
+     */
+    public function checkRepliedThreadsForActivity(int $maxCheck = 2): array
+    {
+        try {
+            $pdo = \App\Service\Database::getConnection();
+            $stmt = $pdo->prepare(
+                "SELECT detail, created_at FROM forum_action_logs
+                 WHERE account_id = ? AND type = 'reply'
+                   AND created_at > DATE_SUB(NOW(), INTERVAL 48 HOUR)
+                 ORDER BY created_at DESC LIMIT 20"
+            );
+            $stmt->execute([$this->accountId]);
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            $tids = [];
+            foreach ($rows as $row) {
+                $detail = $row['detail'] ?? '';
+                if (preg_match('/帖子#(\d+)/', $detail, $m)) {
+                    $tids[] = (int)$m[1];
+                } elseif (preg_match('/tid[:\s=](\d+)/i', $detail, $m)) {
+                    $tids[] = (int)$m[1];
+                }
+            }
+            $tids = array_unique(array_filter($tids));
+
+            if (empty($tids)) {
+                return ['ok' => true, 'message' => '没有需要检查的历史帖子', 'replied' => 0];
+            }
+
+            $toCheck = array_slice($tids, 0, $maxCheck);
+            $replied = 0;
+
+            foreach ($toCheck as $tid) {
+                try {
+                    $thread = $this->getThreadContent($tid);
+                    if (!$thread['ok']) continue;
+
+                    $latestReply = $this->getThreadLatestReplyContent($tid);
+                    if (!$latestReply['ok']) continue;
+
+                    $replyContent = $latestReply['content'];
+                    if (mb_strlen($replyContent) < 10) continue;
+
+                    $replyAuthor = $latestReply['author'] ?? '';
+                    $replyAuthorUid = $latestReply['author_uid'] ?? 0;
+
+                    if ($this->isSelfPost($replyAuthor, $replyAuthorUid)) continue;
+
+                    $fullContext = ($thread['title'] ?? '') . ' ' . ($thread['content'] ?? '') . ' ' . $replyContent;
+                    if (self::isMoneyRelated($fullContext)) {
+                        $message = '抱歉，目前不支持涉及钱财相关问题的自动回复。';
+                    } else {
+                        $message = self::generateFollowUpReply($thread['title'], $thread['content'], $replyContent, $replyAuthor);
+                        if (empty($message)) {
+                            $message = self::generateFollowUpReply($thread['title'], $thread['content'], $replyContent, $replyAuthor, true);
+                        }
+                        if (empty($message)) continue;
+                    }
+
+                    $replyResult = $this->reply($tid, $message);
+                    if ($replyResult['ok']) {
+                        $replied++;
+                        $this->recordReplied($tid, '历史帖子跟踪回复');
+                        if ($this->enableBonus) {
+                            $this->claimTreasureEgg($tid);
+                        }
+                    }
+
+                    usleep(3000000);
+                } catch (\Throwable $e) {}
+            }
+
+            return [
+                'ok' => true,
+                'message' => "历史帖子跟踪回复 {$replied} 个",
+                'replied' => $replied,
+            ];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => '历史帖子检查异常: ' . $e->getMessage(), 'replied' => 0];
+        }
     }
 
     /**
@@ -967,6 +1178,106 @@ class DiscuzService
         // 随机选一个未回复的帖子
         $threads = $result['threads'];
         return $threads[array_rand($threads)];
+    }
+
+    /**
+     * 领取寻宝彩蛋（nm_treasure_egg 插件）
+     */
+    public function claimTreasureEgg(int $tid): array
+    {
+        if (!$this->enableBonus) {
+            return ['ok' => false, 'claimed' => false, 'message' => '彩蛋领取未开启'];
+        }
+
+        $page = $this->httpGet("/forum.php?mod=viewthread&tid=$tid");
+        if (!$page['ok']) {
+            return ['ok' => false, 'claimed' => false, 'message' => '页面访问失败'];
+        }
+
+        $html = $page['body'];
+
+        if (stripos($html, 'nm_treasure_egg') === false && stripos($html, 'NAM_FORMHASH') === false) {
+            return ['ok' => true, 'claimed' => false, 'message' => '该页面无彩蛋'];
+        }
+
+        $formhash = '';
+        if (preg_match('/NAM_FORMHASH\s*=\s*["\']([a-f0-9]+)["\']/', $html, $m)) {
+            $formhash = $m[1];
+        } elseif (preg_match('/name\s*=\s*["\']formhash["\']\s*value\s*=\s*["\']([a-f0-9]+)["\']/', $html, $m)) {
+            $formhash = $m[1];
+        } elseif (preg_match('/formhash=([a-f0-9]+)/i', $html, $m)) {
+            $formhash = $m[1];
+        }
+
+        if (empty($formhash)) {
+            return ['ok' => false, 'claimed' => false, 'message' => '未找到formhash'];
+        }
+
+        $claimResult = $this->httpPost(
+            "/plugin.php?id=nm_treasure_egg&op=claim",
+            "formhash={$formhash}&action=claim&tid={$tid}"
+        );
+
+        if (!$claimResult['ok']) {
+            return ['ok' => false, 'claimed' => false, 'message' => '领取请求失败: ' . $claimResult['error']];
+        }
+
+        $body = $claimResult['body'];
+        $claimed = false;
+        $rewardText = '';
+        $coinAmount = 0;
+
+        if (preg_match('/恭喜.*?获得.*?(\d+).*?([金币积分经验值威望贡献]+)/u', $body, $rm)) {
+            $claimed = true;
+            $coinAmount = (int)$rm[1];
+            $rewardText = "获得 {$rm[1]} {$rm[2]}";
+        } elseif (preg_match('/(\d+)\s*([金币积分经验值威望贡献]+)/u', $body, $rm)) {
+            $claimed = true;
+            $coinAmount = (int)$rm[1];
+            $rewardText = "获得 {$rm[1]} {$rm[2]}";
+        } elseif (stripos($body, '已领取') !== false || stripos($body, 'already') !== false) {
+            $claimed = false;
+            $rewardText = '今日已领取';
+        } elseif (stripos($body, '达到上限') !== false || stripos($body, 'limit') !== false) {
+            $claimed = false;
+            $rewardText = '已达每日上限';
+        } elseif (preg_match('/"reward"\s*:\s*(\d+)/i', $body, $jm)) {
+            $claimed = true;
+            $coinAmount = (int)$jm[1];
+            $rewardText = "获得 {$jm[1]} 金币";
+        } elseif (preg_match('/"message"\s*:\s*"([^"]+)"/i', $body, $jm)) {
+            $rewardText = $jm[1];
+            if (stripos($rewardText, '获得') !== false || stripos($rewardText, '恭喜') !== false) {
+                $claimed = true;
+                if (preg_match('/(\d+)/', $rewardText, $cm)) {
+                    $coinAmount = (int)$cm[1];
+                }
+            }
+        } elseif (stripos($body, 'success') !== false || stripos($body, '"ok"') !== false) {
+            $claimed = true;
+            $rewardText = '领取成功';
+        }
+
+        $logMessage = $claimed
+            ? "寻宝彩蛋领取成功 - {$rewardText}" . ($coinAmount > 0 ? "（+{$coinAmount}）" : '')
+            : "寻宝彩蛋 - {$rewardText}";
+
+        try {
+            \App\Model\ForumActionLog::create(
+                $this->userId,
+                $this->accountId,
+                'bonus',
+                $logMessage,
+                "帖子#{$tid}"
+            );
+        } catch (\Throwable $e) {}
+
+        return [
+            'ok' => true,
+            'claimed' => $claimed,
+            'coins' => $coinAmount,
+            'message' => $rewardText ?: '未检测到奖励信息',
+        ];
     }
 
     /**
@@ -1156,6 +1467,86 @@ class DiscuzService
     }
 
     /**
+     * AI生成跟踪回复：基于对方回复内容进行拟人化再次回复
+     */
+    public static function generateFollowUpReply(string $title, string $threadContent, string $otherReply, string $otherAuthor = '', bool $retrying = false): ?string
+    {
+        if (self::isMoneyRelated($title . ' ' . $threadContent . ' ' . $otherReply)) {
+            return '抱歉，目前不支持涉及钱财相关问题的自动回复。';
+        }
+
+        $apiUrl = Config::get('ai.forum_reply.api_url', '');
+        $apiKey = Config::get('ai.forum_reply.api_key', '');
+        $model = Config::get('ai.forum_reply.model', 'gpt-3.5-turbo');
+        $maxTokens = (int)Config::get('ai.forum_reply.max_tokens', 150);
+        $temperature = (float)Config::get('ai.forum_reply.temperature', 0.8);
+
+        if (empty($apiUrl) || empty($apiKey)) {
+            return null;
+        }
+
+        $threadContent = mb_substr($threadContent, 0, 300);
+        $otherReply = mb_substr($otherReply, 0, 300);
+
+        $authorPrefix = $otherAuthor ? "{$otherAuthor} " : '有人';
+
+        $systemPrompt = $retrying
+            ? "你是一个真实论坛用户。你发帖后被{$authorPrefix}回复了。你要根据对方的回复内容进行自然的回应，像普通网友在交流。可以赞同、补充、追问，或者幽默回应。禁止说空洞的客套话。"
+            : "你是一个真实论坛用户。有人回复了你的帖子，你需要进行自然的回应。先理解对方在说什么，再给出有内容的回复。可以用轻松的语气，也可以认真讨论。每次回应都要针对对方的具体内容，避免泛泛而谈。像正常人在论坛聊天一样。";
+
+        $prompt = "你之前在论坛发帖，现在{$authorPrefix}回复了你。请根据以下信息生成一条回复（30-80字）：\n";
+        $prompt .= "1. 自然地回应对方说的话，不要机械地客套\n";
+        $prompt .= "2. 可以表达赞同/不同意见，分享想法，追问细节\n";
+        $prompt .= "3. 语气像真人聊天，不要AI味道\n\n";
+        $prompt .= "【你的帖子标题】{$title}\n";
+        $prompt .= "【帖子内容】{$threadContent}\n";
+        $prompt .= "【对方回复的内容】{$otherReply}\n\n";
+        $prompt .= "直接输出回复内容，不要加引号、前缀或任何说明文字。";
+
+        $payload = json_encode([
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $prompt],
+            ],
+            'max_tokens' => $maxTokens,
+            'temperature' => $temperature,
+        ], JSON_UNESCAPED_UNICODE);
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $apiUrl,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $apiKey,
+            ],
+        ]);
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error || !$response) {
+            return null;
+        }
+
+        $data = json_decode($response, true);
+        if (!empty($data['choices'][0]['message']['content'])) {
+            $reply = trim($data['choices'][0]['message']['content'], " \t\n\r\0\x0B\"'");
+            $finishReason = $data['choices'][0]['finish_reason'] ?? '';
+            if (!empty($reply)) {
+                return self::cleanReply($reply, $finishReason);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * AI智能生成回帖内容
      */
     public static function generateAiReply(string $title, string $content, bool $retrying = false): ?string
@@ -1178,7 +1569,7 @@ class DiscuzService
             ? '你是一个真实论坛用户。你必须针对帖子的核心内容发表观点。回复要自然口语化，像普通网友打字。禁止说空话套话。可以表达赞同/反对，可以补充信息，可以提问。'
             : '你是一个真实论坛用户。你必须阅读并理解帖子内容，抓住核心话题，给出有实质性内容的回复。使用自然的口语，不要书面化。可以表达自己的观点、分享相关经验、或者提出有深度的问题。严禁使用"感谢分享""学到了""写得好""收藏了"等空洞模板。每条回复都是独特的，针对当前帖子。';
 
-        $prompt = "请根据以下帖子内容生成一条论坛回复（60-200字），要求：\n";
+        $prompt = "请根据以下帖子内容生成一条论坛回复（30-80字），要求：\n";
         $prompt .= "1. 仔细阅读帖子内容，提取核心话题，围绕核心展开\n";
         $prompt .= "2. 有实质观点或补充信息，像真实网友在交流\n";
         $prompt .= "3. 语气自然，口语化，不要AI味道\n";
@@ -1221,12 +1612,47 @@ class DiscuzService
         $data = json_decode($response, true);
         if (!empty($data['choices'][0]['message']['content'])) {
             $reply = trim($data['choices'][0]['message']['content'], " \t\n\r\0\x0B\"'");
+            $finishReason = $data['choices'][0]['finish_reason'] ?? '';
             if (!empty($reply)) {
-                return $reply;
+                return self::cleanReply($reply, $finishReason);
             }
         }
 
         return null;
+    }
+
+    /**
+     * 清理AI回复：去除截断的不完整句子
+     */
+    private static function cleanReply(string $reply, string $finishReason = ''): string
+    {
+        $reply = preg_replace('/^[""「」『』【】\s]+|[""「」『』【】\s]+$/', '', $reply);
+        $reply = trim($reply);
+
+        if ($finishReason === 'length') {
+            $puncts = ['。', '！', '？', '～', '.', '!', '?'];
+            $lastPunct = 0;
+            foreach ($puncts as $p) {
+                $pos = mb_strrpos($reply, $p);
+                if ($pos !== false && $pos > $lastPunct) {
+                    $lastPunct = $pos;
+                }
+            }
+
+            $lastComma = mb_strrpos($reply, '，');
+            if ($lastComma !== false && $lastComma > 10 && $lastPunct < 5) {
+                $lastPunct = $lastComma;
+            }
+
+            if ($lastPunct > 5) {
+                $reply = mb_substr($reply, 0, $lastPunct + 1);
+            }
+        }
+
+        $reply = preg_replace('/\s+$/', '', $reply);
+        $reply = preg_replace('/[,，、]\s*$/', '。', $reply);
+
+        return $reply;
     }
 
     /**

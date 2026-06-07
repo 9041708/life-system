@@ -112,8 +112,8 @@ class LicenseAdminController
             $logFilters['date_to'] = trim((string)$_GET['date_to']);
         }
 
-        $logs = Log::search($logFilters, $perPage, $offset);
-        $logTotal = Log::count($logFilters);
+        $logs = Log::searchUnified($logFilters, $perPage, $offset);
+        $logTotal = Log::countUnified($logFilters);
         $logTotalPages = ceil($logTotal / $perPage);
 
         $this->render('index', [

@@ -75,6 +75,19 @@ try {
 	if (!$col9) {
 		$pdo->exec("ALTER TABLE forum_accounts ADD COLUMN reply_interval INT DEFAULT 10 COMMENT '手动回帖间隔(秒)' AFTER reply_time");
 	}
+	$col10 = $pdo->query("SHOW COLUMNS FROM forum_accounts LIKE 'last_mention_reply'")->fetch();
+	if (!$col10) {
+		$pdo->exec("ALTER TABLE forum_accounts ADD COLUMN last_mention_reply DATETIME DEFAULT NULL COMMENT '上次@提及回复时间' AFTER last_notice_check");
+	}
+	$col11 = $pdo->query("SHOW COLUMNS FROM forum_accounts LIKE 'enable_follow_up'")->fetch();
+	if (!$col11) {
+		$pdo->exec("ALTER TABLE forum_accounts ADD COLUMN enable_follow_up TINYINT(1) DEFAULT 0 COMMENT '跟进回复开关' AFTER enable_mention_reply");
+	}
+	$col12 = $pdo->query("SHOW COLUMNS FROM forum_accounts LIKE 'enable_bonus'")->fetch();
+	if (!$col12) {
+		$pdo->exec("ALTER TABLE forum_accounts ADD COLUMN enable_bonus TINYINT(1) DEFAULT 0 COMMENT '自动领取彩蛋' AFTER enable_follow_up");
+	}
+
 	// Resume multi-support migration
 	$resumeNameCol = $pdo->query("SHOW COLUMNS FROM resume_data LIKE 'name'")->fetch();
 	if (!$resumeNameCol) {

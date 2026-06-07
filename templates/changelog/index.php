@@ -13,7 +13,18 @@ $appVersion = Config::get('app.version', 'v2.0.0');
         </div>
 
         <div id="changelog-latest">
-        <h3 class="h6">v2.1.0 <span class="badge bg-success ms-1">最新</span></h3>
+        <h3 class="h6">v2.1.2 <span class="badge bg-success ms-1">最新</span></h3>
+        <ul class="small mb-3">
+            <li><strong>AI 回复防截断：</strong>max_tokens 从 150 提升至 300，新增 cleanReply() 后处理——当 API 返回 finish_reason=length 时自动截断到最后一个完整句子并补句号，不再出现"话说到一半"的情况。</li>
+            <li><strong>修复回复重复发送：</strong>助手在同一个帖子连续回复多次的问题已修复。新增 isSelfPost() 方法，跟进回复和历史帖子检查时自动识别助手自己发的帖子并跳过。</li>
+            <li><strong>跟进回复开关：</strong>账号配置新增"跟进回复（坛友回复后AI再回复）"开关。关闭时助手只回帖一次；开启时检测到坛友回复助手才会再次回复。不再受 reply_time 时间窗口限制。</li>
+            <li><strong>自动领取寻宝彩蛋：</strong>账号配置新增"自动领取彩蛋奖励"开关，支持 nm_treasure_egg 插件。助手每次回帖/跟进回复后自动检测页面彩蛋并领取，日志面板显示🎁彩蛋领取结果（含获得金币数）。每日上限10次，不额外增加论坛负担。</li>
+            <li><strong>系统日志优化：</strong>Log 模型新增 searchUnified()/countUnified()，通过 UNION 合并系统操作日志和论坛操作日志，统一展示和搜索。页面新增操作类型分组筛选、来源列（系统/论坛）。账户/分类管理、用户注册、退出登录均已接入操作日志。</li>
+            <li><strong>修复仪表盘干支计算错误：</strong>dashboard 模板中干支月干计算公式 operator precedence 错误，导致 6-12 月数组越界。已修复括号优先级。</li>
+            <li><strong>论坛助手 @提及修复：</strong>getNeedMentionReply() 与通知检查共享 last_notice_check 时间戳导致@回复始终被跳过，现使用独立 last_mention_reply 列。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.1</h3>
         <ul class="small mb-3">
             <li><strong>项目开源：</strong>代码已托管至 <a href="https://github.com/9041708/life-system" target="_blank">GitHub</a>，欢迎 Star ⭐</li>
             <li><strong>论坛助手 AI 回复优化：</strong>移除鸡汤/自定义回复模式，统一使用 AI 生成回复，AI 失败则跳过不再发鸡汤，回复质量大幅提升。</li>

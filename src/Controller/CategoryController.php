@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Service\Config;
 use App\Service\LedgerContext;
+use App\Service\Logger;
 use App\Model\Category;
 use App\Model\IconLibrary;
 use App\Model\SystemIconSubmission;
@@ -84,6 +85,7 @@ class CategoryController
                         Category::create($userId, $type, $name, $sort, $iconType, $iconValue);
                     }
                     $success = '新增分类成功';
+                    Logger::log('创建分类', "创建分类：{$name}（{$type}）", $userId, $_SESSION['user_nickname'] ?? null);
                 }
             } elseif ($action === 'update') {
                 $id = (int)($_POST['id'] ?? 0);
@@ -144,6 +146,7 @@ class CategoryController
                         Category::update($userId, $id, $name, $sort, $iconType, $iconValue);
                     }
                     $success = '更新分类成功';
+                    Logger::log('更新分类', "更新分类 #{$id}：{$name}", $userId, $_SESSION['user_nickname'] ?? null);
                 }
             } elseif ($action === 'delete') {
                 $id = (int)($_POST['id'] ?? 0);
@@ -154,6 +157,7 @@ class CategoryController
                     $error = '该分类已有记账数据，无法删除';
                 } else {
                     $success = '删除分类成功';
+                    Logger::log('删除分类', "删除分类 #{$id}", $userId, $_SESSION['user_nickname'] ?? null);
                 }
             }
         }

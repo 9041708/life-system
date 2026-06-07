@@ -160,7 +160,12 @@ class AuthController
 
     public function logout(): void
     {
+        $userId = (int)($_SESSION['user_id'] ?? 0);
+        $nickname = (string)($_SESSION['user_nickname'] ?? '');
         session_destroy();
+        if ($userId > 0) {
+            Logger::log('退出登录', "用户退出登录", $userId, $nickname);
+        }
 		header('Location: /public/index.php?route=login');
         exit;
     }
@@ -215,6 +220,8 @@ class AuthController
                 // 注册完成即为该用户注入默认数据，登录后可直接使用
                 Seeder::seedIfEmpty($userId);
                 $success = '注册成功，您现在可以使用该账号直接登录。';
+
+                Logger::log('用户注册', "用户注册成功：{$username}（{$nickname}，{$email}）", $userId, $nickname);
 
                 // 生成一次性绑定令牌（有效期 10 分钟），用于小程序扫码直接绑定
                 $bindToken = bin2hex(random_bytes(16));

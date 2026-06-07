@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Service\Config;
 use App\Service\Database;
 use App\Service\LedgerContext;
+use App\Service\Logger;
 use App\Model\Account;
 use App\Model\IconLibrary;
 use App\Model\SystemIconSubmission;
@@ -86,6 +87,7 @@ class AccountController
                         Account::create($userId, $groupId, $name, $accountNo ?: null, $initial, $iconType, $iconValue);
                     }
                     $success = '新增账户成功';
+                    Logger::log('创建账户', "创建账户：{$name}", $userId, $_SESSION['user_nickname'] ?? null);
                 }
             } elseif ($action === 'update') {
                 $id = (int)($_POST['id'] ?? 0);
@@ -146,6 +148,7 @@ class AccountController
                         Account::update($userId, $id, $groupId, $name, $accountNo ?: null, $iconType, $iconValue);
                     }
                     $success = '更新账户成功';
+                    Logger::log('更新账户', "更新账户 #{$id}：{$name}", $userId, $_SESSION['user_nickname'] ?? null);
                 }
             } elseif ($action === 'delete') {
                 $id = (int)($_POST['id'] ?? 0);
@@ -156,6 +159,7 @@ class AccountController
                     $error = '该账户已有记账数据，无法删除';
                 } else {
                     $success = '删除账户成功';
+                    Logger::log('删除账户', "删除账户 #{$id}", $userId, $_SESSION['user_nickname'] ?? null);
                 }
             }
         }

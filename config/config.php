@@ -5,45 +5,45 @@ return array (
   'db' => 
   array (
     'host' => 'localhost',
-    'dbname' => 'your_database_name',
-    'user' => 'your_db_user',
-    'pass' => 'your_db_password',
+    'dbname' => 'ssjizhang_cn',
+    'user' => 'root',
+    'pass' => 'QQcao110..',
     'charset' => 'utf8mb4',
   ),
   'mail' => 
   array (
     'driver' => 'mail',
-    'host' => 'smtp.example.com',
+    'host' => 'smtp.exmail.qq.com',
     'port' => 465,
     'encryption' => 'ssl',
-    'username' => 'your_email@example.com',
-    'password' => 'your_email_password',
-    'from_email' => 'your_email@example.com',
+    'username' => 'sanshi@9041708.cn',
+    'password' => 'TeNCTefZzmQ3ihXe',
+    'from_email' => 'sanshi@9041708.cn',
     'from_name' => '个人生活管理平台',
   ),
   'app' => 
   array (
     'name' => '个人生活管理平台',
     'base_url' => '/',
-    'site_url' => 'https://your-domain.com',
+    'site_url' => 'https://9041708.cn:555',
     'allow_register' => true,
-    'upload_dir' => __DIR__ . '/../uploads',
-    'version' => 'v2.1.0',
-    'mini_version' => 'v2.1.0',
+    'upload_dir' => '/volume1/web/ssjizhang.cn_ceshi/config/../uploads',
+    'version' => 'v2.1.2',
+    'mini_version' => 'v2.1.2',
     'landing_enabled' => true,
-    'license_admin_enabled' => false,
-    'screenshotmachine_api_key' => '',
+    'license_admin_enabled' => true,
+    'screenshotmachine_api_key' => '531677',
   ),
   'license' => 
   array (
     'client_enabled' => false,
-    'server_url' => 'https://your-domain.com',
+    'server_url' => 'https://9041708.cn:555',
     'check_interval_hours' => 24,
     'offline_max_days' => 7,
   ),
   'ai' => 
   array (
-    'enabled' => false,
+    'enabled' => true,
     'provider' => 'qclaw',
     'qclaw_api_url' => 'http://127.0.0.1:5000/parse',
     'qclaw_use_cli' => false,
@@ -51,10 +51,10 @@ return array (
     'timeout' => 30,
     'forum_reply' => 
     array (
-      'enabled' => false,
+      'enabled' => true,
       'api_url' => 'https://api.deepseek.com/v1/chat/completions',
-      'api_key' => 'your_deepseek_api_key',
-      'model' => 'deepseek-chat',
+      'api_key' => 'sk-8e4423c0d6fd4865893e0b396270dd00',
+      'model' => 'deepseek-v4-pro',
       'max_tokens' => 300,
       'temperature' => 0.8,
       'filter_words' => 
@@ -87,10 +87,10 @@ return array (
   ),
   'wechat' => 
   array (
-    'miniapp_appid' => 'your_miniapp_appid',
-    'miniapp_secret' => 'your_miniapp_secret',
-    'share_secret' => 'your_share_secret_key',
-    'enable_miniapp' => false,
+    'miniapp_appid' => 'wx1807d58e8e5f8909',
+    'miniapp_secret' => '33560a46b8e1d838f64950e43d4075fe',
+    'share_secret' => 'ssjizhang_share_secret_20250108',
+    'enable_miniapp' => true,
   ),
   'security' => 
   array (
@@ -102,10 +102,10 @@ return array (
   ),
   'backup' => 
   array (
-    'enabled' => false,
+    'enabled' => true,
     'retention_days' => 10,
     'encrypt_backup' => true,
-    'encryption_key' => 'your_backup_encryption_key',
+    'encryption_key' => 'sanshi-backup-key-2025',
     'backup_paths' => 
     array (
       'database' => true,
@@ -116,8 +116,9 @@ return array (
     'execution_time' => '02:00',
     'keep_versions' => 5,
     'email_notify' => true,
-    'notify_email' => 'your_email@example.com',
+    'notify_email' => '9041708@qq.com',
     'backup_target' => 'database',
+    'last_run_time' => 1780405544,
   ),
   'scheduler' => 
   array (
@@ -126,5 +127,5 @@ return array (
     'log_retention_days' => 30,
     'max_execution_time' => 3600,
   ),
-  'cron_token' => 'your_cron_token_here',
+  'cron_token' => 'ss_cron_a8f3e2b1c9d7',
 );

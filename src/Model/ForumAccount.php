@@ -118,7 +118,8 @@ class ForumAccount
 
         $simpleFields = [
             'forum_name', 'forum_url', 'username', 'enable_notice',
-            'enable_mention_reply', 'mention_reply_mode',
+            'enable_mention_reply', 'enable_follow_up', 'enable_bonus',
+            'notice_interval', 'mention_reply_mode',
             'enable_signin', 'enable_autoreply', 'reply_mode',
             'custom_reply', 'ai_reply_flag', 'signin_time', 'signin_url',
             'reply_time', 'reply_interval', 'auto_reply_interval'
@@ -170,6 +171,15 @@ class ForumAccount
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
             "UPDATE forum_accounts SET last_notice_check = NOW() WHERE id = ?"
+        );
+        return $stmt->execute([$id]);
+    }
+
+    public static function updateLastMentionReply(int $id): bool
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare(
+            "UPDATE forum_accounts SET last_mention_reply = NOW() WHERE id = ?"
         );
         return $stmt->execute([$id]);
     }
@@ -245,10 +255,19 @@ class ForumAccount
     public static function getNeedMentionReply(): array
     {
         $pdo = Database::getConnection();
-        $sql = "SELECT * FROM forum_accounts WHERE enable_mention_reply = 1
-                AND (last_notice_check IS NULL OR last_notice_check < DATE_SUB(NOW(), INTERVAL 5 MINUTE))";
+        $sql = "SELECT * FROM forum_accounts WHERE enable_follow_up = 1
+                AND (last_mention_reply IS NULL OR last_mention_reply < DATE_SUB(NOW(), INTERVAL COALESCE(auto_reply_interval, 30) MINUTE))";
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            if (!empty($row['password'])) {
+                $row['password'] = self::decrypt($row['password']);
+            }
+            if (!empty($row['cookie_data'])) {
+                $row['cookie_data'] = self::decrypt($row['cookie_data']);
+            }
+        }
+        return $rows;
     }
 }

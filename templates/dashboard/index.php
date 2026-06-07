@@ -547,7 +547,7 @@ body.theme-dark .dashboard-timeline-item { border-bottom-color: rgba(148,163,184
         $mTrad = $thisMonthTL;
         $jqApprox2 = [1=>5,2=>4,3=>5,4=>5,5=>5,6=>5,7=>7,8=>7,9=>7,10=>8,11=>7,12=>7];
         if ($thisDayTL < $jqApprox2[$thisMonthTL]) { $mTrad--; if ($mTrad < 1) $mTrad = 12; }
-        $mGz = $tgI2[(($thisYearTL - 4) % 10 + 10) % 10 * 2 + $mTrad % 10] . $dzI2[$mZhiMap[$mTrad]];
+        $mGz = $tgI2[(($thisYearTL - 4) % 10 * 2 + $mTrad) % 10] . $dzI2[$mZhiMap[$mTrad]];
         $mGzShort = $tgI2[((($thisYearTL - 4) % 10) * 2 + $mTrad) % 10] . $dzI2[$mZhiMap[$mTrad]];
         $jcIdx2 = ($dGzIdx % 12 - $mZhiMap[$mTrad] + 12) % 12;
         $yiAll = [

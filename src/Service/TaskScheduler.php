@@ -746,6 +746,9 @@ class TaskScheduler
                     \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], $logType, $result['message'] ?? $result['error'], $target);
                     if ($result['ok']) {
                         \App\Model\ForumAccount::updateLastReply((int)$account['id']);
+                        if ($service->isBonusEnabled()) {
+                            $service->claimTreasureEgg($tid);
+                        }
                     }
                     $results['reply']++;
                 } catch (\Throwable $e) {
@@ -785,18 +788,27 @@ class TaskScheduler
                 try {
                     $service = new \App\Service\DiscuzService((int)$account['user_id'], $account);
                     $loginResult = $service->login($account['username'], $account['password']);
-                    if (!$loginResult['ok']) continue;
+                    if (!$loginResult['ok']) {
+                        $results['errors'][] = "互动回复登录失败[{$account['forum_name']}]: " . ($loginResult['error'] ?? '未知');
+                        continue;
+                    }
                     $r = $service->handleMentionReplies();
                     $results['mention'] += ($r['replied'] ?? 0);
                     if (($r['replied'] ?? 0) > 0) {
                         \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], 'reply', $r['message']);
                     }
+                    // 直接检查已回复帖子是否有新回复
+                    $h = $service->checkRepliedThreadsForActivity(2);
+                    $results['mention'] += ($h['replied'] ?? 0);
+                    if (($h['replied'] ?? 0) > 0) {
+                        \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], 'reply', $h['message']);
+                    }
                 } catch (\Throwable $e) {
-                    $results['errors'][] = "@提及回复异常[{$account['forum_name']}]: " . $e->getMessage();
+                    $results['errors'][] = "互动回复异常[{$account['forum_name']}]: " . $e->getMessage();
                 }
             }
         } catch (\Throwable $e) {
-            $results['errors'][] = '@提及回复任务异常: ' . $e->getMessage();
+            $results['errors'][] = '互动回复任务异常: ' . $e->getMessage();
         }
 
         try {
@@ -805,7 +817,7 @@ class TaskScheduler
         } catch (\Throwable $e) {}
 
         return [
-            'message' => "签到{$results['signin']}个，回帖{$results['reply']}个，通知{$results['notice']}个，@回复{$results['mention']}个，清理{$results['cleaned']}条日志",
+            'message' => "签到{$results['signin']}个，回帖{$results['reply']}个，通知{$results['notice']}个，互动{$results['mention']}个，清理{$results['cleaned']}条日志",
             'details' => $results,
             'success' => empty($results['errors']),
         ];
