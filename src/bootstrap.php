@@ -88,29 +88,10 @@ try {
 		$pdo->exec("ALTER TABLE forum_accounts ADD COLUMN enable_bonus TINYINT(1) DEFAULT 0 COMMENT '自动领取彩蛋' AFTER enable_follow_up");
 	}
 
-	// Resume multi-support migration
-	$resumeNameCol = $pdo->query("SHOW COLUMNS FROM resume_data LIKE 'name'")->fetch();
-	if (!$resumeNameCol) {
-		$pdo->exec("ALTER TABLE resume_data ADD COLUMN name VARCHAR(100) DEFAULT '未命名简历' COMMENT '简历名称' AFTER user_id");
-	}
-	$resumeCreatedCol = $pdo->query("SHOW COLUMNS FROM resume_data LIKE 'created_at'")->fetch();
-	if (!$resumeCreatedCol) {
-		$pdo->exec("ALTER TABLE resume_data ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' AFTER template");
-	}
-	// Drop unique key on user_id to allow multiple resumes per user
 	try {
-		$ukCheck = $pdo->query("SHOW INDEX FROM resume_data WHERE Key_name = 'uk_user'")->fetch();
-		if ($ukCheck) {
-			$pdo->exec("ALTER TABLE resume_data DROP INDEX uk_user");
-		}
-	} catch (\Throwable $eIgnored) {}
-	// Add index on user_id for query performance
-	try {
-		$idxCheck = $pdo->query("SHOW INDEX FROM resume_data WHERE Key_name = 'idx_user'")->fetch();
-		if (!$idxCheck) {
-			$pdo->exec("ALTER TABLE resume_data ADD INDEX idx_user (user_id)");
-		}
-	} catch (\Throwable $eIgnored) {}
+		\App\Service\TodayDoService::initTables();
+	} catch (\Throwable $e) {}
+
 } catch (\Throwable $e) {
 	// 静默失败，不影响正常请求
 }

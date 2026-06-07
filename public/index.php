@@ -604,6 +604,15 @@ switch ($route) {
         $controller->forumAssistantApi();
         break;
 
+    case 'toolbox-today-do':
+        $controller = new \App\Controller\ToolboxController();
+        $controller->todayDo();
+        break;
+    case 'toolbox-today-do-api':
+        $controller = new \App\Controller\ToolboxController();
+        $controller->todayDoApi();
+        break;
+
     // 取名助手
     case 'naming':
         $controller = new \App\Controller\NamingController();

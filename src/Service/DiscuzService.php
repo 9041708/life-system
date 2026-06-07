@@ -706,7 +706,9 @@ class DiscuzService
         $notices = [];
 
         $result = $this->httpGet('/home.php?mod=space&do=notice');
-        if (!$result['ok']) return $notices;
+        if (!$result['ok']) {
+            return $notices;
+        }
 
         $body = $result['body'];
 
@@ -714,6 +716,12 @@ class DiscuzService
 
         if (preg_match_all('/<li[^>]*class="[^"]*bbda[^"]*"[^>]*>(.*?)<\/li>/si', $body, $matches)) {
             $items = $matches[1];
+        }
+
+        if (empty($items) && preg_match('/<ul[^>]*class="[^"]*bbda[^"]*"[^>]*>(.*?)<\/ul>/si', $body, $nm)) {
+            if (preg_match_all('/<li[^>]*>(.*?)<\/li>/si', $nm[1], $matches)) {
+                $items = $matches[1];
+            }
         }
 
         if (empty($items) && preg_match('/<ul[^>]*class="[^"]*notif[^"]*"[^>]*>(.*?)<\/ul>/si', $body, $nm)) {
@@ -724,6 +732,18 @@ class DiscuzService
 
         if (empty($items)) {
             if (preg_match_all('/<tr[^>]*>(.*?)<\/tr>/si', $body, $matches)) {
+                $items = $matches[1];
+            }
+        }
+
+        if (empty($items)) {
+            if (preg_match_all('/<div[^>]*class="[^"]*ntc[^"]*"[^>]*>(.*?)<\/div>/si', $body, $matches)) {
+                $items = $matches[1];
+            }
+        }
+
+        if (empty($items)) {
+            if (preg_match_all('/<div[^>]*class="[^"]*bm_c[^"]*"[^>]*>(.*?)<\/div>/si', $body, $matches)) {
                 $items = $matches[1];
             }
         }
@@ -875,18 +895,17 @@ class DiscuzService
     {
         $results = [];
 
-        $repliedTids = $this->getRepliedTids();
-
         $notifications = $this->getReplyNotifications();
+        error_log("[ForumFollowUp] account={$this->accountId} notifications=" . count($notifications));
         if (empty($notifications)) {
+            ForumAccount::updateLastMentionReply($this->accountId);
             return ['ok' => true, 'message' => '暂无新的互动通知', 'replied' => 0];
         }
 
         $replied = 0;
         foreach ($notifications as $notice) {
             $tid = $notice['tid'];
-
-            if (in_array($tid, $repliedTids)) continue;
+            error_log("[ForumFollowUp] checking tid={$tid} content=" . mb_substr($notice['content'] ?? '', 0, 50));
 
             $thread = $this->getThreadContent($tid);
             if (!$thread['ok']) continue;
@@ -962,7 +981,7 @@ class DiscuzService
             $tids = [];
             $stmt = $pdo->prepare(
                 "SELECT detail, created_at FROM forum_action_logs
-                 WHERE account_id = ? AND type = 'reply'
+                 WHERE account_id = ? AND action_type = 'reply'
                  ORDER BY created_at DESC LIMIT 200"
             );
             $stmt->execute([$this->accountId]);
@@ -1007,7 +1026,7 @@ class DiscuzService
             $pdo = \App\Service\Database::getConnection();
             $stmt = $pdo->prepare(
                 "SELECT detail, created_at FROM forum_action_logs
-                 WHERE account_id = ? AND type = 'reply'
+                 WHERE account_id = ? AND action_type = 'reply'
                    AND created_at > DATE_SUB(NOW(), INTERVAL 48 HOUR)
                  ORDER BY created_at DESC LIMIT 20"
             );
@@ -1025,6 +1044,8 @@ class DiscuzService
             }
             $tids = array_unique(array_filter($tids));
 
+            error_log("[ForumThreadScan] account={$this->accountId} historyTids=" . count($tids));
+
             if (empty($tids)) {
                 return ['ok' => true, 'message' => '没有需要检查的历史帖子', 'replied' => 0];
             }
@@ -1035,18 +1056,30 @@ class DiscuzService
             foreach ($toCheck as $tid) {
                 try {
                     $thread = $this->getThreadContent($tid);
-                    if (!$thread['ok']) continue;
+                    if (!$thread['ok']) {
+                        error_log("[ForumThreadScan] tid={$tid} getThreadContent failed");
+                        continue;
+                    }
 
                     $latestReply = $this->getThreadLatestReplyContent($tid);
-                    if (!$latestReply['ok']) continue;
+                    if (!$latestReply['ok']) {
+                        error_log("[ForumThreadScan] tid={$tid} getThreadLatestReplyContent failed");
+                        continue;
+                    }
 
                     $replyContent = $latestReply['content'];
-                    if (mb_strlen($replyContent) < 10) continue;
+                    if (mb_strlen($replyContent) < 10) {
+                        error_log("[ForumThreadScan] tid={$tid} reply too short: " . mb_strlen($replyContent));
+                        continue;
+                    }
 
                     $replyAuthor = $latestReply['author'] ?? '';
                     $replyAuthorUid = $latestReply['author_uid'] ?? 0;
 
-                    if ($this->isSelfPost($replyAuthor, $replyAuthorUid)) continue;
+                    if ($this->isSelfPost($replyAuthor, $replyAuthorUid)) {
+                        error_log("[ForumThreadScan] tid={$tid} self post, skip");
+                        continue;
+                    }
 
                     $fullContext = ($thread['title'] ?? '') . ' ' . ($thread['content'] ?? '') . ' ' . $replyContent;
                     if (self::isMoneyRelated($fullContext)) {
@@ -1078,6 +1111,7 @@ class DiscuzService
                 'replied' => $replied,
             ];
         } catch (\Throwable $e) {
+            error_log("[ForumThreadScan] EXCEPTION: " . $e->getMessage());
             return ['ok' => false, 'message' => '历史帖子检查异常: ' . $e->getMessage(), 'replied' => 0];
         }
     }

@@ -8,6 +8,7 @@ use App\Model\PasswordVault;
 use App\Model\EasyTodoTask;
 use App\Model\ForumAccount;
 use App\Model\ForumActionLog;
+use App\Service\TodayDoService;
 
 class ToolboxController
 {
@@ -539,5 +540,66 @@ class ToolboxController
     {
         $logs = ForumActionLog::listByUser($userId, 50);
         $this->json(['ok' => true, 'logs' => $logs]);
+    }
+
+    public function todayDo(): void
+    {
+        $this->requireLogin();
+        $this->render('toolbox/today_do', ['pageTitle' => '今天干嘛']);
+    }
+
+    public function todayDoApi(): void
+    {
+        $this->requireLogin();
+        $action = $_POST['action'] ?? $_GET['action'] ?? '';
+
+        switch ($action) {
+            case 'get_food':
+                $category = $_POST['category'] ?? '';
+                $result = TodayDoService::getRandomFood($category);
+                $this->json(['ok' => true, 'data' => $result]);
+                break;
+            case 'get_food_list':
+                $foods = TodayDoService::getRandomFoodList($_POST['category'] ?? '');
+                $this->json(['ok' => true, 'data' => $foods]);
+                break;
+            case 'food_categories':
+                $this->json(['ok' => true, 'data' => TodayDoService::getFoodCategories()]);
+                break;
+            case 'get_place':
+                $city = $_POST['city'] ?? '';
+                $isFree = isset($_POST['is_free']) ? (int)$_POST['is_free'] : null;
+                $result = TodayDoService::getRandomPlace($city, $isFree);
+                $this->json(['ok' => true, 'data' => $result]);
+                break;
+            case 'get_place_list':
+                $city = $_POST['city'] ?? '';
+                $isFree = isset($_POST['is_free']) ? (int)$_POST['is_free'] : null;
+                $places = TodayDoService::getRandomPlaceList($city, $isFree);
+                $this->json(['ok' => true, 'data' => $places]);
+                break;
+            case 'places_cities':
+                $this->json(['ok' => true, 'data' => TodayDoService::getPlacesCities()]);
+                break;
+            case 'get_show':
+                $type = $_POST['type'] ?? 'tv';
+                $platform = $_POST['platform'] ?? '';
+                $result = TodayDoService::getRandomShow($type, $platform);
+                $this->json(['ok' => true, 'data' => $result]);
+                break;
+            case 'get_show_list':
+                $type = $_POST['type'] ?? 'tv';
+                $shows = TodayDoService::getRandomShowList($type);
+                $this->json(['ok' => true, 'data' => $shows]);
+                break;
+            case 'show_types':
+                $this->json(['ok' => true, 'data' => TodayDoService::getShowTypes()]);
+                break;
+            case 'show_platforms':
+                $this->json(['ok' => true, 'data' => TodayDoService::getShowPlatforms()]);
+                break;
+            default:
+                $this->json(['ok' => false, 'error' => '未知操作']);
+        }
     }
 }

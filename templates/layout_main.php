@@ -304,6 +304,7 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
         <a href="/public/index.php?route=toolbox-morse" class="flyout-item"><span class="menu-icon">📡</span>摩斯电码编码解码</a>
         <a href="/public/index.php?route=toolbox-calendar" class="flyout-item"><span class="menu-icon">📅</span>万年历</a>
         <a href="/public/index.php?route=toolbox-forum-assistant" class="flyout-item"><span class="menu-icon">🌐</span>论坛助手</a>
+        <a href="/public/index.php?route=toolbox-today-do" class="flyout-item"><span class="menu-icon">🎲</span>今天干嘛</a>
         <a href="/public/index.php?route=naming" class="flyout-item"><span class="menu-icon">✍️</span>取名助手</a>
     </div>
 

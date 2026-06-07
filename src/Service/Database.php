@@ -10,6 +10,14 @@ class Database
 
     public static function getConnection(): PDO
     {
+        if (self::$pdo !== null) {
+            try {
+                self::$pdo->query('SELECT 1');
+            } catch (\Throwable $e) {
+                self::$pdo = null;
+            }
+        }
+
         if (self::$pdo === null) {
             $host = Config::get('db.host');
             $dbname = Config::get('db.dbname');
@@ -23,6 +31,7 @@ class Database
                 self::$pdo = new PDO($dsn, $user, $pass, [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_PERSISTENT => false,
                 ]);
             } catch (PDOException $e) {
                 die('Database connection failed: ' . $e->getMessage());
@@ -30,5 +39,10 @@ class Database
         }
 
         return self::$pdo;
+    }
+
+    public static function reset(): void
+    {
+        self::$pdo = null;
     }
 }

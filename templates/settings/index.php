@@ -1145,6 +1145,17 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
 
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
+            <h3 class="h6 mb-2">🔄 系统更新</h3>
+            <div class="form-text small mb-3">点击下方按钮执行数据库迁移和数据表更新。新用户自动建表，老用户自动添加新字段和种子数据。不会影响已有数据。</div>
+            <form method="post" onsubmit="return confirm('确认执行系统更新？这将检查并更新数据库结构。')">
+                <input type="hidden" name="action" value="run_migration">
+                <button type="submit" class="btn btn-sm btn-warning fw-bold">🚀 执行系统更新</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
             <h3 class="h6 mb-2">📱 小程序配置</h3>
             <div class="form-text small mb-3">配置后，顶部导航栏"使用小程序"按钮将显示以下小程序列表，用户可查看对应小程序码。</div>
 

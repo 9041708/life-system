@@ -566,6 +566,23 @@ class SettingsController
                 }
                 $tab = 'system';
 
+            } elseif ($isAdmin && $action === 'run_migration') {
+                $results = [];
+                try {
+                    require_once __DIR__ . '/../bootstrap.php';
+                    $results[] = '数据库迁移完成';
+                } catch (\Throwable $e) {
+                    $results[] = '迁移异常: ' . $e->getMessage();
+                }
+                try {
+                    \App\Service\TodayDoService::initTables();
+                    $results[] = '「今天干嘛」数据表已就绪';
+                } catch (\Throwable $e) {
+                    $results[] = '今天干嘛异常: ' . $e->getMessage();
+                }
+                $success = implode('；', $results);
+                $tab = 'system';
+
             } elseif ($isAdmin && $action === 'miniapp_add') {
                 $pdo = \App\Service\Database::getConnection();
                 $name = trim($_POST['miniapp_name'] ?? '');

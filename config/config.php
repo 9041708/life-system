@@ -28,11 +28,12 @@ return array (
     'site_url' => 'https://9041708.cn:555',
     'allow_register' => true,
     'upload_dir' => '/volume1/web/ssjizhang.cn_ceshi/config/../uploads',
-    'version' => 'v2.1.2',
-    'mini_version' => 'v2.1.2',
+    'version' => 'v2.1.3',
+    'mini_version' => 'v2.1.3',
     'landing_enabled' => true,
     'license_admin_enabled' => true,
     'screenshotmachine_api_key' => '531677',
+    'amap_key' => '',
   ),
   'license' => 
   array (
