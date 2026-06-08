@@ -576,7 +576,8 @@ class SettingsController
                 }
                 try {
                     \App\Service\TodayDoService::initTables();
-                    $results[] = '「今天干嘛」数据表已就绪';
+                    \App\Service\TodayDoService::forceReseed();
+                    $results[] = '「今天干嘛」数据已重置并写入';
                 } catch (\Throwable $e) {
                     $results[] = '今天干嘛异常: ' . $e->getMessage();
                 }

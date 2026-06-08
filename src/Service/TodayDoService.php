@@ -50,7 +50,6 @@ class TodayDoService
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-        // 老表结构升级：如果 air_date 列不存在则重建
         try {
             $hasCol = $pdo->query("SHOW COLUMNS FROM today_shows LIKE 'air_date'")->fetch();
             if (!$hasCol) {
@@ -62,19 +61,22 @@ class TodayDoService
             }
         } catch (\Throwable $e) {}
 
-        self::seedIfEmpty($pdo);
+        self::seedData($pdo);
     }
 
-    private static function seedIfEmpty($pdo): void
+    public static function forceReseed(): void
+    {
+        $pdo = Database::getConnection();
+        $pdo->exec("TRUNCATE TABLE today_food");
+        $pdo->exec("TRUNCATE TABLE today_places");
+        $pdo->exec("TRUNCATE TABLE today_shows");
+        self::seedData($pdo);
+    }
+
+    private static function seedData($pdo): void
     {
         $count = $pdo->query("SELECT COUNT(*) FROM today_food")->fetchColumn();
-        $placeCount = $pdo->query("SELECT COUNT(*) FROM today_places")->fetchColumn();
-        $showCount = $pdo->query("SELECT COUNT(*) FROM today_shows")->fetchColumn();
-        if ($count >= 80 && $placeCount >= 150 && $showCount >= 40) return;
-
-        if ($count < 80) $pdo->exec("TRUNCATE TABLE today_food");
-        if ($placeCount < 150) $pdo->exec("TRUNCATE TABLE today_places");
-        if ($showCount < 40) $pdo->exec("TRUNCATE TABLE today_shows");
+        if ($count >= 95) return;
 
         $foods = [
             ['红烧肉','家常菜',2,60,'https://www.xiachufang.com/search/?keyword=红烧肉','五花肉,冰糖,生抽,老抽,料酒,八角,桂皮',1,'硬菜,下饭'],
