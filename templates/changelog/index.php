@@ -13,7 +13,17 @@ $appVersion = Config::get('app.version', 'v2.0.0');
         </div>
 
         <div id="changelog-latest">
-        <h3 class="h6">v2.1.2 <span class="badge bg-success ms-1">最新</span></h3>
+        <h3 class="h6">v2.1.3 <span class="badge bg-success ms-1">最新</span></h3>
+        <ul class="small mb-3">
+            <li><strong>新增「今天干嘛」工具（工具箱）：</strong>三个随机选择模块——今天吃什么（95 道菜，含菜谱链接、食材、耗时）、今天去哪里（286 个景点覆盖 30+ 城市）、今天看什么（59 部影视综艺，含上映日期）。支持高德地图 API 实时获取景点数据。</li>
+            <li><strong>高德地图 API 集成：</strong>「今天去哪里」支持接入高德 POI 搜索 API（需配置 amap_key），自动获取真实景点信息（名称/地址/评分/电话），6 小时本地缓存，API 不可用时自动降级到种子数据。</li>
+            <li><strong>系统更新按钮（系统设置）：</strong>管理员可在「系统设置 → 系统参数」页面点击「执行系统更新」按钮，一键完成数据库迁移和种子数据写入。新老用户均可使用。</li>
+            <li><strong>数据库自动重连：</strong>Database.php 新增连接存活检测（SELECT 1 ping），MySQL 连接断开后自动重连，解决长时间运行后 MySQL server has gone away 问题。</li>
+            <li><strong>config.example.php 模板：</strong>新增配置占位文件，config.php 加入 .gitignore，避免数据库密码等敏感信息上传到 GitHub。</li>
+            <li><strong>修复 forum_action_logs 列名：</strong>getRepliedTids() 和 checkRepliedThreadsForActivity() 中 detail 列改为 target_info，修复 SQL Column not found 错误。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.2</h3>
         <ul class="small mb-3">
             <li><strong>AI 回复防截断：</strong>max_tokens 从 150 提升至 300，新增 cleanReply() 后处理——当 API 返回 finish_reason=length 时自动截断到最后一个完整句子并补句号，不再出现"话说到一半"的情况。</li>
             <li><strong>修复回复重复发送：</strong>助手在同一个帖子连续回复多次的问题已修复。新增 isSelfPost() 方法，跟进回复和历史帖子检查时自动识别助手自己发的帖子并跳过。</li>
