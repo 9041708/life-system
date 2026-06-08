@@ -677,10 +677,11 @@ class TaskScheduler
      */
     public static function runForumCron(): array
     {
+        if (function_exists('opcache_reset')) { opcache_reset(); }
         $results = ['signin' => 0, 'reply' => 0, 'notice' => 0, 'mention' => 0, 'cleaned' => 0, 'errors' => []];
 
         try {
-            $cleaned = \App\Model\ForumActionLog::cleanOldLogs(3);
+            $cleaned = \App\Model\ForumActionLog::cleanOldLogs(1);
             $results['cleaned'] = $cleaned;
         } catch (\Throwable $e) {
             $results['errors'][] = '日志清理失败: ' . $e->getMessage();
@@ -726,7 +727,6 @@ class TaskScheduler
                     }
                     $thread = $service->getUnrepliedThread();
                     if (!$thread) {
-                        \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], 'error', '没有可回复的帖子');
                         continue;
                     }
                     $tid = (int)$thread['tid'];
@@ -742,13 +742,11 @@ class TaskScheduler
                     $message .= "\n" . ($account['ai_reply_flag'] ?? '[AI回帖]');
                     $result = $service->reply($tid, $message);
                     $logType = $result['ok'] ? 'reply' : 'error';
-                    $target = $result['title'] ?? "帖子#$tid";
+                    $target = "帖子#{$tid} " . ($result['title'] ?? '');
                     \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], $logType, $result['message'] ?? $result['error'], $target);
                     if ($result['ok']) {
                         \App\Model\ForumAccount::updateLastReply((int)$account['id']);
-                        if ($service->isBonusEnabled()) {
-                            $service->claimTreasureEgg($tid);
-                        }
+                        \App\Model\ForumRepliedThread::markReplied((int)$account['id'], $tid, $result['title'] ?? '');
                     }
                     $results['reply']++;
                 } catch (\Throwable $e) {
@@ -796,12 +794,6 @@ class TaskScheduler
                     $results['mention'] += ($r['replied'] ?? 0);
                     if (($r['replied'] ?? 0) > 0) {
                         \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], 'reply', $r['message']);
-                    }
-                    // 直接检查已回复帖子是否有新回复
-                    $h = $service->checkRepliedThreadsForActivity(2);
-                    $results['mention'] += ($h['replied'] ?? 0);
-                    if (($h['replied'] ?? 0) > 0) {
-                        \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], 'reply', $h['message']);
                     }
                 } catch (\Throwable $e) {
                     $results['errors'][] = "互动回复异常[{$account['forum_name']}]: " . $e->getMessage();

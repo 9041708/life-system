@@ -289,7 +289,6 @@ class ToolboxController
             'notice_interval' => max(5, min(1440, (int)($_POST['notice_interval'] ?? 15))),
             'enable_mention_reply' => isset($_POST['enable_mention_reply']) ? 1 : 0,
             'enable_follow_up' => isset($_POST['enable_follow_up']) ? 1 : 0,
-            'enable_bonus' => isset($_POST['enable_bonus']) ? 1 : 0,
             'enable_signin' => isset($_POST['enable_signin']) ? 1 : 0,
             'enable_autoreply' => isset($_POST['enable_autoreply']) ? 1 : 0,
             'reply_mode' => 'ai',

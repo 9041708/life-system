@@ -30,7 +30,7 @@ class ForumRepliedThread
     {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
-            "SELECT tid FROM forum_replied_threads WHERE account_id = ?"
+            "SELECT tid FROM forum_replied_threads WHERE account_id = ? ORDER BY replied_at DESC"
         );
         $stmt->execute([$accountId]);
         return array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'tid');

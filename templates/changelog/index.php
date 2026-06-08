@@ -13,7 +13,25 @@ $appVersion = Config::get('app.version', 'v2.0.0');
         </div>
 
         <div id="changelog-latest">
-        <h3 class="h6">v2.1.3 <span class="badge bg-success ms-1">最新</span></h3>
+        <h3 class="h6">v2.1.5 <span class="badge bg-success ms-1">最新</span></h3>
+        <ul class="small mb-3">
+            <li><strong>@提及回复修复：</strong>通知解析从 `<li>` 改为 `<dd class="ntc_body">` 匹配，修复了一直返回 0 的问题。新增多 URL 尝试（&type=at、&inajax=1 等），确保不同 Discuz 版本兼容。@回复基于帖子内容和坛友回复生成上下文感知回复。</li>
+            <li><strong>彩蛋每日独立任务：</strong>claimDailyEggs() 不再依赖回帖触发，遍历所有已回复帖子逐个访问页面检测并领取彩蛋。isEligibleForEgg() 仅校验当日是否已领取同帖。每轮最多扫描 15 个帖子，每天上限 10 次。</li>
+            <li><strong>跟进回复精简：</strong>关闭了主动扫描（checkRepliedThreadsForActivity），仅保留 @提及触发回复。移除 UI 中的「跟进回复」开关。isSelfPost() 新增 AI 回帖标识检测，防止重复回复。</li>
+            <li><strong>引用回复优化：</strong>formatQuoteReply() 修复了错误引用自己文本的问题，改为引用对方实际回复内容。AI 提示词加强针对性，要求先理解对方具体说了什么再回应。</li>
+            <li><strong>操作日志清理：</strong>移除每分钟产生的"没有可回复的帖子"冗余日志（峰值 12602 条/天）。日志保留期从 3 天缩至 1 天。新增 clean_logs.php 一键清理存量。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.4</h3>
+        <ul class="small mb-3">
+            <li><strong>跟进回复重大修复：</strong>自动回帖成功后写入 forum_replied_threads 表（之前缺失导致跟进系统无帖可查），checkRepliedThreadsForActivity() 改为从 forum_replied_threads 直接获取 TID（替代从 target_info 中提取的不可靠方式）。扫描频率从 2 帖/30 分钟提升至 5 帖/15 分钟，全量覆盖从 22 小时缩短至 27 分钟。</li>
+            <li><strong>引用回复（Quote Reply）：</strong>坛友引用助手帖子后，助手自动检测 blockquote/[quote] BBcode 并引用回应。formatQuoteReply() 生成标准 Discuz 引用格式（含对方帖子链接），末尾追加 AI 回帖标识。修复了错误引用自己文本的问题。</li>
+            <li><strong>AI 上下文感知增强：</strong>generateFollowUpReply() 新增"助手自己的上一条回复"上下文参数。getThreadLatestReplyContent() 同时返回倒数第二帖（助手发的）内容，AI 不再"乱回复"——它知道自己之前说了什么，能理解对方是针对哪句话回应的。</li>
+            <li><strong>今天干嘛数据扩充：</strong>旅游景点从 286 增加至 394 个，新增覆盖北京、山东、河北、山西、陕西、甘肃、新疆、西藏、青海、贵州、四川、江西、安徽、河南、湖南、广西、海南、辽宁、吉林、黑龙江等 30+ 省市。独立 SQL 种子文件 + ress seed_places.php 绕过 OPcache 直接写入。</li>
+            <li><strong>移除高德 API 集成：</strong>NAS 网络环境无法稳定连接外部 API，改用纯本地种子数据库（394 个景点），删除 getPlaceFromAmap() / guessCategory() 方法及 amap_key 配置。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.3</h3>
         <ul class="small mb-3">
             <li><strong>新增「今天干嘛」工具（工具箱）：</strong>三个随机选择模块——今天吃什么（95 道菜，含菜谱链接、食材、耗时）、今天去哪里（286 个景点覆盖 30+ 城市）、今天看什么（59 部影视综艺，含上映日期）。支持高德地图 API 实时获取景点数据。</li>
             <li><strong>高德地图 API 集成：</strong>「今天去哪里」支持接入高德 POI 搜索 API（需配置 amap_key），自动获取真实景点信息（名称/地址/评分/电话），6 小时本地缓存，API 不可用时自动降级到种子数据。</li>

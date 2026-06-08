@@ -233,18 +233,6 @@ body.theme-dark #replyProgressText { background: rgba(15, 23, 42, 0.35); }
                                 <label class="form-check-label" for="acc_enable_mention_reply">@提及自动回复 (AI)</label>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="enable_follow_up" id="acc_enable_follow_up">
-                                <label class="form-check-label" for="acc_enable_follow_up">跟进回复（坛友回复后AI再回复）</label>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="enable_bonus" id="acc_enable_bonus">
-                                <label class="form-check-label" for="acc_enable_bonus">自动领取彩蛋奖励</label>
-                            </div>
-                        </div>
                         <div class="col-md-4 mb-3"></div>
                         <div class="col-md-4 mb-3">
                             <div class="form-check form-switch">
@@ -442,8 +430,6 @@ function openAccountModal(id) {
                 document.getElementById('acc_enable_notice').checked = !!parseInt(a.enable_notice);
                 document.getElementById('acc_notice_interval').value = a.notice_interval || 15;
                 document.getElementById('acc_enable_mention_reply').checked = !!parseInt(a.enable_mention_reply);
-                document.getElementById('acc_enable_follow_up').checked = !!parseInt(a.enable_follow_up);
-                document.getElementById('acc_enable_bonus').checked = !!parseInt(a.enable_bonus);
                 document.getElementById('acc_enable_signin').checked = !!parseInt(a.enable_signin);
                 document.getElementById('acc_enable_autoreply').checked = !!parseInt(a.enable_autoreply);
                 document.getElementById('acc_ai_reply_flag').value = a.ai_reply_flag || '[AI回帖]';

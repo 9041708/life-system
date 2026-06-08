@@ -255,8 +255,8 @@ class ForumAccount
     public static function getNeedMentionReply(): array
     {
         $pdo = Database::getConnection();
-        $sql = "SELECT * FROM forum_accounts WHERE enable_follow_up = 1
-                AND (last_mention_reply IS NULL OR last_mention_reply < DATE_SUB(NOW(), INTERVAL COALESCE(auto_reply_interval, 30) MINUTE))";
+        $sql = "SELECT * FROM forum_accounts WHERE enable_mention_reply = 1
+                AND (last_mention_reply IS NULL OR last_mention_reply < DATE_SUB(NOW(), INTERVAL 10 MINUTE))";
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
