@@ -9,16 +9,12 @@ class TodayDoService
     {
         $pdo = Database::getConnection();
 
-        $pdo->exec("DROP TABLE IF EXISTS today_food");
-        $pdo->exec("DROP TABLE IF EXISTS today_places");
-        $pdo->exec("DROP TABLE IF EXISTS today_shows");
-
-        $pdo->exec("CREATE TABLE today_food (
+        $pdo->exec("CREATE TABLE IF NOT EXISTS today_food (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
             category VARCHAR(50) NOT NULL DEFAULT '家常菜',
-            difficulty TINYINT DEFAULT 1 COMMENT '1简单 2中等 3困难',
-            time_min INT DEFAULT 30 COMMENT '耗时分钟',
+            difficulty TINYINT DEFAULT 1,
+            time_min INT DEFAULT 30,
             recipe_url VARCHAR(500) DEFAULT '',
             ingredients VARCHAR(500) DEFAULT '',
             is_takeout TINYINT DEFAULT 1,
@@ -45,14 +41,26 @@ class TodayDoService
             type VARCHAR(20) NOT NULL DEFAULT 'tv',
             platform VARCHAR(100) NOT NULL DEFAULT '',
             status VARCHAR(50) DEFAULT '',
-            cast TEXT,
+            `cast` TEXT,
             description TEXT,
             rating DECIMAL(2,1) DEFAULT 0,
-            air_date VARCHAR(20) DEFAULT '' COMMENT '上映/开播日期',
+            air_date VARCHAR(20) DEFAULT '',
             year INT DEFAULT 0,
             tags VARCHAR(200) DEFAULT '',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        // 老表结构升级：如果 air_date 列不存在则重建
+        try {
+            $hasCol = $pdo->query("SHOW COLUMNS FROM today_shows LIKE 'air_date'")->fetch();
+            if (!$hasCol) {
+                $pdo->exec("DROP TABLE today_food");
+                $pdo->exec("DROP TABLE today_places");
+                $pdo->exec("DROP TABLE today_shows");
+                self::initTables();
+                return;
+            }
+        } catch (\Throwable $e) {}
 
         self::seedIfEmpty($pdo);
     }
