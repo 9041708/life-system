@@ -9,7 +9,11 @@ class TodayDoService
     {
         $pdo = Database::getConnection();
 
-        $pdo->exec("CREATE TABLE IF NOT EXISTS today_food (
+        $pdo->exec("DROP TABLE IF EXISTS today_food");
+        $pdo->exec("DROP TABLE IF EXISTS today_places");
+        $pdo->exec("DROP TABLE IF EXISTS today_shows");
+
+        $pdo->exec("CREATE TABLE today_food (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
             category VARCHAR(50) NOT NULL DEFAULT '家常菜',
