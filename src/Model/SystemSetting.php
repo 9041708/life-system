@@ -55,7 +55,13 @@ class SystemSetting
                 $row['bind_qr_expires_minutes'] = 10;
             }
             if (!array_key_exists('bind_qr_text', $row)) {
-                $row['bind_qr_text'] = '打开微信小程序“SanS三石记账”，进入绑定页面扫码完成绑定。';
+                $row['bind_qr_text'] = '打开微信小程序"SanS三石记账"，进入绑定页面扫码完成绑定。';
+            }
+            if (!array_key_exists('admin_contact', $row)) {
+                $row['admin_contact'] = null;
+            }
+            if (!array_key_exists('admin_qrcode_image', $row)) {
+                $row['admin_qrcode_image'] = null;
             }
             if (!array_key_exists('license_email', $row)) {
                 $row['license_email'] = null;

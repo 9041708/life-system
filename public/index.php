@@ -92,6 +92,10 @@ $pageTitles = [
     'nav-my' => '我的导航',
     'nav-config' => '导航配置',
     'nav-detail' => '导航详情',
+    // 正念
+    'mindfulness-checkin' => '正念签到',
+    'mindfulness-treasure' => '正念树洞',
+    'mindfulness-config' => '正念配置',
 ];
 
 if (isset($pageTitles[$route])) {
@@ -638,6 +642,24 @@ switch ($route) {
         break;
     case 'nav-api':
         $controller = new \App\Controller\NavController();
+        $controller->api();
+        break;
+
+    // 正念
+    case 'mindfulness-checkin':
+        $controller = new \App\Controller\MindfulnessController();
+        $controller->checkin();
+        break;
+    case 'mindfulness-treasure':
+        $controller = new \App\Controller\MindfulnessController();
+        $controller->treasure();
+        break;
+    case 'mindfulness-config':
+        $controller = new \App\Controller\MindfulnessController();
+        $controller->config();
+        break;
+    case 'mindfulness-api':
+        $controller = new \App\Controller\MindfulnessController();
         $controller->api();
         break;
 

@@ -13,6 +13,9 @@
         <li class="nav-item">
 		<a class="nav-link <?= $tab === 'ledgers' ? 'active' : '' ?>" href="/public/index.php?route=settings&tab=ledgers">账本管理</a>
         </li>
+    <li class="nav-item">
+		<a class="nav-link <?= $tab === 'ai_service' ? 'active' : '' ?>" href="/public/index.php?route=settings&tab=ai_service">AI服务</a>
+    </li>
     <?php if ($isAdmin): ?>
         <li class="nav-item">
 			<a class="nav-link <?= $tab === 'system' ? 'active' : '' ?>" href="/public/index.php?route=settings&tab=system">系统参数</a>
@@ -1064,6 +1067,106 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
             });
         </script>
     <?php endif; ?>
+<?php elseif ($tab === 'ai_service'): ?>
+    <?php
+    $aiQuotaData = $aiQuotaData ?? ['system_quota'=>10,'system_used'=>0,'purchased_quota'=>0,'purchased_used'=>0];
+    $aiRemaining = max(0, (int)$aiQuotaData['system_quota'] - (int)$aiQuotaData['system_used']) + max(0, (int)$aiQuotaData['purchased_quota'] - (int)$aiQuotaData['purchased_used']);
+    $pricingPlansData = $pricingPlansData ?? [];
+    ?>
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <h3 class="h6 mb-3">🤖 AI服务</h3>
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <div class="border rounded-3 p-3 text-center" style="background:rgba(102,126,234,0.06)">
+                        <div class="small text-muted mb-1">系统配额</div>
+                        <div class="fs-4 fw-bold"><?= (int)$aiQuotaData['system_quota'] ?></div>
+                        <div class="small text-muted">已用 <?= (int)$aiQuotaData['system_used'] ?></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded-3 p-3 text-center" style="background:rgba(34,197,94,0.06)">
+                        <div class="small text-muted mb-1">购买配额</div>
+                        <div class="fs-4 fw-bold"><?= (int)$aiQuotaData['purchased_quota'] ?></div>
+                        <div class="small text-muted">已用 <?= (int)$aiQuotaData['purchased_used'] ?></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded-3 p-3 text-center" style="background:rgba(245,158,11,0.06)">
+                        <div class="small text-muted mb-1">剩余总次数</div>
+                        <div class="fs-4 fw-bold" style="color:<?= $aiRemaining > 0 ? '#22c55e' : '#ef4444' ?>"><?= $aiRemaining ?></div>
+                        <div class="small text-muted"><?= $aiRemaining > 0 ? '可用' : '已用完' ?></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded-3 p-3 text-center" style="background:rgba(148,163,184,0.08)">
+                        <div class="small text-muted mb-1">论坛助手</div>
+                        <div class="small fw-semibold"><?= $aiRemaining > 0 ? '可用' : '已用完' ?></div>
+                        <div class="small text-muted">AI回帖/回复均消耗1次</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="small text-muted mb-3">AI次数用于树洞AI回复和论坛助手AI回帖。系统配置模式下每次消耗1次，自定义AI配置不消耗次数。</div>
+
+            <?php if (!empty($pricingPlansData)): ?>
+            <h6 class="fw-semibold mb-3">💰 购买套餐</h6>
+            <div class="row g-3 mb-3">
+                <?php foreach ($pricingPlansData as $plan): ?>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3 text-center h-100" style="border-color:rgba(102,126,234,0.3)!important;transition:all 0.2s">
+                        <div class="fw-semibold mb-1"><?= htmlspecialchars($plan['name']) ?></div>
+                        <div class="text-muted small mb-2"><?= (int)$plan['quota'] ?> 次</div>
+                        <div>
+                            <span class="fs-4 fw-bold" style="color:#667eea">¥<?= number_format((float)$plan['price'], 2) ?></span>
+                            <?php if ((float)$plan['original_price'] > (float)$plan['price']): ?>
+                            <span class="text-muted small text-decoration-line-through ms-1">¥<?= number_format((float)$plan['original_price'], 2) ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <?php
+                        $discount = 0;
+                        if ((float)$plan['original_price'] > 0 && (float)$plan['price'] < (float)$plan['original_price']) {
+                            $discount = round((float)$plan['price'] / (float)$plan['original_price'] * 10, 1);
+                        }
+                        ?>
+                        <?php if ($discount > 0): ?>
+                        <div class="mt-1"><span class="badge bg-danger" style="font-size:0.65rem"><?= $discount ?>折</span></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="text-center">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#contactAdminModal">联系管理员购买</button>
+            </div>
+            <?php else: ?>
+            <div class="text-center text-muted py-3">暂无可购买的套餐</div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="modal fade" id="contactAdminModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2 px-3">
+                    <h6 class="modal-title">联系管理员</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <?php if (!empty($system['admin_qrcode_image'])): ?>
+                    <div class="mb-3">
+                        <img src="/uploads/<?= htmlspecialchars($system['admin_qrcode_image']) ?>" style="max-width:200px;border-radius:8px;" alt="收款码">
+                    </div>
+                    <?php endif; ?>
+                    <?php if (!empty($system['admin_contact'])): ?>
+                    <div class="small" style="white-space:pre-wrap;line-height:1.8"><?= nl2br(htmlspecialchars($system['admin_contact'])) ?></div>
+                    <?php else: ?>
+                    <div class="text-muted small">管理员暂未配置联系方式，请通过其他渠道联系。</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 <?php elseif ($tab === 'system' && $isAdmin): ?>
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
@@ -1114,6 +1217,19 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
                     <label class="form-label small">绑定二维码提示文案</label>
                     <textarea name="bind_qr_text" class="form-control form-control-sm" rows="3" placeholder="扫码绑定时展示的说明文字，可告诉用户如何在小程序中完成绑定。"><?= htmlspecialchars($system['bind_qr_text'] ?? '') ?></textarea>
                 </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label small">管理员联系方式（AI服务购买联系）</label>
+                    <textarea name="admin_contact" class="form-control form-control-sm" rows="3" placeholder="如：微信：admin123&#10;QQ群：123456&#10;邮箱：admin@example.com"><?= htmlspecialchars($system['admin_contact'] ?? '') ?></textarea>
+                    <div class="form-text small">用户在"AI服务"页面点击"联系管理员"时显示此内容，支持多行。</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label small">管理员收款码图片</label>
+                    <input type="file" name="admin_qrcode_image" accept="image/*" class="form-control form-control-sm mb-1">
+                    <?php if (!empty($system['admin_qrcode_image'])): ?>
+                    <div class="mt-1"><img src="/uploads/<?= htmlspecialchars($system['admin_qrcode_image']) ?>" style="max-width:120px;border-radius:6px;"></div>
+                    <?php endif; ?>
+                    <div class="form-text small">可上传收款码图片，用户联系管理员弹窗中会展示。</div>
+                </div>
                 <div class="col-12">
                     <hr class="my-2">
                     <h6 class="small fw-bold mb-2">🖼️ PC 端背景图（毛玻璃效果）</h6>
@@ -1128,7 +1244,7 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
                     <div class="d-flex flex-wrap gap-2">
                         <?php foreach ($bgImages as $bg): ?>
                             <div class="position-relative border rounded p-1 <?= ($system['bg_image_path'] ?? '') === $bg['file_path'] ? 'border-primary' : '' ?>" style="background:rgba(255,255,255,0.5);">
-                                <img src="/<?= htmlspecialchars($bg['file_path']) ?>" alt="背景图" style="width:100px;height:60px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="this.form.bg_image_select.value='<?= htmlspecialchars($bg['file_path']) ?>'; this.form.submit();">
+                                <img src="/uploads/<?= htmlspecialchars($bg['file_path']) ?>" alt="背景图" style="width:100px;height:60px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="this.form.bg_image_select.value='<?= htmlspecialchars($bg['file_path']) ?>'; this.form.submit();">
                                 <button type="submit" name="bg_image_delete" value="<?= htmlspecialchars($bg['file_path']) ?>" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 py-0 px-1" style="font-size:10px;line-height:1;" onclick="return confirm('确认删除此背景图？服务器文件将同步删除。');">✕</button>
                             </div>
                         <?php endforeach; ?>
@@ -1809,6 +1925,181 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
             <div class="small text-muted mt-2">提示：无法禁用或删除当前登录账号，以避免误操作。</div>
         </div>
     </div>
+
+    <div class="card border-0 shadow-sm mt-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h6 mb-0">🤖 AI次数管理</h3>
+                <button type="button" class="btn btn-sm btn-primary" onclick="openGrantAiModal()">发放次数</button>
+            </div>
+            <div class="form-text small mb-2">管理员不受AI次数限制。此处可为用户发放/修改AI使用次数，以及管理套餐定价。</div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light"><tr><th>用户ID</th><th>用户名</th><th>系统配额</th><th>已用</th><th>购买配额</th><th>已用</th><th>剩余</th><th class="text-center">操作</th></tr></thead>
+                    <tbody id="aiQuotaTableBody">
+                    <tr><td colspan="8" class="text-center text-muted small py-3">点击"加载列表"查看</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="loadAiQuotas()">加载列表</button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h6 mb-0">💰 AI套餐定价</h3>
+                <button type="button" class="btn btn-sm btn-primary" onclick="openPlanModal()">+ 添加套餐</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light"><tr><th>名称</th><th>次数</th><th>原价</th><th>售价</th><th>排序</th><th>状态</th><th class="text-center">操作</th></tr></thead>
+                    <tbody>
+                    <?php if (empty($pricingPlansAdmin)): ?>
+                        <tr><td colspan="7" class="text-center text-muted small">暂无套餐</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($pricingPlansAdmin as $plan): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($plan['name']) ?></td>
+                            <td><?= (int)$plan['quota'] ?></td>
+                            <td>¥<?= number_format((float)$plan['original_price'], 2) ?></td>
+                            <td>¥<?= number_format((float)$plan['price'], 2) ?></td>
+                            <td><?= (int)$plan['sort_order'] ?></td>
+                            <td><?= (int)$plan['enabled'] ? '<span class="badge bg-success">启用</span>' : '<span class="badge bg-secondary">禁用</span>' ?></td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" data-plan="<?= htmlspecialchars(json_encode($plan, JSON_UNESCAPED_UNICODE)) ?>" onclick="editPlan(JSON.parse(this.getAttribute('data-plan')))">编辑</button>
+                                <form method="post" class="d-inline" onsubmit="return confirm('确定删除？')">
+                                    <input type="hidden" name="action" value="ai_plan_delete">
+                                    <input type="hidden" name="plan_id" value="<?= (int)$plan['id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">删除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="grantAiModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h6 class="modal-title">发放AI次数</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form method="post" id="grantAiForm">
+                        <input type="hidden" name="action" value="ai_quota_grant">
+                        <div class="mb-3">
+                            <label class="form-label small">用户ID</label>
+                            <input type="number" name="target_user_id" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">系统配额</label>
+                            <input type="number" name="system_quota" class="form-control form-control-sm" value="10">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">购买配额（增加）</label>
+                            <input type="number" name="purchased_quota" class="form-control form-control-sm" value="0">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" form="grantAiForm" class="btn btn-sm btn-primary">确认发放</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="planModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post">
+                    <input type="hidden" name="action" value="ai_plan_save">
+                    <input type="hidden" name="plan_id" id="planId" value="0">
+                    <div class="modal-header"><h6 class="modal-title" id="planModalTitle">添加套餐</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        <div class="mb-2"><label class="form-label small">套餐名称</label><input type="text" name="plan_name" id="planName" class="form-control form-control-sm" required></div>
+                        <div class="mb-2"><label class="form-label small">次数</label><input type="number" name="plan_quota" id="planQuota" class="form-control form-control-sm" required></div>
+                        <div class="mb-2"><label class="form-label small">原价</label><input type="number" name="plan_original_price" id="planOriginalPrice" class="form-control form-control-sm" step="0.01" required></div>
+                        <div class="mb-2"><label class="form-label small">售价</label><input type="number" name="plan_price" id="planPrice" class="form-control form-control-sm" step="0.01" required></div>
+                        <div class="mb-2"><label class="form-label small">排序</label><input type="number" name="plan_sort" id="planSort" class="form-control form-control-sm" value="0"></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="plan_enabled" id="planEnabled" value="1" checked><label class="form-check-label small" for="planEnabled">启用</label></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-sm btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function openGrantAiModal() { new bootstrap.Modal(document.getElementById('grantAiModal')).show(); }
+    function loadAiQuotas() {
+        fetch('/public/index.php?route=settings&action=get_ai_quotas', { headers: {'X-Requested-With':'XMLHttpRequest'} })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) { alert(d.error || '加载失败'); return; }
+            var html = '';
+            if (!d.list || d.list.length === 0) { html = '<tr><td colspan="8" class="text-center text-muted small">暂无数据</td></tr>'; }
+            else {
+                d.list.forEach(function(q) {
+                    var rem = Math.max(0, q.system_quota - q.system_used) + Math.max(0, q.purchased_quota - q.purchased_used);
+                    html += '<tr>';
+                    html += '<td>' + q.user_id + '</td>';
+                    html += '<td>' + (q.username || q.nickname || '-') + '</td>';
+                    html += '<td>' + q.system_quota + '</td>';
+                    html += '<td>' + q.system_used + '</td>';
+                    html += '<td>' + q.purchased_quota + '</td>';
+                    html += '<td>' + q.purchased_used + '</td>';
+                    html += '<td><strong>' + rem + '</strong></td>';
+                    html += '<td class="text-center"><button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="editQuota(' + q.user_id + ',' + q.system_quota + ',' + q.purchased_quota + ')">修改</button></td>';
+                    html += '</tr>';
+                });
+            }
+            document.getElementById('aiQuotaTableBody').innerHTML = html;
+        });
+    }
+    function editQuota(uid, sq, pq) {
+        var nsq = prompt('系统配额（当前' + sq + '）', sq);
+        if (nsq === null) return;
+        var npq = prompt('购买配额（当前' + pq + '）', pq);
+        if (npq === null) return;
+        var fd = new FormData();
+        fd.append('action', 'ai_quota_set');
+        fd.append('target_user_id', uid);
+        fd.append('system_quota', nsq);
+        fd.append('purchased_quota', npq);
+        fetch('/public/index.php?route=settings', { method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd })
+        .then(function(r) { return r.json(); })
+        .then(function(d) { if (d.ok) { alert('已更新'); loadAiQuotas(); } else alert(d.error || '失败'); });
+    }
+    function openPlanModal() {
+        document.getElementById('planId').value = '0';
+        document.getElementById('planName').value = '';
+        document.getElementById('planQuota').value = '';
+        document.getElementById('planOriginalPrice').value = '';
+        document.getElementById('planPrice').value = '';
+        document.getElementById('planSort').value = '0';
+        document.getElementById('planEnabled').checked = true;
+        document.getElementById('planModalTitle').textContent = '添加套餐';
+        new bootstrap.Modal(document.getElementById('planModal')).show();
+    }
+    function editPlan(p) {
+        document.getElementById('planId').value = p.id;
+        document.getElementById('planName').value = p.name;
+        document.getElementById('planQuota').value = p.quota;
+        document.getElementById('planOriginalPrice').value = p.original_price;
+        document.getElementById('planPrice').value = p.price;
+        document.getElementById('planSort').value = p.sort_order;
+        document.getElementById('planEnabled').checked = !!parseInt(p.enabled);
+        document.getElementById('planModalTitle').textContent = '编辑套餐';
+        new bootstrap.Modal(document.getElementById('planModal')).show();
+    }
+    </script>
 <?php else: ?>
     <div class="card border-0 shadow-sm">
         <div class="card-body">

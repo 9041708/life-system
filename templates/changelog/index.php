@@ -13,7 +13,17 @@ $appVersion = Config::get('app.version', 'v2.0.0');
         </div>
 
         <div id="changelog-latest">
-        <h3 class="h6">v2.1.5 <span class="badge bg-success ms-1">最新</span></h3>
+        <h3 class="h6">v2.2.0 <span class="badge bg-success ms-1">最新</span></h3>
+        <ul class="small mb-3">
+            <li><strong>新增「正念」模块：</strong>全新菜单组💊正念，包含签到、树洞、配置三个页面。签到支持日历打卡、补录正负念、连续签到奖励、分数颜色分级显示。树洞支持提交心事并由AI暖心回复，自动判断正负能量并加减分，连续负面自动提醒。配置页面支持自定义正负念项目、签到奖励规则、AI模式切换。</li>
+            <li><strong>AI次数管理系统：</strong>新增AI配额统一管理（树洞+论坛助手共用），系统配置模式限次使用，自定义API不限。管理员可在用户管理页面发放/修改用户AI次数。新增AI套餐定价管理，支持多套餐配置（原价+折扣价显示）。用户个人中心新增「AI服务」tab，显示剩余次数和购买入口，联系管理员弹窗展示联系方式和收款码。</li>
+            <li><strong>论坛助手AI配额：</strong>AI回帖现在消耗AI次数（1次/条），次数用完需购买或切换自定义配置。管理员也走购买流程，不再豁免。</li>
+            <li><strong>页面性能优化：</strong>bootstrap迁移检查加文件缓存标记，避免每次请求重复执行SHOW TABLES/COLUMNS。Service Worker扩展缓存范围（CSS/JS/字体/图片），assets和uploads目录添加浏览器缓存头（7天/30天）。日夜切换改为即时CSS切换+后台同步，禁用按钮防重复点击。</li>
+            <li><strong>背景图修复：</strong>系统设置中已上传背景图显示路径修复（补全/uploads/前缀），解决裂图问题。</li>
+            <li><strong>今天干嘛异常修复：</strong>种子数据INSERT循环添加异常处理，单条数据失败不影响整体迁移。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.5</h3>
         <ul class="small mb-3">
             <li><strong>@提及回复修复：</strong>通知解析从 `<li>` 改为 `<dd class="ntc_body">` 匹配，修复了一直返回 0 的问题。新增多 URL 尝试（&type=at、&inajax=1 等），确保不同 Discuz 版本兼容。@回复基于帖子内容和坛友回复生成上下文感知回复。</li>
             <li><strong>彩蛋每日独立任务：</strong>claimDailyEggs() 不再依赖回帖触发，遍历所有已回复帖子逐个访问页面检测并领取彩蛋。isEligibleForEgg() 仅校验当日是否已领取同帖。每轮最多扫描 15 个帖子，每天上限 10 次。</li>

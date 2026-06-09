@@ -190,6 +190,13 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
                 </div>
             </div>
 
+            <!-- 正念 -->
+            <div class="sidebar-section sidebar-flyout-trigger" id="flyout-mindfulness">
+                <div class="sidebar-section-header">
+                    <span>💊 正念</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
+                </div>
+            </div>
+
             <!-- 工具箱 -->
             <div class="sidebar-section sidebar-flyout-trigger" id="flyout-toolbox">
                 <div class="sidebar-section-header">
@@ -293,6 +300,13 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
     <div class="sidebar-flyout" id="flyout-resume-menu">
         <a href="/public/index.php?route=resume-preview" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>在线预览</a>
         <a href="/public/index.php?route=resume-builder" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>简历配置</a>
+    </div>
+
+    <!-- 正念 -->
+    <div class="sidebar-flyout" id="flyout-mindfulness-menu">
+        <a href="/public/index.php?route=mindfulness-checkin" class="flyout-item"><span class="menu-icon">💊</span>签到</a>
+        <a href="/public/index.php?route=mindfulness-treasure" class="flyout-item"><span class="menu-icon">🕳️</span>树洞</a>
+        <a href="/public/index.php?route=mindfulness-config" class="flyout-item"><span class="menu-icon">⚙️</span>配置</a>
     </div>
 
     <!-- 工具箱 -->
@@ -620,38 +634,31 @@ document.addEventListener('DOMContentLoaded', function () {
     var themeBtn = document.getElementById('themeToggleBtn');
     if (themeBtn) {
         themeBtn.addEventListener('click', function () {
+            if (themeBtn.disabled) return;
+            themeBtn.disabled = true;
             var current = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+            var nextMode = current === 'dark' ? 'light' : 'dark';
+            document.body.classList.remove('theme-light', 'theme-dark');
+            document.body.classList.add(nextMode === 'dark' ? 'theme-dark' : 'theme-light');
+            themeBtn.textContent = nextMode === 'dark' ? '☀' : '🌙';
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '/public/index.php?route=theme-toggle', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.timeout = 5000;
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        try {
-                            var data = JSON.parse(xhr.responseText || '{}');
-                            var mode = data.mode === 'dark' ? 'dark' : 'light';
-                            document.body.classList.remove('theme-light', 'theme-dark');
-                            document.body.classList.add(mode === 'dark' ? 'theme-dark' : 'theme-light');
-
-                            if (mode === 'dark') {
-                                themeBtn.textContent = '☀';
-                                themeBtn.title = '切换为白天模式';
-                                themeBtn.setAttribute('aria-label', '切换为白天模式');
-                            } else {
-                                themeBtn.textContent = '🌙';
-                                themeBtn.title = '切换为夜间模式';
-                                themeBtn.setAttribute('aria-label', '切换为夜间模式');
-                            }
-                        } catch (e) {
-                            // 如果解析失败，则回退为整页刷新
-                            window.location.href = '/public/index.php?route=theme-toggle';
-                        }
-                    } else {
-                        // 请求失败也回退为整页刷新
-                        window.location.href = '/public/index.php?route=theme-toggle';
+                    themeBtn.disabled = false;
+                    if (xhr.status !== 200) {
+                        document.body.classList.remove('theme-light', 'theme-dark');
+                        document.body.classList.add(current === 'dark' ? 'theme-dark' : 'theme-light');
+                        themeBtn.textContent = current === 'dark' ? '☀' : '🌙';
                     }
                 }
+            };
+            xhr.ontimeout = function () {
+                themeBtn.disabled = false;
+                window.location.reload();
             };
             xhr.send('current=' + encodeURIComponent(current));
         });

@@ -560,6 +560,23 @@ class SettingsController
                     bindQrText: $bindText,
                     bgImagePath: $bgImagePath,
                 );
+
+                    $adminContact = trim($_POST['admin_contact'] ?? '');
+                    $adminQrImagePath = $system['admin_qrcode_image'] ?? null;
+                    if (!empty($_FILES['admin_qrcode_image']) && $_FILES['admin_qrcode_image']['error'] === UPLOAD_ERR_OK) {
+                        $newQrPath = \App\Service\Upload::saveBgImage($_FILES['admin_qrcode_image']);
+                        if ($newQrPath !== null) {
+                            $adminQrImagePath = $newQrPath;
+                        }
+                    }
+                    $pdoAC = \App\Service\Database::getConnection();
+                    try {
+                        $pdoAC->exec("ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS admin_contact TEXT DEFAULT NULL");
+                        $pdoAC->exec("ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS admin_qrcode_image VARCHAR(500) DEFAULT NULL");
+                    } catch (\Throwable $e) {}
+                    $stmtAC = $pdoAC->prepare("UPDATE system_settings SET admin_contact = ?, admin_qrcode_image = ? WHERE id = 1");
+                    $stmtAC->execute([$adminContact ?: null, $adminQrImagePath]);
+
                     $success = '系统参数已保存';
                     // 重新加载系统设置，避免页面仍显示旧值
                     $system = SystemSetting::get();
@@ -844,6 +861,52 @@ class SettingsController
                     }
                     $success = '已为该用户解除微信绑定，如需继续在小程序使用，请提醒其重新登录或扫码绑定。';
                 }
+            } elseif ($isAdmin && $action === 'ai_quota_grant') {
+                $tab = 'users';
+                $targetUid = (int)($_POST['target_user_id'] ?? 0);
+                $target = User::findById($targetUid);
+                if (!$target) {
+                    $error = '用户不存在';
+                } else {
+                    $sysQuota = (int)($_POST['system_quota'] ?? 10);
+                    $purchasedAdd = (int)($_POST['purchased_quota'] ?? 0);
+                    \App\Model\AiQuota::adminSetQuota($targetUid, $sysQuota, 0);
+                    if ($purchasedAdd > 0) {
+                        \App\Model\AiQuota::adminGrant($targetUid, $purchasedAdd);
+                    }
+                    $success = "已为用户 {$targetUid} 设置AI配额（系统配额:{$sysQuota}，增加购买配额:{$purchasedAdd}）";
+                }
+            } elseif ($isAdmin && $action === 'ai_quota_set') {
+                $tab = 'users';
+                $targetUid = (int)($_POST['target_user_id'] ?? 0);
+                $sysQuota = (int)($_POST['system_quota'] ?? 0);
+                $purchasedQuota = (int)($_POST['purchased_quota'] ?? 0);
+                \App\Model\AiQuota::adminSetQuota($targetUid, $sysQuota, $purchasedQuota);
+                $success = '已更新AI配额';
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                    while (ob_get_level()) ob_end_clean();
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['ok' => true, 'message' => '已更新'], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+            } elseif ($isAdmin && $action === 'ai_plan_save') {
+                $tab = 'users';
+                $planId = (int)($_POST['plan_id'] ?? 0);
+                $planData = [
+                    'name' => trim($_POST['plan_name'] ?? ''),
+                    'quota' => (int)($_POST['plan_quota'] ?? 0),
+                    'original_price' => (float)($_POST['plan_original_price'] ?? 0),
+                    'price' => (float)($_POST['plan_price'] ?? 0),
+                    'sort_order' => (int)($_POST['plan_sort'] ?? 0),
+                    'enabled' => isset($_POST['plan_enabled']) ? 1 : 0,
+                ];
+                \App\Model\AiQuota::savePricingPlan($planId, $planData);
+                $success = $planId > 0 ? '套餐已更新' : '套餐已添加';
+            } elseif ($isAdmin && $action === 'ai_plan_delete') {
+                $tab = 'users';
+                $planId = (int)($_POST['plan_id'] ?? 0);
+                \App\Model\AiQuota::deletePricingPlan($planId);
+                $success = '套餐已删除';
             } elseif ($action === 'self_generate_bind_qr') {
                 // 普通用户在个人信息页生成自己的绑定二维码
                 $tab = 'profile';
@@ -1260,6 +1323,11 @@ class SettingsController
             $this->json(['success' => true, 'count' => $count]);
             exit;
         }
+        if ($isAdmin && $_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'get_ai_quotas') {
+            $list = \App\Model\AiQuota::listAll();
+            $this->json(['ok' => true, 'list' => $list]);
+            exit;
+        }
         // 查询背景图历史记录
         $pdo = \App\Service\Database::getConnection();
         $bgImages = $pdo->query("SELECT id, file_path, created_at FROM bg_images ORDER BY created_at DESC LIMIT 20")->fetchAll(\PDO::FETCH_ASSOC);
@@ -1317,6 +1385,9 @@ class SettingsController
             'newApiToken' => $newApiToken,
             'bgImages' => $bgImages,
             'miniapps' => $pdo->query("SELECT * FROM miniapps ORDER BY sort_order, id")->fetchAll(\PDO::FETCH_ASSOC) ?: [],
+            'pricingPlansAdmin' => \App\Model\AiQuota::getAllPricingPlans(),
+            'aiQuotaData' => \App\Model\AiQuota::get($userId),
+            'pricingPlansData' => \App\Model\AiQuota::getPricingPlans(),
         ]);
     }
 

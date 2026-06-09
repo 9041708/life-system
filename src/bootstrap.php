@@ -32,6 +32,8 @@ Config::init(__DIR__ . '/../config/config.php');
 // 自动数据库迁移
 try {
 	$pdo = \App\Service\Database::getConnection();
+	$existingMigrationFlag = __DIR__ . '/../runtime/existing_migrated.flag';
+	if (!file_exists($existingMigrationFlag)) {
 	$col1 = $pdo->query("SHOW COLUMNS FROM forum_accounts LIKE 'last_reply'")->fetch();
 	if (!$col1) {
 		$pdo->exec("ALTER TABLE forum_accounts ADD COLUMN last_reply DATETIME DEFAULT NULL COMMENT '上次自动回帖时间' AFTER last_notice_check");
@@ -87,10 +89,104 @@ try {
 	if (!$col12) {
 		$pdo->exec("ALTER TABLE forum_accounts ADD COLUMN enable_bonus TINYINT(1) DEFAULT 0 COMMENT '自动领取彩蛋' AFTER enable_follow_up");
 	}
+	@file_put_contents($existingMigrationFlag, date('Y-m-d H:i:s'));
+	}
 
 	try {
 		\App\Service\TodayDoService::initTables();
 	} catch (\Throwable $e) {}
+
+	// 正念模块表（用文件缓存标记避免每次请求都检查）
+	$migrationFlag = __DIR__ . '/../runtime/mindfulness_migrated.flag';
+	if (!file_exists($migrationFlag)) {
+		$tblMF1 = $pdo->query("SHOW TABLES LIKE 'mindfulness_checkins'")->fetch();
+		if (!$tblMF1) {
+			$pdo->exec("CREATE TABLE IF NOT EXISTS mindfulness_checkins (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL,
+			checkin_date DATE NOT NULL,
+			score_change DECIMAL(5,1) DEFAULT 0.3,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE KEY uk_user_date (user_id, checkin_date),
+			INDEX idx_user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='正念签到记录'");
+	}
+	$tblMF2 = $pdo->query("SHOW TABLES LIKE 'mindfulness_daily_records'")->fetch();
+	if (!$tblMF2) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS mindfulness_daily_records (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL,
+			record_date DATE NOT NULL,
+			type ENUM('positive','negative') NOT NULL,
+			item_name VARCHAR(100) NOT NULL,
+			score_change DECIMAL(5,1) NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			INDEX idx_user_date (user_id, record_date)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='正念每日正负念记录'");
+	}
+	$tblMF3 = $pdo->query("SHOW TABLES LIKE 'mindfulness_treasures'")->fetch();
+	if (!$tblMF3) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS mindfulness_treasures (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL,
+			content TEXT NOT NULL,
+			ai_reply TEXT,
+			sentiment ENUM('positive','negative','neutral') DEFAULT 'neutral',
+			score_change DECIMAL(5,1) DEFAULT 0,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			INDEX idx_user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='正念树洞心事'");
+	}
+	$tblMF4 = $pdo->query("SHOW TABLES LIKE 'mindfulness_configs'")->fetch();
+	if (!$tblMF4) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS mindfulness_configs (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL UNIQUE,
+			initial_score DECIMAL(5,1) DEFAULT 80.0,
+			checkin_score DECIMAL(5,1) DEFAULT 0.3,
+			positive_items JSON,
+			negative_items JSON,
+			bonus_rules JSON,
+			ai_mode ENUM('system','custom') DEFAULT 'system',
+			custom_api_url VARCHAR(500) DEFAULT '',
+			custom_api_key VARCHAR(200) DEFAULT '',
+			custom_model VARCHAR(100) DEFAULT '',
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='正念用户配置'");
+	}
+	$tblMF5 = $pdo->query("SHOW TABLES LIKE 'user_ai_quotas'")->fetch();
+	if (!$tblMF5) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS user_ai_quotas (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL UNIQUE,
+			system_quota INT DEFAULT 10,
+			system_used INT DEFAULT 0,
+			purchased_quota INT DEFAULT 0,
+			purchased_used INT DEFAULT 0,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户AI使用次数'");
+	}
+	$tblMF6 = $pdo->query("SHOW TABLES LIKE 'ai_pricing_plans'")->fetch();
+	if (!$tblMF6) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS ai_pricing_plans (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			name VARCHAR(50) NOT NULL,
+			quota INT NOT NULL,
+			original_price DECIMAL(10,2) NOT NULL,
+			price DECIMAL(10,2) NOT NULL,
+			sort_order INT DEFAULT 0,
+			enabled TINYINT DEFAULT 1,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI套餐定价'");
+		$pdo->exec("INSERT INTO ai_pricing_plans (name, quota, original_price, price, sort_order) VALUES
+			('体验包', 10, 10.00, 5.00, 1),
+			('标准包', 50, 40.00, 25.00, 2),
+			('高级包', 200, 120.00, 68.00, 3)");
+	}
+
+		@file_put_contents($migrationFlag, date('Y-m-d H:i:s'));
+	}
 
 } catch (\Throwable $e) {
 	// 静默失败，不影响正常请求

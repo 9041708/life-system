@@ -8,6 +8,7 @@ use App\Model\PasswordVault;
 use App\Model\EasyTodoTask;
 use App\Model\ForumAccount;
 use App\Model\ForumActionLog;
+use App\Model\AiQuota;
 use App\Service\TodayDoService;
 
 class ToolboxController
@@ -460,7 +461,11 @@ class ToolboxController
 
             // AI 生成回帖内容
             $aiFlag = $account['ai_reply_flag'] ?? '[AI回帖]';
-            
+
+            if (!AiQuota::hasQuota($userId)) {
+                $this->json(['ok' => false, 'error' => 'AI次数已用完，请在"正念配置"页面购买套餐或联系管理员']);
+            }
+
             $message = '';
             $threadContent = $service->getThreadContent($tid);
             if ($threadContent['ok']) {
@@ -476,6 +481,8 @@ class ToolboxController
                 $this->json(['ok' => false, 'error' => 'AI回复生成失败，请稍后重试']);
             }
             $message .= "\n" . $aiFlag;
+
+            AiQuota::consume($userId);
 
             // 回帖
             $result = $service->reply($tid, $message);

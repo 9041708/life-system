@@ -67,9 +67,9 @@ class TodayDoService
     public static function forceReseed(): void
     {
         $pdo = Database::getConnection();
-        $pdo->exec("TRUNCATE TABLE today_food");
-        $pdo->exec("TRUNCATE TABLE today_places");
-        $pdo->exec("TRUNCATE TABLE today_shows");
+        try { $pdo->exec("TRUNCATE TABLE today_food"); } catch (\Throwable $e) {}
+        try { $pdo->exec("TRUNCATE TABLE today_places"); } catch (\Throwable $e) {}
+        try { $pdo->exec("TRUNCATE TABLE today_shows"); } catch (\Throwable $e) {}
         self::seedData($pdo);
     }
 
@@ -171,7 +171,7 @@ class TodayDoService
         ];
 
         $stmt = $pdo->prepare("INSERT INTO today_food (name,category,difficulty,time_min,recipe_url,ingredients,is_takeout,tags) VALUES (?,?,?,?,?,?,?,?)");
-        foreach ($foods as $f) $stmt->execute($f);
+        foreach ($foods as $f) { try { $stmt->execute($f); } catch (\Throwable $e) {} }
         }
 
         $places = [
@@ -574,7 +574,7 @@ class TodayDoService
         ];
 
         $stmt = $pdo->prepare("INSERT INTO today_places (name,city,province,is_free,ticket_price,description,tips,category) VALUES (?,?,?,?,?,?,?,?)");
-        foreach ($places as $p) $stmt->execute($p);
+        foreach ($places as $p) { try { $stmt->execute($p); } catch (\Throwable $e) {} }
 
         if ($showCount < 40) {
         $shows = [
@@ -646,7 +646,7 @@ class TodayDoService
         ];
 
         $stmt = $pdo->prepare("INSERT INTO today_shows (name,type,platform,`status`,`cast`,description,rating,air_date,year,tags) VALUES (?,?,?,?,?,?,?,?,?,?)");
-        foreach ($shows as $s) $stmt->execute($s);
+        foreach ($shows as $s) { try { $stmt->execute($s); } catch (\Throwable $e) {} }
         }
     }
 
