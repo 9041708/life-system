@@ -1,24 +1,22 @@
-# 配置文件（含数据库密码等敏感信息）
+# === 密钥文件 — 绝不提交 ===
 config/config.php
-
-# 密钥文件
 .env
 .env.*
 
-# 用户上传文件
+# === 加密数据库备份 ===
+backup/
+
+# === 用户上传文件 ===
 uploads/
 
-# 运行时 / 日志 / 锁文件
+# === 运行时 / 日志 / 锁文件 ===
 runtime/
 logs/
 *.log
 *.pid
 *.lock
 
-# 数据库备份目录
-backup/
-
-# Debug 与一次性脚本
+# === Debug 与一次性脚本 ===
 public/debug_*.php
 public/login_flow_debug.php
 public/login_test.php
@@ -35,7 +33,7 @@ bg_diagnose.php
 bg_fix.php
 check_bg.php
 
-# 补丁 / 备份文件
+# === 补丁 / 备份文件 ===
 *.patched
 *.bak
 *.bak2
@@ -43,25 +41,32 @@ check_bg.php
 *.corrupted
 *_bak_*
 
-# Windows 系统文件
+# === Windows 系统文件 ===
 Thumbs.db
 Desktop.ini
 
-# IDE / 编辑器
+# === IDE / 编辑器 ===
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# 依赖
+# === 依赖（只提交 composer.json） ===
 vendor/
 node_modules/
 
-# macOS
+# === macOS ===
 .DS_Store
 
-# OS 生成文件
+# === OS 生成文件 ===
 *~
 
-# 微信小程序私有配置
+# === Kilo 工具配置 ===
+.kilo/
+
+# === 微信小程序 ===
+wwechatxiaochengxu/project.config.json
 wwechatxiaochengxu/project.private.config.json
+wwechatxiaochengxu/miniprogram_npm/
+wwechatxiaochengxu/node_modules/
+wwechatxiaochengxu/.eslintrc*
