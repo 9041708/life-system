@@ -107,6 +107,25 @@ chmod 755 uploads runtime logs
 
 Token 在网页端「设置 → 个人信息 → API Token 管理」中创建。
 
+## 微信小程序部署
+
+小程序源码位于 `wwechatxiaochengxu/` 目录。发布前需要配置你自己的 AppID：
+
+```bash
+cd wwechatxiaochengxu
+cp project.config.template.json project.config.json
+```
+
+然后编辑 `project.config.json`，将 `appid` 字段替换为你自己的微信小程序 AppID：
+
+```json
+"appid": "wx你的小程序AppID"
+```
+
+> **注意**：`project.config.json` 包含真实 AppID，已在 `.gitignore` 中忽略，不会提交到仓库。请勿将含有真实 AppID 的文件推送到公开仓库。
+
+在微信开发者工具中打开 `wwechatxiaochengxu/` 目录，编译上传即可。
+
 ## License
 
 MIT License
