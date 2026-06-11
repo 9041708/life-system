@@ -96,6 +96,13 @@ $pageTitles = [
     'mindfulness-checkin' => '正念签到',
     'mindfulness-treasure' => '正念树洞',
     'mindfulness-config' => '正念配置',
+    // 项目
+    'project-list' => '项目列表',
+    'project-detail' => '项目详情',
+    // 知识库
+    'kb-editor' => '知识库编辑',
+    'kb-read' => '知识库',
+    'kb-share' => '知识库分享',
 ];
 
 if (isset($pageTitles[$route])) {
@@ -138,6 +145,7 @@ if (empty($_SESSION['user_id']) && !in_array($route, [
     'source-download',
     'wechat_bind_callback',
     'wechat_self_bind_callback',
+    'kb-share',
 ])) {
     header('Location: ?route=login');
     exit;
@@ -660,6 +668,38 @@ switch ($route) {
         break;
     case 'mindfulness-api':
         $controller = new \App\Controller\MindfulnessController();
+        $controller->api();
+        break;
+
+    // 项目
+    case 'project-list':
+        $controller = new \App\Controller\ProjectController();
+        $controller->list();
+        break;
+    case 'project-detail':
+        $controller = new \App\Controller\ProjectController();
+        $controller->detail();
+        break;
+    case 'project-api':
+        $controller = new \App\Controller\ProjectController();
+        $controller->api();
+        break;
+
+    // 知识库
+    case 'kb-editor':
+        $controller = new \App\Controller\KbController();
+        $controller->editor();
+        break;
+    case 'kb-read':
+        $controller = new \App\Controller\KbController();
+        $controller->read();
+        break;
+    case 'kb-share':
+        $controller = new \App\Controller\KbController();
+        $controller->share();
+        break;
+    case 'kb-api':
+        $controller = new \App\Controller\KbController();
         $controller->api();
         break;
 

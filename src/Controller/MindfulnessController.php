@@ -282,6 +282,10 @@ class MindfulnessController
             $this->json(['ok' => false, 'error' => '请输入心事内容']);
         }
 
+        if (MindfulnessTreasure::countToday($userId) >= 3) {
+            $this->json(['ok' => false, 'error' => '今天已经写了3条心事了，明天再来倾诉吧~']);
+        }
+
         $config = MindfulnessConfig::get($userId);
         $aiMode = $config['ai_mode'] ?? 'system';
 

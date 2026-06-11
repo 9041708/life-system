@@ -90,7 +90,7 @@ class DebtController
             $payment['remaining_amount'] = (float)$stmt->fetchColumn();
         }
 
-        // 查询当月已还款金额
+        // 查询当月已还款金额（按应还日期统计，与列表一致）
         $paidAmount = 0.0;
         $paidCount = 0;
         try {
@@ -99,7 +99,7 @@ class DebtController
                 FROM debt_payment
                 WHERE ' . ($ledgerId > 0 ? 'ledger_id = :lid' : 'user_id = :uid') . '
                   AND status = "paid"
-                  AND DATE_FORMAT(paid_date, "%Y-%m") = :month
+                  AND DATE_FORMAT(due_date, "%Y-%m") = :month
             ');
             $params = $ledgerId > 0 ? [':lid' => $ledgerId, ':month' => $month] : [':uid' => $userId, ':month' => $month];
             $stmt->execute($params);

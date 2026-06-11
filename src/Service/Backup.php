@@ -479,56 +479,75 @@ class Backup
     {
         try {
             if (!extension_loaded('openssl')) {
-                return [
-                    'success' => false,
-                    'error' => 'OpenSSL 扩展未加载',
-                ];
-            }
-
-            $data = @file_get_contents($inputFile);
-            if ($data === false) {
-                return [
-                    'success' => false,
-                    'error' => '无法读取输入文件',
-                ];
+                return ['success' => false, 'error' => 'OpenSSL 扩展未加载'];
             }
 
             $encryptionKey = hash('sha256', $key, true);
             $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-
             if ($iv === false) {
-                return [
-                    'success' => false,
-                    'error' => '无法生成 IV',
-                ];
+                return ['success' => false, 'error' => '无法生成 IV'];
             }
 
-            $encrypted = openssl_encrypt($data, 'aes-256-cbc', $encryptionKey, OPENSSL_RAW_DATA, $iv);
-
-            // 立即释放明文内存
-            unset($data);
-
-            if ($encrypted === false) {
-                return [
-                    'success' => false,
-                    'error' => '加密失败',
-                ];
+            $in = @fopen($inputFile, 'rb');
+            if (!$in) {
+                return ['success' => false, 'error' => '无法读取输入文件'];
+            }
+            $out = @fopen($outputFile, 'wb');
+            if (!$out) {
+                fclose($in);
+                return ['success' => false, 'error' => '无法创建输出文件'];
             }
 
-            if (@file_put_contents($outputFile, $iv . $encrypted) === false) {
-                return [
-                    'success' => false,
-                    'error' => '无法写入输出文件',
-                ];
+            fwrite($out, $iv);
+
+            $cipher = 'aes-256-cbc';
+            $blockSize = 16;
+            $chunkSize = 64 * 1024; // 64KB chunks, well within memory
+            $padding = '';
+
+            while (!feof($in)) {
+                $chunk = fread($in, $chunkSize);
+                if ($chunk === false) break;
+                $padding .= $chunk;
+                // Encrypt all complete 16-byte blocks, keep remainder for next iteration
+                $completeLen = (int)(strlen($padding) / $blockSize) * $blockSize;
+                if ($completeLen > 0) {
+                    $toEncrypt = substr($padding, 0, $completeLen);
+                    $padding = substr($padding, $completeLen);
+                    $enc = openssl_encrypt($toEncrypt, $cipher, $encryptionKey, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv);
+                    if ($enc === false) {
+                        fclose($in); fclose($out);
+                        return ['success' => false, 'error' => '加密失败'];
+                    }
+                    fwrite($out, $enc);
+                    // Update IV to last ciphertext block for CBC chaining
+                    $iv = substr($enc, -$blockSize);
+                }
             }
 
-            unset($encrypted);
-            return ['success' => true];
-        } catch (\Throwable $e) {
+            // PKCS7 padding for the last block
+            $padLen = $blockSize - (strlen($padding) % $blockSize);
+            $padding .= chr($padLen) . str_repeat(chr($padLen), $padLen - 1);
+            $enc = openssl_encrypt($padding, $cipher, $encryptionKey, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv);
+            if ($enc !== false) {
+                fwrite($out, $enc);
+            }
+
+            fclose($in);
+            fclose($out);
+
+            if (!file_exists($outputFile) || filesize($outputFile) === 0) {
+                return ['success' => false, 'error' => '加密文件为空'];
+            }
+
             return [
-                'success' => false,
-                'error' => '加密异常: ' . $e->getMessage(),
+                'success' => true,
+                'file' => basename($outputFile),
+                'size' => filesize($outputFile),
+                'formatted_size' => self::formatBytes(filesize($outputFile)),
             ];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'error' => '加密异常: ' . $e->getMessage()];
         }
     }
 

@@ -1324,8 +1324,27 @@ class SettingsController
             exit;
         }
         if ($isAdmin && $_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'get_ai_quotas') {
-            $list = \App\Model\AiQuota::listAll();
-            $this->json(['ok' => true, 'list' => $list]);
+            $page = max(1, (int)($_GET['page'] ?? 1));
+            $pageSize = 10;
+            $offset = ($page - 1) * $pageSize;
+            $pdoQ = \App\Service\Database::getConnection();
+            $total = (int)$pdoQ->query("SELECT COUNT(*) FROM user_ai_quotas")->fetchColumn();
+            $totalPages = max(1, (int)ceil($total / $pageSize));
+            $list = \App\Model\AiQuota::listPaged($pageSize, $offset);
+            $this->json(['ok' => true, 'list' => $list, 'page' => $page, 'total_pages' => $totalPages, 'total' => $total]);
+            exit;
+        }
+        if ($isAdmin && $_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'search_users') {
+            $keyword = trim($_GET['q'] ?? '');
+            $results = [];
+            if ($keyword !== '') {
+                $pdoS = \App\Service\Database::getConnection();
+                $kw = '%' . $keyword . '%';
+                $stmt = $pdoS->prepare("SELECT id, username, nickname, email FROM users WHERE CAST(id AS CHAR) LIKE :kw OR username LIKE :kw OR nickname LIKE :kw OR email LIKE :kw ORDER BY id LIMIT 20");
+                $stmt->execute([':kw' => $kw]);
+                $results = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            }
+            $this->json(['ok' => true, 'users' => $results]);
             exit;
         }
         // 查询背景图历史记录

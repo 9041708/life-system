@@ -62,4 +62,12 @@ class MindfulnessTreasure
         $stmt->execute();
         return (int)$stmt->fetchColumn();
     }
+
+    public static function countToday(int $userId): int
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM mindfulness_treasures WHERE user_id = :uid AND DATE(created_at) = CURDATE()');
+        $stmt->execute([':uid' => $userId]);
+        return (int)$stmt->fetchColumn();
+    }
 }

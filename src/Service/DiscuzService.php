@@ -926,6 +926,8 @@ class DiscuzService
             $tid = $notice['tid'];
             error_log("[ForumFollowUp] checking tid={$tid} content=" . mb_substr($notice['content'] ?? '', 0, 50));
 
+            if (\App\Model\ForumRepliedThread::hasRepliedSince($this->accountId, $tid, 3600)) continue;
+
             $thread = $this->getThreadContent($tid);
             if (!$thread['ok']) continue;
 
@@ -988,17 +990,24 @@ class DiscuzService
     }
 
     /**
-     * 格式化引用回复：如果对方引用了帖子，也以引用回复；末尾加上AI回帖标识
+     * 格式化引用回复：始终引用对方的回复内容，末尾加上AI回帖标识
      */
     private function formatQuoteReply(string $message, array $latestReply): string
     {
-        if (!empty($latestReply['is_quote']) && !empty($latestReply['pid']) && !empty($latestReply['author'])) {
-            $quoteHeader = $latestReply['author'];
-            if (!empty($latestReply['ptid']) && !empty($latestReply['pid'])) {
-                $quoteHeader = "[url={$this->forumUrl}/forum.php?mod=redirect&goto=findpost&pid={$latestReply['pid']}&ptid={$latestReply['ptid']}]{$latestReply['author']}[/url]";
+        $author = $latestReply['author'] ?? '';
+        $pid = $latestReply['pid'] ?? 0;
+        $ptid = $latestReply['ptid'] ?? 0;
+        $content = $latestReply['content'] ?? '';
+
+        if (!empty($content)) {
+            $quoteContent = mb_substr($content, 0, 300);
+            if (!empty($author) && $pid > 0 && $ptid > 0) {
+                $quoteHeader = "[url={$this->forumUrl}/forum.php?mod=redirect&goto=findpost&pid={$pid}&ptid={$ptid}]{$author}[/url]";
+            } elseif (!empty($author)) {
+                $quoteHeader = $author;
+            } else {
+                $quoteHeader = ' ';
             }
-            $quoteContent = $latestReply['content'] ?? '';
-            $quoteContent = mb_substr($quoteContent, 0, 300);
             $message = "[quote]{$quoteHeader}\n{$quoteContent}[/quote]\n{$message}";
         }
         return $message . "\n" . $this->aiReplyFlag;

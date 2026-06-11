@@ -13,10 +13,16 @@ $siteIconSvg = isset($systemSetting['site_icon_svg']) ? $systemSetting['site_ico
 $miniappEnabled = (bool)Config::get('wechat.enable_miniapp', true);
 $miniappsList = [];
 if ($miniappEnabled) {
-    try {
-        $pdoMa = \App\Service\Database::getConnection();
-        $miniappsList = $pdoMa->query("SELECT * FROM miniapps ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    } catch (\Throwable $e) { $miniappsList = []; }
+    static $miniappsCache = null;
+    if ($miniappsCache !== null) {
+        $miniappsList = $miniappsCache;
+    } else {
+        try {
+            $pdoMa = \App\Service\Database::getConnection();
+            $miniappsList = $pdoMa->query("SELECT * FROM miniapps ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $e) { $miniappsList = []; }
+        $miniappsCache = $miniappsList;
+    }
 }
 
 $ledgerList = [];
@@ -162,6 +168,13 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
                 </div>
             </div>
 
+            <!-- 知识库 -->
+            <div class="sidebar-section sidebar-flyout-trigger" id="flyout-kb">
+                <div class="sidebar-section-header">
+                    <span>📝 知识库</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
+                </div>
+            </div>
+
             <!-- 图书 -->
             <div class="sidebar-section sidebar-flyout-trigger" id="flyout-books">
                 <div class="sidebar-section-header">
@@ -194,6 +207,13 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
             <div class="sidebar-section sidebar-flyout-trigger" id="flyout-mindfulness">
                 <div class="sidebar-section-header">
                     <span>💊 正念</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
+                </div>
+            </div>
+
+            <!-- 项目 -->
+            <div class="sidebar-section sidebar-flyout-trigger" id="flyout-project">
+                <div class="sidebar-section-header">
+                    <span>📂 项目</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
                 </div>
             </div>
 
@@ -276,6 +296,12 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
         <a href="/public/index.php?route=easytodo-memos" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>备忘录</a>
     </div>
 
+    <!-- 知识库 -->
+    <div class="sidebar-flyout" id="flyout-kb-menu">
+        <a href="/public/index.php?route=kb-editor" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>文档编辑</a>
+        <a href="/public/index.php?route=kb-read" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>文档阅读</a>
+    </div>
+
     <!-- 图书 -->
     <div class="sidebar-flyout" id="flyout-books-menu">
         <a href="/public/index.php?route=books" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>在线阅览</a>
@@ -307,6 +333,11 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
         <a href="/public/index.php?route=mindfulness-checkin" class="flyout-item"><span class="menu-icon">💊</span>签到</a>
         <a href="/public/index.php?route=mindfulness-treasure" class="flyout-item"><span class="menu-icon">🕳️</span>树洞</a>
         <a href="/public/index.php?route=mindfulness-config" class="flyout-item"><span class="menu-icon">⚙️</span>配置</a>
+    </div>
+
+    <!-- 项目 -->
+    <div class="sidebar-flyout" id="flyout-project-menu">
+        <a href="/public/index.php?route=project-list" class="flyout-item"><span class="menu-icon">📋</span>项目列表</a>
     </div>
 
     <!-- 工具箱 -->

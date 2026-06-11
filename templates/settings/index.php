@@ -1932,6 +1932,55 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
                 <h3 class="h6 mb-0">🤖 AI次数管理</h3>
                 <button type="button" class="btn btn-sm btn-primary" onclick="openGrantAiModal()">发放次数</button>
             </div>
+            <div class="form-text small mb-2">此处可为用户发放/修改AI使用次数。管理员同样受次数限制，需自行发放。</div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light"><tr><th>用户ID</th><th>用户名</th><th>系统配额</th><th>已用</th><th>购买配额</th><th>已用</th><th>剩余</th><th class="text-center">操作</th></tr></thead>
+                    <tbody id="aiQuotaTableBody">
+                    <tr><td colspan="8" class="text-center text-muted small py-3">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="aiQuotaPagination" class="mt-2"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="grantAiModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h6 class="modal-title">发放AI次数</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="grantSelectedUid" value="">
+                    <div class="mb-3">
+                        <label class="form-label small">搜索用户</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" id="grantSearchInput" class="form-control" placeholder="输入用户名/昵称/邮箱/ID搜索" autocomplete="off">
+                            <button class="btn btn-outline-secondary" type="button" onclick="searchUsersForGrant()">搜索</button>
+                        </div>
+                        <div id="grantSearchResults" class="mt-1" style="max-height:200px;overflow-y:auto"></div>
+                    </div>
+                    <div id="grantSelectedUser" class="mb-3" style="display:none">
+                        <div class="alert alert-success py-2 small mb-2">
+                            已选择：<strong id="grantSelectedName"></strong> <span class="text-muted" id="grantSelectedId"></span>
+                            <button type="button" class="btn btn-sm btn-link py-0 ms-1" onclick="clearGrantSelection()">更换</button>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small">系统配额</label>
+                            <input type="number" id="grantSystemQuota" class="form-control form-control-sm" value="10">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small">购买配额（增加）</label>
+                            <input type="number" id="grantPurchasedQuota" class="form-control form-control-sm" value="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="btnGrantSubmit" onclick="submitGrant()" disabled>确认发放</button>
+                </div>
+            </div>
+        </div>
+    </div>
             <div class="form-text small mb-2">管理员不受AI次数限制。此处可为用户发放/修改AI使用次数，以及管理套餐定价。</div>
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
@@ -2037,9 +2086,12 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
     </div>
 
     <script>
-    function openGrantAiModal() { new bootstrap.Modal(document.getElementById('grantAiModal')).show(); }
-    function loadAiQuotas() {
-        fetch('/public/index.php?route=settings&action=get_ai_quotas', { headers: {'X-Requested-With':'XMLHttpRequest'} })
+    var aiQuotaPage = 1;
+    document.addEventListener('DOMContentLoaded', function() { loadAiQuotas(1); });
+
+    function loadAiQuotas(page) {
+        aiQuotaPage = page || 1;
+        fetch('/public/index.php?route=settings&action=get_ai_quotas&page=' + aiQuotaPage, { headers: {'X-Requested-With':'XMLHttpRequest'} })
         .then(function(r) { return r.json(); })
         .then(function(d) {
             if (!d.ok) { alert(d.error || '加载失败'); return; }
@@ -2061,8 +2113,86 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
                 });
             }
             document.getElementById('aiQuotaTableBody').innerHTML = html;
+            renderAiQuotaPagination(d.page || 1, d.total_pages || 1, d.total || 0);
         });
     }
+
+    function renderAiQuotaPagination(page, totalPages, total) {
+        if (totalPages <= 1) { document.getElementById('aiQuotaPagination').innerHTML = '<div class="small text-muted">共 ' + total + ' 条</div>'; return; }
+        var html = '<div class="d-flex justify-content-between align-items-center"><div class="small text-muted">共 ' + total + ' 条</div><nav><ul class="pagination pagination-sm mb-0">';
+        html += '<li class="page-item ' + (page<=1?'disabled':'') + '"><a class="page-link" href="javascript:void(0)" onclick="loadAiQuotas('+(page-1)+')">上一页</a></li>';
+        for (var p = 1; p <= totalPages; p++) {
+            if (totalPages > 7 && p > 3 && p < totalPages-2 && Math.abs(p-page)>1) { if (p===4) html += '<li class="page-item disabled"><span class="page-link">…</span></li>'; continue; }
+            html += '<li class="page-item '+(p===page?'active':'')+'"><a class="page-link" href="javascript:void(0)" onclick="loadAiQuotas('+p+')">'+p+'</a></li>';
+        }
+        html += '<li class="page-item ' + (page>=totalPages?'disabled':'') + '"><a class="page-link" href="javascript:void(0)" onclick="loadAiQuotas('+(page+1)+')">下一页</a></li>';
+        html += '</ul></nav></div>';
+        document.getElementById('aiQuotaPagination').innerHTML = html;
+    }
+
+    function openGrantAiModal() {
+        clearGrantSelection();
+        document.getElementById('grantSearchInput').value = '';
+        document.getElementById('grantSearchResults').innerHTML = '';
+        document.getElementById('grantSystemQuota').value = '10';
+        document.getElementById('grantPurchasedQuota').value = '0';
+        new bootstrap.Modal(document.getElementById('grantAiModal')).show();
+        setTimeout(function(){ document.getElementById('grantSearchInput').focus(); }, 300);
+    }
+
+    function searchUsersForGrant() {
+        var kw = document.getElementById('grantSearchInput').value.trim();
+        if (!kw) { document.getElementById('grantSearchResults').innerHTML = '<div class="small text-muted">请输入搜索关键字</div>'; return; }
+        fetch('/public/index.php?route=settings&action=search_users&q=' + encodeURIComponent(kw), { headers: {'X-Requested-With':'XMLHttpRequest'} })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok || !d.users.length) { document.getElementById('grantSearchResults').innerHTML = '<div class="small text-muted">未找到匹配用户</div>'; return; }
+            var html = '';
+            d.users.forEach(function(u) {
+                html += '<div class="d-flex align-items-center justify-content-between py-1 px-2 rounded" style="cursor:pointer;border:1px solid rgba(0,0,0,0.06);margin-bottom:3px;transition:background 0.1s" onmouseenter="this.style.background=\'rgba(102,126,234,0.08)\'" onmouseleave="this.style.background=\'\'" onclick="selectGrantUser('+u.id+',\''+h(u.username)+'\',\''+h(u.nickname||'')+'\',\''+h(u.email||'')+'\')">';
+                html += '<div><strong>'+h(u.username)+'</strong> <span class="text-muted small">('+h(u.nickname||'')+' / ID:'+u.id+')</span></div>';
+                html += '<span class="small text-muted">'+h(u.email||'')+'</span>';
+                html += '</div>';
+            });
+            document.getElementById('grantSearchResults').innerHTML = html;
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        var gsi = document.getElementById('grantSearchInput');
+        if (gsi) gsi.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); searchUsersForGrant(); } });
+    });
+
+    function selectGrantUser(uid, username, nickname, email) {
+        document.getElementById('grantSelectedUid').value = uid;
+        document.getElementById('grantSelectedName').textContent = nickname || username;
+        document.getElementById('grantSelectedId').textContent = '(ID:' + uid + ' / ' + email + ')';
+        document.getElementById('grantSelectedUser').style.display = '';
+        document.getElementById('grantSearchResults').innerHTML = '';
+        document.getElementById('grantSearchInput').value = '';
+        document.getElementById('btnGrantSubmit').disabled = false;
+    }
+    function clearGrantSelection() {
+        document.getElementById('grantSelectedUid').value = '';
+        document.getElementById('grantSelectedUser').style.display = 'none';
+        document.getElementById('btnGrantSubmit').disabled = true;
+    }
+    function submitGrant() {
+        var uid = document.getElementById('grantSelectedUid').value;
+        if (!uid) { alert('请先选择用户'); return; }
+        var fd = new FormData();
+        fd.append('action', 'ai_quota_grant');
+        fd.append('target_user_id', uid);
+        fd.append('system_quota', document.getElementById('grantSystemQuota').value);
+        fd.append('purchased_quota', document.getElementById('grantPurchasedQuota').value);
+        fetch('/public/index.php?route=settings', { method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.ok) { alert(d.message || '已发放'); bootstrap.Modal.getInstance(document.getElementById('grantAiModal')).hide(); loadAiQuotas(aiQuotaPage); }
+            else alert(d.error || '失败');
+        });
+    }
+    function h(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
     function editQuota(uid, sq, pq) {
         var nsq = prompt('系统配额（当前' + sq + '）', sq);
         if (nsq === null) return;
@@ -2075,7 +2205,7 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
         fd.append('purchased_quota', npq);
         fetch('/public/index.php?route=settings', { method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd })
         .then(function(r) { return r.json(); })
-        .then(function(d) { if (d.ok) { alert('已更新'); loadAiQuotas(); } else alert(d.error || '失败'); });
+        .then(function(d) { if (d.ok) { alert('已更新'); loadAiQuotas(aiQuotaPage); } else alert(d.error || '失败'); });
     }
     function openPlanModal() {
         document.getElementById('planId').value = '0';

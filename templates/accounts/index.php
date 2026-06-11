@@ -88,7 +88,10 @@
 
 <div class="card glass-card">
     <div class="card-body p-3">
-        <h3 class="h6 mb-3">账户列表</h3>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h3 class="h6 mb-0">账户列表</h3>
+            <input type="text" id="accountSearchInput" class="form-control form-control-sm" style="width:220px" placeholder="🔍 搜索账户名称/账号/大类..." oninput="filterAccounts()">
+        </div>
         <div class="table-responsive">
             <table class="table table-sm align-middle mb-0 table-accounts">
                 <thead class="table-light">
@@ -321,5 +324,15 @@ document.addEventListener('DOMContentLoaded', function () {
     bindIconLibrary(document.querySelector('#modalAccountCreate .modal-body'));
     bindIconLibrary(document.querySelector('#modalAccountEdit .modal-body'));
 });
+
+function filterAccounts() {
+    var kw = document.getElementById('accountSearchInput').value.trim().toLowerCase();
+    var rows = document.querySelectorAll('.table-accounts tbody tr');
+    rows.forEach(function(row) {
+        if (!kw) { row.style.display = ''; return; }
+        var text = row.textContent.toLowerCase();
+        row.style.display = text.indexOf(kw) !== -1 ? '' : 'none';
+    });
+}
 </script>
 </div>

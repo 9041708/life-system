@@ -8,23 +8,24 @@ class ApiToken
 {
     /**
      * 创建 API Token
+     * @param int $userId 用户ID
+     * @param string $description 描述
+     * @param int $expiresIn 过期秒数（默认365天）
+     * @param string $clientType 客户端类型（miniapp/mobile-web/空=手动创建）
      */
-    public static function createToken(int $userId, string $description): string
+    public static function createToken(int $userId, string $description, int $expiresIn = 31536000, string $clientType = ''): string
     {
         $token = 'ssj_' . bin2hex(random_bytes(32));
         $pdo = Database::getConnection();
-
-        // 确保表存在
         self::ensureTable($pdo);
-
-        $stmt = $pdo->prepare('INSERT INTO api_tokens (user_id, token, client_type, description, expires_at, created_at) VALUES (:u, :t, :ct, :d, DATE_ADD(NOW(), INTERVAL 365 DAY), NOW())');
+        $stmt = $pdo->prepare('INSERT INTO api_tokens (user_id, token, client_type, description, expires_at, created_at) VALUES (:u, :t, :ct, :d, DATE_ADD(NOW(), INTERVAL :exp SECOND), NOW())');
         $stmt->execute([
             ':u' => $userId,
             ':t' => $token,
-            ':ct' => '',
+            ':ct' => $clientType,
             ':d' => $description,
+            ':exp' => $expiresIn,
         ]);
-
         return $token;
     }
 
@@ -37,9 +38,9 @@ class ApiToken
         self::ensureTable($pdo);
         // 自动删除过期 Token
         $pdo->prepare('DELETE FROM api_tokens WHERE user_id = :u AND expires_at < NOW()')->execute([':u' => $userId]);
-        // 过滤掉小程序登录 Token（client_type = miniapp_login）
-        $stmt = $pdo->prepare('SELECT id, user_id, LEFT(token, 8) AS token_prefix, description, expires_at, last_used_at, created_at FROM api_tokens WHERE user_id = :u AND (client_type IS NULL OR client_type != :ct) ORDER BY id DESC');
-        $stmt->execute([':u' => $userId, ':ct' => 'miniapp_login']);
+        // 过滤掉小程序和移动端登录 Token（只显示手动创建的）
+        $stmt = $pdo->prepare('SELECT id, user_id, LEFT(token, 8) AS token_prefix, description, expires_at, last_used_at, created_at FROM api_tokens WHERE user_id = :u AND (client_type IS NULL OR client_type = "") ORDER BY id DESC');
+        $stmt->execute([':u' => $userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
@@ -50,8 +51,8 @@ class ApiToken
     {
         $pdo = Database::getConnection();
         self::ensureTable($pdo);
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM api_tokens WHERE user_id = :u AND (client_type IS NULL OR client_type != :ct) AND (expires_at IS NULL OR expires_at > NOW())');
-        $stmt->execute([':u' => $userId, ':ct' => 'miniapp_login']);
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM api_tokens WHERE user_id = :u AND (client_type IS NULL OR client_type = "") AND (expires_at IS NULL OR expires_at > NOW())');
+        $stmt->execute([':u' => $userId]);
         return (int)$stmt->fetchColumn();
     }
 

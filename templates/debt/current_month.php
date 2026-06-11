@@ -94,7 +94,8 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-3">负债项目</th>
+                                <th class="ps-3" style="width:50px">#</th>
+                                <th>负债项目</th>
                                 <th>期数</th>
                                 <th>应还日期</th>
                                 <th>本金</th>
@@ -107,12 +108,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($payments as $payment): 
+                            <?php $seq = 0; foreach ($payments as $payment): 
+                                $seq++;
                                 $isPaid = ($payment['status'] === 'paid');
                                 $isOverdue = (!$isPaid && strtotime($payment['due_date']) < strtotime(date('Y-m-d')));
                             ?>
                                 <tr class="<?= $isPaid ? 'table-success bg-opacity-10' : '' ?>">
-                                    <td class="ps-3">
+                                    <td class="ps-3 text-muted"><?= $seq ?></td>
+                                    <td>
                                         <div class="fw-semibold <?= $isPaid ? 'text-muted' : '' ?>"><?= htmlspecialchars($payment['debt_name']) ?></div>
                                     </td>
                                     <td>

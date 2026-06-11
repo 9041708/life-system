@@ -9,8 +9,9 @@ class ForumRepliedThread
     {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
-            "INSERT IGNORE INTO forum_replied_threads (account_id, tid, title, replied_at)
-             VALUES (?, ?, ?, NOW())"
+            "INSERT INTO forum_replied_threads (account_id, tid, title, replied_at)
+             VALUES (?, ?, ?, NOW())
+             ON DUPLICATE KEY UPDATE replied_at = NOW(), title = VALUES(title)"
         );
         $stmt->execute([$accountId, $tid, $title]);
         return (int)$pdo->lastInsertId();
@@ -23,6 +24,16 @@ class ForumRepliedThread
             "SELECT 1 FROM forum_replied_threads WHERE account_id = ? AND tid = ? LIMIT 1"
         );
         $stmt->execute([$accountId, $tid]);
+        return $stmt->fetch() !== false;
+    }
+
+    public static function hasRepliedSince(int $accountId, int $tid, int $seconds = 3600): bool
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare(
+            "SELECT 1 FROM forum_replied_threads WHERE account_id = ? AND tid = ? AND replied_at > DATE_SUB(NOW(), INTERVAL ? SECOND) LIMIT 1"
+        );
+        $stmt->execute([$accountId, $tid, $seconds]);
         return $stmt->fetch() !== false;
     }
 

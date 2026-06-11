@@ -92,11 +92,16 @@ try {
 	@file_put_contents($existingMigrationFlag, date('Y-m-d H:i:s'));
 	}
 
-	try {
-		\App\Service\TodayDoService::initTables();
-	} catch (\Throwable $e) {}
+	// TodayDoService 初始化（用独立标记，只跑一次）
+	$todayDoFlag = __DIR__ . '/../runtime/todaydo_inited.flag';
+	if (!file_exists($todayDoFlag)) {
+		try {
+			\App\Service\TodayDoService::initTables();
+		} catch (\Throwable $e) {}
+		@file_put_contents($todayDoFlag, date('Y-m-d H:i:s'));
+	}
 
-	// 正念模块表（用文件缓存标记避免每次请求都检查）
+	// 正念+项目+知识库模块表（用文件缓存标记避免每次请求都检查）
 	$migrationFlag = __DIR__ . '/../runtime/mindfulness_migrated.flag';
 	if (!file_exists($migrationFlag)) {
 		$tblMF1 = $pdo->query("SHOW TABLES LIKE 'mindfulness_checkins'")->fetch();
@@ -185,6 +190,107 @@ try {
 			('高级包', 200, 120.00, 68.00, 3)");
 	}
 
+	$tblPJ1 = $pdo->query("SHOW TABLES LIKE 'projects'")->fetch();
+	if (!$tblPJ1) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS projects (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL,
+			name VARCHAR(200) NOT NULL,
+			description TEXT,
+			status ENUM('planning','active','completed','archived') DEFAULT 'planning',
+			progress TINYINT DEFAULT 0,
+			start_date DATE DEFAULT NULL,
+			end_date DATE DEFAULT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			INDEX idx_user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='项目管理'");
+	}
+	$tblPJ2 = $pdo->query("SHOW TABLES LIKE 'project_updates'")->fetch();
+	if (!$tblPJ2) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS project_updates (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			project_id INT NOT NULL,
+			user_id INT NOT NULL,
+			title VARCHAR(200) NOT NULL,
+			content TEXT,
+			progress TINYINT DEFAULT 0,
+			update_date DATE NOT NULL,
+			attachments TEXT,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			INDEX idx_project_id (project_id),
+			INDEX idx_user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='项目进度更新'");
+	}
+	$tblPJ3 = $pdo->query("SHOW TABLES LIKE 'project_members'")->fetch();
+	if (!$tblPJ3) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS project_members (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			project_id INT NOT NULL,
+			user_id INT NOT NULL,
+			role ENUM('owner','member') DEFAULT 'member',
+			joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE KEY uk_project_user (project_id, user_id),
+			INDEX idx_user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='项目成员'");
+	}
+	$colPJ1 = $pdo->query("SHOW COLUMNS FROM projects LIKE 'tasks'")->fetch();
+	if (!$colPJ1) {
+		$pdo->exec("ALTER TABLE projects ADD COLUMN tasks TEXT DEFAULT NULL AFTER description");
+	}
+
+	// 知识库模块表
+	$tblKB1 = $pdo->query("SHOW TABLES LIKE 'kb_spaces'")->fetch();
+	if (!$tblKB1) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS kb_spaces (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL,
+			name VARCHAR(100) NOT NULL DEFAULT '我的知识库',
+			description TEXT DEFAULT NULL,
+			version_enabled TINYINT DEFAULT 0 COMMENT '是否开启版本历史',
+			version_max INT DEFAULT 10 COMMENT '最大版本数',
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			INDEX idx_user (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库空间'");
+	}
+	$tblKB2 = $pdo->query("SHOW TABLES LIKE 'kb_documents'")->fetch();
+	if (!$tblKB2) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS kb_documents (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			space_id INT NOT NULL,
+			user_id INT NOT NULL,
+			parent_id INT DEFAULT 0 COMMENT '父文档ID，0=顶级',
+			title VARCHAR(255) NOT NULL DEFAULT '无标题',
+			content LONGTEXT COMMENT 'Markdown原文',
+			content_html LONGTEXT COMMENT '渲染后HTML缓存',
+			sort_order INT DEFAULT 0,
+			is_folder TINYINT DEFAULT 0 COMMENT '是否为文件夹',
+			is_public TINYINT DEFAULT 0 COMMENT '是否允许外部分享',
+			share_token VARCHAR(64) DEFAULT NULL COMMENT '分享token',
+			status ENUM('draft','published') DEFAULT 'published',
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			INDEX idx_space (space_id),
+			INDEX idx_user (user_id),
+			INDEX idx_parent (parent_id),
+			INDEX idx_share_token (share_token)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库文档'");
+	}
+	$tblKB3 = $pdo->query("SHOW TABLES LIKE 'kb_doc_versions'")->fetch();
+	if (!$tblKB3) {
+		$pdo->exec("CREATE TABLE IF NOT EXISTS kb_doc_versions (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			doc_id INT NOT NULL,
+			user_id INT NOT NULL,
+			title VARCHAR(255) NOT NULL,
+			content LONGTEXT,
+			version_num INT NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			INDEX idx_doc (doc_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库文档版本'");
+	}
+
 		@file_put_contents($migrationFlag, date('Y-m-d H:i:s'));
 	}
 
@@ -197,8 +303,11 @@ if (Config::get('license.client_enabled', false)) {
 	LicenseClient::enforce();
 }
 
-// 启动内置定时任务调度器
-if (Config::get('scheduler.enabled', false) && !defined('SCHEDULER_STARTED')) {
+// 启动内置定时任务调度器（用标记避免每次请求都检查文件）
+$schedulerFlag = __DIR__ . '/../runtime/scheduler_checked.flag';
+$schedulerNeedsCheck = !file_exists($schedulerFlag) || (time() - filemtime($schedulerFlag)) > 60;
+if ($schedulerNeedsCheck && Config::get('scheduler.enabled', false) && !defined('SCHEDULER_STARTED')) {
+	@touch($schedulerFlag);
 	define('SCHEDULER_STARTED', true);
 
 	$scheduler = TaskScheduler::getInstance();

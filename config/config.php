@@ -28,8 +28,8 @@ return array (
     'site_url' => 'https://9041708.cn:555',
     'allow_register' => true,
     'upload_dir' => '/volume1/web/ssjizhang.cn_ceshi/config/../uploads',
-    'version' => 'v2.2.0',
-    'mini_version' => 'v2.2.0',
+    'version' => 'v2.4.0',
+    'mini_version' => 'v2.4.0',
     'landing_enabled' => true,
     'license_admin_enabled' => true,
     'screenshotmachine_api_key' => '531677',
@@ -118,7 +118,7 @@ return array (
     'email_notify' => true,
     'notify_email' => '9041708@qq.com',
     'backup_target' => 'database',
-    'last_run_time' => 1780405544,
+    'last_run_time' => 1781140268,
   ),
   'scheduler' => 
   array (

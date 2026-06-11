@@ -439,7 +439,7 @@ switch ($route) {
         // 标记该绑定二维码已用
         LoginToken::confirm($bindToken, $userId);
 
-        $token = ApiToken::createToken($userId, 'miniapp', 30 * 24 * 60 * 60);
+        $token = ApiToken::createToken($userId, 'miniapp', 30 * 24 * 60 * 60, 'miniapp');
         $user = User::findById($userId);
 
         json_response(200, [
@@ -491,7 +491,7 @@ switch ($route) {
                 \App\Model\UserWechatBinding::create($userId, $openid, $unionid);
             }
 
-            $apiToken = \App\Model\ApiToken::createToken($userId, 'miniapp', 30 * 24 * 60 * 60);
+            $apiToken = \App\Model\ApiToken::createToken($userId, 'miniapp', 30 * 24 * 60 * 60, 'miniapp');
             json_response(200, [
                 'success' => true,
                 'token' => $apiToken,
@@ -530,7 +530,7 @@ switch ($route) {
             }
 
             UserWechatBinding::updateLastLogin((int)$binding['id']);
-            $token = ApiToken::createToken((int)$user['id'], 'miniapp', 30 * 24 * 60 * 60);
+            $token = ApiToken::createToken((int)$user['id'], 'miniapp', 30 * 24 * 60 * 60, 'miniapp');
 
             json_response(200, [
                 'success' => true,
@@ -601,7 +601,7 @@ switch ($route) {
                 }
 
                 UserWechatBinding::updateLastLogin((int)$binding['id']);
-                $token = ApiToken::createToken((int)$user['id'], 'miniapp', 30 * 24 * 60 * 60);
+            $token = ApiToken::createToken((int)$user['id'], 'miniapp', 30 * 24 * 60 * 60, 'miniapp');
                 json_response(200, [
                     'success' => true,
                     'token' => $token,
@@ -652,7 +652,7 @@ switch ($route) {
                 // 新用户注入默认数据（分类/项目/账户）
                 Seeder::seedIfEmpty($userId);
 
-                $token = ApiToken::createToken($userId, 'miniapp', 30 * 24 * 60 * 60);
+        $token = ApiToken::createToken($userId, 'miniapp', 30 * 24 * 60 * 60, 'miniapp');
                 $user = User::findById($userId);
                 json_response(200, [
                     'success' => true,
@@ -767,7 +767,7 @@ switch ($route) {
             }
         }
 
-        $token = ApiToken::createToken($userId, 'miniapp', 30 * 24 * 60 * 60);
+        $token = ApiToken::createToken($userId, 'miniapp', 30 * 24 * 60 * 60, 'miniapp');
         $user = User::findById($userId);
 
         json_response(200, [
@@ -838,7 +838,7 @@ switch ($route) {
         User::updateLoginSecurity((int)$user['id'], 0, null);
         Seeder::seedIfEmpty((int)$user['id']);
 
-        $token = ApiToken::createToken((int)$user['id'], 'mobile-web', 30 * 24 * 60 * 60);
+        $token = ApiToken::createToken((int)$user['id'], 'mobile-web', 30 * 24 * 60 * 60, 'mobile-web');
 
         json_response(200, [
             'success' => true,
@@ -885,7 +885,7 @@ switch ($route) {
         User::markEmailVerified($userId);
         Seeder::seedIfEmpty($userId);
 
-        $token = ApiToken::createToken($userId, 'mobile-web', 30 * 24 * 60 * 60);
+        $token = ApiToken::createToken($userId, 'mobile-web', 30 * 24 * 60 * 60, 'mobile-web');
         $user = User::findById($userId);
 
         json_response(200, [

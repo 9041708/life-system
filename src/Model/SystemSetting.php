@@ -6,8 +6,11 @@ use PDO;
 
 class SystemSetting
 {
+    private static ?array $cache = null;
+
     public static function get(): array
     {
+        if (self::$cache !== null) return self::$cache;
         $pdo = Database::getConnection();
         $stmt = $pdo->query('SELECT * FROM system_settings WHERE id = 1 LIMIT 1');
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -112,6 +115,7 @@ class SystemSetting
                 $row['ai_default_model'] = 0;
             }
         }
+        self::$cache = $row;
         return $row;
     }
 
@@ -327,6 +331,7 @@ class SystemSetting
         } catch (\Throwable $e) {
             // 忽略无法自动创建字段的情况下的错误，避免影响其他配置保存
         }
+        self::$cache = null;
     }
 
     /**

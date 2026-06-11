@@ -718,7 +718,12 @@ class TaskScheduler
             $replyAccounts = \App\Model\ForumAccount::getNeedExecute('autoreply');
             foreach ($replyAccounts as $account) {
                 try {
-                    $service = new \App\Service\DiscuzService((int)$account['user_id'], $account);
+                    $uid = (int)$account['user_id'];
+                    if (!\App\Model\AiQuota::hasQuota($uid)) {
+                        $results['errors'][] = "AI次数不足[{$account['forum_name']}],跳过回帖";
+                        continue;
+                    }
+                    $service = new \App\Service\DiscuzService($uid, $account);
                     $loginResult = $service->login($account['username'], $account['password']);
                     if (!$loginResult['ok']) {
                         \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], 'error', $loginResult['error']);
@@ -745,6 +750,7 @@ class TaskScheduler
                     $target = "帖子#{$tid} " . ($result['title'] ?? '');
                     \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], $logType, $result['message'] ?? $result['error'], $target);
                     if ($result['ok']) {
+                        \App\Model\AiQuota::consume($uid);
                         \App\Model\ForumAccount::updateLastReply((int)$account['id']);
                         \App\Model\ForumRepliedThread::markReplied((int)$account['id'], $tid, $result['title'] ?? '');
                     }
@@ -784,7 +790,12 @@ class TaskScheduler
             $mentionAccounts = \App\Model\ForumAccount::getNeedMentionReply();
             foreach ($mentionAccounts as $account) {
                 try {
-                    $service = new \App\Service\DiscuzService((int)$account['user_id'], $account);
+                    $uid = (int)$account['user_id'];
+                    if (!\App\Model\AiQuota::hasQuota($uid)) {
+                        $results['errors'][] = "AI次数不足[{$account['forum_name']}],跳过@回复";
+                        continue;
+                    }
+                    $service = new \App\Service\DiscuzService($uid, $account);
                     $loginResult = $service->login($account['username'], $account['password']);
                     if (!$loginResult['ok']) {
                         $results['errors'][] = "互动回复登录失败[{$account['forum_name']}]: " . ($loginResult['error'] ?? '未知');
@@ -793,7 +804,8 @@ class TaskScheduler
                     $r = $service->handleMentionReplies();
                     $results['mention'] += ($r['replied'] ?? 0);
                     if (($r['replied'] ?? 0) > 0) {
-                        \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], 'reply', $r['message']);
+                        \App\Model\AiQuota::consume($uid);
+                        \App\Model\ForumActionLog::create($uid, (int)$account['id'], 'reply', $r['message']);
                     }
                 } catch (\Throwable $e) {
                     $results['errors'][] = "互动回复异常[{$account['forum_name']}]: " . $e->getMessage();

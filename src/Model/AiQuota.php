@@ -103,6 +103,20 @@ class AiQuota
         return $rows;
     }
 
+    public static function listPaged(int $limit, int $offset): array
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT q.*, u.username, u.nickname FROM user_ai_quotas q LEFT JOIN users u ON q.user_id = u.id ORDER BY q.updated_at DESC LIMIT :limit OFFSET :offset');
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
     public static function getPricingPlans(): array
     {
         $pdo = Database::getConnection();
