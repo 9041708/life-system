@@ -32,7 +32,7 @@ class AiQuota
         return $systemRemaining + $purchasedRemaining;
     }
 
-    public static function consume(int $userId): bool
+    public static function consume(int $userId, string $source = '', string $detail = ''): bool
     {
         $q = self::get($userId);
         $pdo = Database::getConnection();
@@ -41,22 +41,32 @@ class AiQuota
         $existing->execute([':uid' => $userId]);
         if (!$existing->fetch()) {
             $stmt = $pdo->prepare('INSERT INTO user_ai_quotas (user_id, system_used) VALUES (:uid, 1)');
-            return $stmt->execute([':uid' => $userId]);
+            $result = $stmt->execute([':uid' => $userId]);
+        } else {
+            $systemRemaining = max(0, (int)$q['system_quota'] - (int)$q['system_used']);
+            if ($systemRemaining > 0) {
+                $stmt = $pdo->prepare('UPDATE user_ai_quotas SET system_used = system_used + 1 WHERE user_id = :uid');
+                $result = $stmt->execute([':uid' => $userId]);
+            } else {
+                $purchasedRemaining = max(0, (int)$q['purchased_quota'] - (int)$q['purchased_used']);
+                if ($purchasedRemaining > 0) {
+                    $stmt = $pdo->prepare('UPDATE user_ai_quotas SET purchased_used = purchased_used + 1 WHERE user_id = :uid');
+                    $result = $stmt->execute([':uid' => $userId]);
+                } else {
+                    return false;
+                }
+            }
         }
 
-        $systemRemaining = max(0, (int)$q['system_quota'] - (int)$q['system_used']);
-        if ($systemRemaining > 0) {
-            $stmt = $pdo->prepare('UPDATE user_ai_quotas SET system_used = system_used + 1 WHERE user_id = :uid');
-            return $stmt->execute([':uid' => $userId]);
+        // 记录使用日志
+        if ($source !== '') {
+            try {
+                $logStmt = $pdo->prepare('INSERT INTO ai_usage_logs (user_id, source, detail) VALUES (:uid, :src, :detail)');
+                $logStmt->execute([':uid' => $userId, ':src' => $source, ':detail' => mb_substr($detail, 0, 200)]);
+            } catch (\Throwable $e) {}
         }
 
-        $purchasedRemaining = max(0, (int)$q['purchased_quota'] - (int)$q['purchased_used']);
-        if ($purchasedRemaining > 0) {
-            $stmt = $pdo->prepare('UPDATE user_ai_quotas SET purchased_used = purchased_used + 1 WHERE user_id = :uid');
-            return $stmt->execute([':uid' => $userId]);
-        }
-
-        return false;
+        return true;
     }
 
     public static function hasQuota(int $userId): bool
@@ -90,6 +100,53 @@ class AiQuota
             $stmt = $pdo->prepare('UPDATE user_ai_quotas SET system_quota = :sq, purchased_quota = :pq WHERE user_id = :uid');
             $stmt->execute([':sq' => $systemQuota, ':pq' => $purchasedQuota, ':uid' => $userId]);
         }
+    }
+
+    public static function getUsageLogs(int $userId, int $limit = 20, int $offset = 0): array
+    {
+        $pdo = Database::getConnection();
+        // 自动清理10天前的日志
+        $pdo->prepare('DELETE FROM ai_usage_logs WHERE user_id = :uid AND created_at < DATE_SUB(NOW(), INTERVAL 10 DAY)')->execute([':uid' => $userId]);
+        $stmt = $pdo->prepare('SELECT * FROM ai_usage_logs WHERE user_id = :uid ORDER BY created_at DESC LIMIT :lim OFFSET :off');
+        $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    public static function countUsageLogs(int $userId): int
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM ai_usage_logs WHERE user_id = :uid');
+        $stmt->execute([':uid' => $userId]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public static function cleanupLogs(int $days): int
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('DELETE FROM ai_usage_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL :days DAY)');
+        $stmt->bindValue(':days', $days, PDO::PARAM_INT);
+        $stmt->execute();
+        return (int)$stmt->rowCount();
+    }
+
+    public static function getAllUsageLogs(int $limit = 100): array
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT l.*, u.username, u.nickname FROM ai_usage_logs l LEFT JOIN users u ON u.id = l.user_id ORDER BY l.created_at DESC LIMIT :lim');
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $rows[] = $row;
+        }
+        return $rows;
     }
 
     public static function listAll(): array

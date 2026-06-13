@@ -13,15 +13,21 @@ $appVersion = Config::get('app.version', 'v2.0.0');
         </div>
 
         <div id="changelog-latest">
-        <h3 class="h6">v2.4.0 <span class="badge bg-success ms-1">最新</span></h3>
+        <h3 class="h6">v2.5.0 <span class="badge bg-success ms-1">最新</span></h3>
         <ul class="small mb-3">
-            <li><strong>新增「知识库」模块：</strong>全新菜单组📝知识库（EASYTODO后），支持Markdown文档管理。左侧目录树（多级嵌套文件夹+文档），右键菜单新建/重命名/移动/删除，支持拖拽排序和搜索过滤。编辑页复用editor.md编辑器，自动保存（2s防抖）。阅读页渲染HTML+右侧TOC目录导航（scrollspy高亮）。支持外部分享：生成公开链接，独立白底页面+目录导航，无需登录即可阅读。支持版本历史：空间设置开启后自动保存版本，可配置最大版本数，支持恢复历史版本。文档支持图片上传。</li>
-            <li><strong>每月应还修复：</strong>已还金额/笔数查询从paid_date改为due_date，与列表筛选逻辑一致。列表前加序号列。</li>
-            <li><strong>账户管理搜索：</strong>列表上方新增搜索框，支持按名称/账号/大类实时过滤。</li>
-            <li><strong>知识库分享修复：</strong>分享链接加入免登录白名单，未登录用户可直接访问。阅读页和编辑页加底色背景，解决背景图透出导致文字不清晰的问题。</li>
-            <li><strong>系统性能优化：</strong>SystemSetting::get()加静态缓存避免每次查库。miniapps查询加静态缓存。TodayDoService::initTables()加flag标记只执行一次。调度器状态检查限频60秒。优化后每次请求减少3-4次数据库查询。</li>
-            <li><strong>正念树洞每日限制：</strong>每天最多写3条，防止刷分。</li>
-            <li><strong>项目进度自动变更状态：</strong>添加进度弹窗新增项目状态选择，默认自动切换为进行中。</li>
+            <li><strong>AI使用日志：</strong>新增ai_usage_logs表，树洞AI/论坛回帖/自动回帖/@回复四处均记录消耗日志。用户可在"设置→AI服务"tab查看个人日志（保留10天、每页20条、分页浏览）。管理员可在"系统日志"页面查看全平台AI日志，支持手动清理（90天/60天/30天/7天前）。</li>
+            <li><strong>AI配额管理优化：</strong>发放弹窗改为搜索选用户→输入配额（正增负减），弹窗防重复点击、AJAX返回JSON。AI套餐列表默认加载并分页。</li>
+            <li><strong>论坛助手优化：</strong>@回复改为引用回复格式、同帖1小时内不重复回、AI回帖均扣配额。</li>
+            <li><strong>正念签到修复：</strong>负念记录会导致连续签到归零重新计算。树洞每天最多3条防刷分。</li>
+        </ul>
+
+        <h3 class="h6">v2.4.0</h3>
+        <ul class="small mb-3">
+            <li><strong>新增「知识库」模块：</strong>全新菜单组📝知识库，支持Markdown文档管理、多级文件夹、editor.md编辑器、阅读+目录导航、外部分享（无需登录）、版本历史。</li>
+            <li><strong>系统性能优化：</strong>SystemSetting/miniapps查询加静态缓存。TodayDoService::initTables加flag标记只执行一次。调度器状态检查限频60秒。减少每次请求3-4次数据库查询。</li>
+            <li><strong>数据库备份修复：</strong>encryptFile改为64KB分块流式加密，修复479MB大数据库内存溢出。</li>
+            <li><strong>小程序Token隔离修复：</strong>createToken扩展为4参数，小程序token标记client_type='miniapp'不计入3个上限。</li>
+            <li><strong>正念模块新增：</strong>签到/树洞/配置，AI次数管理，管理员发放+套餐定价。</li>
         </ul>
 
         <h3 class="h6">v2.3.1</h3>
@@ -44,12 +50,16 @@ $appVersion = Config::get('app.version', 'v2.0.0');
 
         <h3 class="h6">v2.1.5</h3>
         <ul class="small mb-3">
-            <li><strong>@提及回复修复：</strong>通知解析从 `<li>` 改为 `<dd class="ntc_body">` 匹配，修复了一直返回 0 的问题。新增多 URL 尝试（&type=at、&inajax=1 等），确保不同 Discuz 版本兼容。@回复基于帖子内容和坛友回复生成上下文感知回复。</li>
+            <li><strong>@提及回复修复：</strong>通知解析从 &lt;li&gt; 改为 &lt;dd class="ntc_body"&gt; 匹配，修复了一直返回 0 的问题。新增多 URL 尝试（&type=at、&inajax=1 等），确保不同 Discuz 版本兼容。@回复基于帖子内容和坛友回复生成上下文感知回复。</li>
             <li><strong>彩蛋每日独立任务：</strong>claimDailyEggs() 不再依赖回帖触发，遍历所有已回复帖子逐个访问页面检测并领取彩蛋。isEligibleForEgg() 仅校验当日是否已领取同帖。每轮最多扫描 15 个帖子，每天上限 10 次。</li>
             <li><strong>跟进回复精简：</strong>关闭了主动扫描（checkRepliedThreadsForActivity），仅保留 @提及触发回复。移除 UI 中的「跟进回复」开关。isSelfPost() 新增 AI 回帖标识检测，防止重复回复。</li>
             <li><strong>引用回复优化：</strong>formatQuoteReply() 修复了错误引用自己文本的问题，改为引用对方实际回复内容。AI 提示词加强针对性，要求先理解对方具体说了什么再回应。</li>
             <li><strong>操作日志清理：</strong>移除每分钟产生的"没有可回复的帖子"冗余日志（峰值 12602 条/天）。日志保留期从 3 天缩至 1 天。新增 clean_logs.php 一键清理存量。</li>
         </ul>
+
+        <details class="mt-3 mb-3">
+            <summary class="small fw-semibold" style="cursor:pointer;color:#667eea">📜 更多历史日志（v2.1.4 及更早）</summary>
+            <div class="mt-2">
 
         <h3 class="h6">v2.1.4</h3>
         <ul class="small mb-3">
@@ -701,6 +711,8 @@ $appVersion = Config::get('app.version', 'v2.0.0');
             <li>支持上传图片凭证，并按用户隔离数据与文件。</li>
             <li>采用自定义 MVC 结构与 PDO + MySQL，保证在群晖 NAS 环境下零依赖运行。</li>
         </ul>
+            </div>
+        </details>
         </div>
         </div>
     </div>

@@ -54,15 +54,37 @@ class MindfulnessCheckin
             return ['max_streak' => 0, 'current_streak' => 0];
         }
 
+        // 查询所有有负念记录的日期
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT DISTINCT record_date FROM mindfulness_daily_records WHERE user_id = :uid AND type = "negative"');
+        $stmt->execute([':uid' => $userId]);
+        $negativeDates = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $negativeDates[] = $row['record_date'];
+        }
+
         $maxStreak = 1;
         $currentStreak = 1;
         $today = date('Y-m-d');
         $yesterday = date('Y-m-d', strtotime('-1 day'));
 
+        // 第一天如果有负念记录则从0开始
+        if (in_array($dates[0], $negativeDates)) {
+            $currentStreak = 0;
+            $maxStreak = 0;
+        }
+
         for ($i = 1; $i < count($dates); $i++) {
             $prev = date('Y-m-d', strtotime($dates[$i - 1]));
             $curr = $dates[$i];
-            if (date('Y-m-d', strtotime($prev . ' +1 day')) === $curr) {
+
+            // 当天有负念记录，连续签到归零
+            if (in_array($curr, $negativeDates)) {
+                $currentStreak = 0;
+                continue;
+            }
+
+            if (date('Y-m-d', strtotime($prev . ' +1 day')) === $curr && $currentStreak > 0) {
                 $currentStreak++;
             } else {
                 $currentStreak = 1;

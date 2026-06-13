@@ -85,6 +85,14 @@ class LicenseAdminController
     {
         $this->ensureAdmin();
 
+        // 处理AI日志清理
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cleanup_ai_logs') {
+            $days = max(1, (int)($_POST['days'] ?? 30));
+            $deleted = \App\Model\AiQuota::cleanupLogs($days);
+            header('Location: /public/index.php?route=license-admin&cleaned=' . $deleted . '&days=' . $days);
+            exit;
+        }
+
         $tab = 'logs';  // 只保留系统日志
 
         // 系统日志
@@ -124,6 +132,7 @@ class LicenseAdminController
             'logTotal' => $logTotal,
             'perPage' => $perPage,
             'tab' => $tab,
+            'aiLogs' => \App\Model\AiQuota::getAllUsageLogs(100),
         ]);
     }
 }

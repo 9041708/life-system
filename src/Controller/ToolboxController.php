@@ -482,7 +482,7 @@ class ToolboxController
             }
             $message .= "\n" . $aiFlag;
 
-            AiQuota::consume($userId);
+            AiQuota::consume($userId, 'forum_reply', '论坛回帖：' . mb_substr($account['forum_name'] ?? '', 0, 30));
 
             // 回帖
             $result = $service->reply($tid, $message);

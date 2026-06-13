@@ -868,13 +868,23 @@ class SettingsController
                 if (!$target) {
                     $error = '用户不存在';
                 } else {
-                    $sysQuota = (int)($_POST['system_quota'] ?? 10);
-                    $purchasedAdd = (int)($_POST['purchased_quota'] ?? 0);
-                    \App\Model\AiQuota::adminSetQuota($targetUid, $sysQuota, 0);
-                    if ($purchasedAdd > 0) {
-                        \App\Model\AiQuota::adminGrant($targetUid, $purchasedAdd);
+                    $adjust = (int)($_POST['purchased_quota'] ?? 0);
+                    $pdoGrant = \App\Service\Database::getConnection();
+                    $ex = $pdoGrant->prepare('SELECT id FROM user_ai_quotas WHERE user_id = :uid');
+                    $ex->execute([':uid' => $targetUid]);
+                    if (!$ex->fetch()) {
+                        $pdoGrant->prepare('INSERT INTO user_ai_quotas (user_id, purchased_quota) VALUES (:uid, :amt)')
+                            ->execute([':uid' => $targetUid, ':amt' => max(0, $adjust)]);
+                    } else {
+                        $pdoGrant->prepare('UPDATE user_ai_quotas SET purchased_quota = purchased_quota + :amt WHERE user_id = :uid')
+                            ->execute([':amt' => $adjust, ':uid' => $targetUid]);
                     }
-                    $success = "已为用户 {$targetUid} 设置AI配额（系统配额:{$sysQuota}，增加购买配额:{$purchasedAdd}）";
+                    $sign = $adjust >= 0 ? '+' : '';
+                    $success = "已为用户 {$targetUid} 调整配额 {$sign}{$adjust}";
+                }
+                if ($this->isAjax()) {
+                    if (!empty($error)) { $this->json(['ok' => false, 'error' => $error]); exit; }
+                    $this->json(['ok' => true, 'message' => $success]); exit;
                 }
             } elseif ($isAdmin && $action === 'ai_quota_set') {
                 $tab = 'users';
@@ -1407,6 +1417,9 @@ class SettingsController
             'pricingPlansAdmin' => \App\Model\AiQuota::getAllPricingPlans(),
             'aiQuotaData' => \App\Model\AiQuota::get($userId),
             'pricingPlansData' => \App\Model\AiQuota::getPricingPlans(),
+            'aiUsageLogs' => \App\Model\AiQuota::getUsageLogs($userId, 20, ((max(1, (int)($_GET['ai_log_page'] ?? 1))) - 1) * 20),
+            'aiLogPage' => max(1, (int)($_GET['ai_log_page'] ?? 1)),
+            'aiLogTotal' => \App\Model\AiQuota::countUsageLogs($userId),
         ]);
     }
 

@@ -206,3 +206,66 @@ $tab = $tab ?? "logs";
         </div>
     </div>
 </div>
+
+<?php $aiLogs = $aiLogs ?? []; ?>
+<div class="card mt-3">
+    <div class="card-body">
+        <?php if (!empty($_GET['cleaned'])): ?>
+        <div class="alert alert-success py-2 small">已清理 <?= (int)$_GET['cleaned'] ?> 条<?= (int)$_GET['days'] ?>天前的AI日志。</div>
+        <?php endif; ?>
+        <h2 class="h5 mb-3">🤖 AI使用日志</h2>
+        <div class="mb-3 d-flex gap-2 align-items-center">
+            <span class="small text-muted">清理旧日志：</span>
+            <form method="post" class="d-inline" onsubmit="return confirm('确定清理吗？')">
+                <input type="hidden" name="action" value="cleanup_ai_logs">
+                <input type="hidden" name="days" value="90">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">90天前</button>
+            </form>
+            <form method="post" class="d-inline" onsubmit="return confirm('确定清理吗？')">
+                <input type="hidden" name="action" value="cleanup_ai_logs">
+                <input type="hidden" name="days" value="60">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">60天前</button>
+            </form>
+            <form method="post" class="d-inline" onsubmit="return confirm('确定清理吗？')">
+                <input type="hidden" name="action" value="cleanup_ai_logs">
+                <input type="hidden" name="days" value="30">
+                <button type="submit" class="btn btn-sm btn-outline-warning">30天前</button>
+            </form>
+            <form method="post" class="d-inline" onsubmit="return confirm('确定清理吗？')">
+                <input type="hidden" name="action" value="cleanup_ai_logs">
+                <input type="hidden" name="days" value="7">
+                <button type="submit" class="btn btn-sm btn-outline-danger">7天前</button>
+            </form>
+        </div>
+        <?php if (empty($aiLogs)): ?>
+        <div class="text-muted small text-center py-3">暂无AI使用记录</div>
+        <?php else: ?>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>时间</th>
+                    <th>用户</th>
+                    <th>来源</th>
+                    <th>详情</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                $srcLabels = ['treasure' => '🕳️ 树洞', 'forum_reply' => '💬 论坛回帖', 'auto_reply' => '🤖 自动回帖', 'mention_reply' => '📢 @回复'];
+                foreach ($aiLogs as $log):
+                ?>
+                <tr>
+                    <td class="small text-muted" style="white-space:nowrap"><?= htmlspecialchars($log['created_at']) ?></td>
+                    <td class="small"><?= htmlspecialchars($log['nickname'] ?: $log['username'] ?: ('UID:'.$log['user_id'])) ?></td>
+                    <td class="small"><?= $srcLabels[$log['source']] ?? htmlspecialchars($log['source']) ?></td>
+                    <td class="small text-muted"><?= htmlspecialchars($log['detail']) ?></td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-2 text-muted small">共 <?= count($aiLogs) ?> 条记录</div>
+        <?php endif; ?>
+    </div>
+</div>

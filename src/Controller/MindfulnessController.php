@@ -319,7 +319,7 @@ class MindfulnessController
         }
 
         if ($aiMode === 'system') {
-            AiQuota::consume($userId);
+            AiQuota::consume($userId, 'treasure', '树洞心事：' . mb_substr($content, 0, 50));
         }
 
         $id = MindfulnessTreasure::create($userId, $content, $aiReply, $sentiment, $scoreChange);

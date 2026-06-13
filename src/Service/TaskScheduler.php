@@ -750,7 +750,7 @@ class TaskScheduler
                     $target = "帖子#{$tid} " . ($result['title'] ?? '');
                     \App\Model\ForumActionLog::create((int)$account['user_id'], (int)$account['id'], $logType, $result['message'] ?? $result['error'], $target);
                     if ($result['ok']) {
-                        \App\Model\AiQuota::consume($uid);
+                        \App\Model\AiQuota::consume($uid, 'auto_reply', '自动回帖：' . ($account['forum_name'] ?? ''));
                         \App\Model\ForumAccount::updateLastReply((int)$account['id']);
                         \App\Model\ForumRepliedThread::markReplied((int)$account['id'], $tid, $result['title'] ?? '');
                     }
@@ -804,7 +804,7 @@ class TaskScheduler
                     $r = $service->handleMentionReplies();
                     $results['mention'] += ($r['replied'] ?? 0);
                     if (($r['replied'] ?? 0) > 0) {
-                        \App\Model\AiQuota::consume($uid);
+                        \App\Model\AiQuota::consume($uid, 'mention_reply', '@提及回复：' . ($account['forum_name'] ?? ''));
                         \App\Model\ForumActionLog::create($uid, (int)$account['id'], 'reply', $r['message']);
                     }
                 } catch (\Throwable $e) {

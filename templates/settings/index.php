@@ -1167,6 +1167,52 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
             </div>
         </div>
     </div>
+
+    <?php
+    $logs = $aiUsageLogs ?? [];
+    $aiLogPage = $aiLogPage ?? 1;
+    $aiLogTotal = $aiLogTotal ?? 0;
+    $aiLogTotalPages = max(1, (int)ceil($aiLogTotal / 20));
+    ?>
+    <div class="card border-0 shadow-sm mt-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="h6 mb-0">📋 AI使用日志</h3>
+                <span class="small text-muted">保留最近10天 · 共 <?= $aiLogTotal ?> 条</span>
+            </div>
+            <?php if (empty($logs)): ?>
+            <div class="text-muted small text-center py-3">暂无使用记录</div>
+            <?php else: ?>
+            <div class="table-responsive" style="max-height:400px;overflow-y:auto">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light" style="position:sticky;top:0"><tr><th>时间</th><th>来源</th><th>详情</th></tr></thead>
+                    <tbody>
+                    <?php
+                    $sourceLabels = ['treasure' => '🕳️ 树洞', 'forum_reply' => '💬 论坛回帖', 'auto_reply' => '🤖 自动回帖', 'mention_reply' => '📢 @回复'];
+                    foreach ($logs as $log):
+                    ?>
+                    <tr>
+                        <td class="small text-muted" style="white-space:nowrap"><?= htmlspecialchars(substr($log['created_at'], 5, 11)) ?></td>
+                        <td><span class="small"><?= $sourceLabels[$log['source']] ?? htmlspecialchars($log['source']) ?></span></td>
+                        <td class="small text-muted"><?= htmlspecialchars($log['detail']) ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php if ($aiLogTotalPages > 1): ?>
+            <nav class="mt-2"><ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item <?= $aiLogPage <= 1 ? 'disabled' : '' ?>"><a class="page-link" href="?route=settings&tab=ai_service&ai_log_page=<?= $aiLogPage - 1 ?>">上一页</a></li>
+                <?php for ($p = 1; $p <= $aiLogTotalPages; $p++): ?>
+                <li class="page-item <?= $p === $aiLogPage ? 'active' : '' ?>"><a class="page-link" href="?route=settings&tab=ai_service&ai_log_page=<?= $p ?>"><?= $p ?></a></li>
+                <?php endfor; ?>
+                <li class="page-item <?= $aiLogPage >= $aiLogTotalPages ? 'disabled' : '' ?>"><a class="page-link" href="?route=settings&tab=ai_service&ai_log_page=<?= $aiLogPage + 1 ?>">下一页</a></li>
+            </ul></nav>
+            <?php endif; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+
 <?php elseif ($tab === 'system' && $isAdmin): ?>
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
@@ -1965,12 +2011,8 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
                             <button type="button" class="btn btn-sm btn-link py-0 ms-1" onclick="clearGrantSelection()">更换</button>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label small">系统配额</label>
-                            <input type="number" id="grantSystemQuota" class="form-control form-control-sm" value="10">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small">购买配额（增加）</label>
-                            <input type="number" id="grantPurchasedQuota" class="form-control form-control-sm" value="0">
+                            <label class="form-label small">调整配额（正数增加，负数减少）</label>
+                            <input type="number" id="grantPurchasedQuota" class="form-control form-control-sm" value="10">
                         </div>
                     </div>
                 </div>
@@ -1979,18 +2021,6 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
                     <button type="button" class="btn btn-sm btn-primary" id="btnGrantSubmit" onclick="submitGrant()" disabled>确认发放</button>
                 </div>
             </div>
-        </div>
-    </div>
-            <div class="form-text small mb-2">管理员不受AI次数限制。此处可为用户发放/修改AI使用次数，以及管理套餐定价。</div>
-            <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                    <thead class="table-light"><tr><th>用户ID</th><th>用户名</th><th>系统配额</th><th>已用</th><th>购买配额</th><th>已用</th><th>剩余</th><th class="text-center">操作</th></tr></thead>
-                    <tbody id="aiQuotaTableBody">
-                    <tr><td colspan="8" class="text-center text-muted small py-3">点击"加载列表"查看</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="loadAiQuotas()">加载列表</button>
         </div>
     </div>
 
@@ -2028,35 +2058,6 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
                     <?php endif; ?>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="grantAiModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header"><h6 class="modal-title">发放AI次数</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <form method="post" id="grantAiForm">
-                        <input type="hidden" name="action" value="ai_quota_grant">
-                        <div class="mb-3">
-                            <label class="form-label small">用户ID</label>
-                            <input type="number" name="target_user_id" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small">系统配额</label>
-                            <input type="number" name="system_quota" class="form-control form-control-sm" value="10">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small">购买配额（增加）</label>
-                            <input type="number" name="purchased_quota" class="form-control form-control-sm" value="0">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="submit" form="grantAiForm" class="btn btn-sm btn-primary">确认发放</button>
-                </div>
             </div>
         </div>
     </div>
@@ -2134,8 +2135,7 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
         clearGrantSelection();
         document.getElementById('grantSearchInput').value = '';
         document.getElementById('grantSearchResults').innerHTML = '';
-        document.getElementById('grantSystemQuota').value = '10';
-        document.getElementById('grantPurchasedQuota').value = '0';
+        document.getElementById('grantPurchasedQuota').value = '10';
         new bootstrap.Modal(document.getElementById('grantAiModal')).show();
         setTimeout(function(){ document.getElementById('grantSearchInput').focus(); }, 300);
     }
@@ -2182,7 +2182,6 @@ $miniappEnabled = \App\Service\Config::get('wechat.enable_miniapp', true);
         var fd = new FormData();
         fd.append('action', 'ai_quota_grant');
         fd.append('target_user_id', uid);
-        fd.append('system_quota', document.getElementById('grantSystemQuota').value);
         fd.append('purchased_quota', document.getElementById('grantPurchasedQuota').value);
         fetch('/public/index.php?route=settings', { method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd })
         .then(function(r) { return r.json(); })
