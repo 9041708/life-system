@@ -1,0 +1,289 @@
+/* miniprogram/pages/debt/list.less */
+
+.page {
+  padding: 24rpx 24rpx 40rpx;
+  background: #f5f6f8;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 24rpx;
+}
+
+.tabs {
+  display: flex;
+  background: #ffffff;
+  border-radius: 999rpx;
+  padding: 6rpx;
+  margin-bottom: 20rpx;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  color: #6b7280;
+  border-radius: 999rpx;
+}
+
+.tab.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.summary-bar {
+  display: flex;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.summary-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 22rpx;
+  color: #9ca3af;
+  margin-bottom: 6rpx;
+}
+
+.summary-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #111827;
+}
+
+.summary-value.green {
+  color: #07c160;
+}
+
+.summary-value.red {
+  color: #e64340;
+}
+
+.list {
+  max-height: calc(100vh - 300rpx);
+}
+
+.payment-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.payment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.payment-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #111827;
+}
+
+.payment-status {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: #f0f9f4;
+  color: #07c160;
+}
+
+.payment-status.paid {
+  background: #f0f9f4;
+  color: #07c160;
+}
+
+.payment-status.unpaid {
+  background: #fef0f0;
+  color: #e64340;
+}
+
+.payment-body .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  margin-bottom: 6rpx;
+}
+
+.payment-body .label {
+  color: #6b7280;
+}
+
+.payment-body .value {
+  color: #111827;
+}
+
+.payment-body .value.green {
+  color: #07c160;
+}
+
+.payment-body .value.red {
+  color: #e64340;
+}
+
+.payment-actions {
+  margin-top: 12rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.btn-mark-paid {
+  background-color: #07c160;
+  color: #ffffff;
+  border: none;
+  font-size: 24rpx;
+}
+
+.btn-undo {
+  background-color: #9ca3af;
+  color: #ffffff;
+  border: none;
+  font-size: 24rpx;
+}
+
+/* 汇总统计 */
+.grand-total {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.grand-label {
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-bottom: 8rpx;
+}
+
+.grand-value {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #07c160;
+}
+
+.grand-sub {
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-top: 4rpx;
+}
+
+.summary-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.summary-card-header {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 12rpx;
+}
+
+.summary-card-body .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  margin-bottom: 6rpx;
+}
+
+.summary-card-body .label {
+  color: #6b7280;
+}
+
+.summary-card-body .value {
+  color: #111827;
+}
+
+.summary-card-body .value.green {
+  color: #07c160;
+}
+
+.summary-card-body .value.red {
+  color: #e64340;
+}
+
+.progress-bar {
+  height: 8rpx;
+  border-radius: 999rpx;
+  background-color: #f3f4f6;
+  overflow: hidden;
+  margin-top: 12rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #07c160;
+  border-radius: 999rpx;
+}
+
+/* 负债配置 */
+.tips {
+  font-size: 22rpx;
+  color: #9ca3af;
+  margin-bottom: 12rpx;
+}
+
+.config-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+}
+
+.config-header {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 12rpx;
+}
+
+.config-body .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  margin-bottom: 6rpx;
+}
+
+.config-body .label {
+  color: #6b7280;
+}
+
+.config-body .value {
+  color: #111827;
+}
+
+.config-body .value.red {
+  color: #e64340;
+}
+
+.empty,
+.loading {
+  text-align: center;
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-top: 24rpx;
+}

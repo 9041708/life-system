@@ -1,0 +1,92 @@
+<!-- miniprogram/pages/budget/edit.wxml -->
+<view class="page">
+
+<!-- 编辑模式：只显示信息 + 金额输入 -->
+<block wx:if="{{mode === 'edit'}}">
+  <view class="section">
+    <view class="label">预算类型</view>
+    <view class="readonly">
+      {{type === 'income' ? '收入预算' : '支出预算'}}
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="label">分类 / 项目</view>
+    <view class="readonly">
+      <text wx:if="{{categoryName}}">{{categoryName}}</text>
+      <text wx:else>全部分类</text>
+      <text wx:if="{{itemName}}"> · {{itemName}}</text>
+    </view>
+  </view>
+</block>
+
+<!-- 新增模式：类型 / 分类 / 项目 可选 -->
+<block wx:if="{{mode === 'create'}}">
+  <view class="section type-row">
+    <view
+      class="type-btn {{type === 'expense' ? 'active' : ''}}"
+      data-type="expense"
+      bindtap="onTypeTap"
+    >支出预算</view>
+    <view
+      class="type-btn {{type === 'income' ? 'active' : ''}}"
+      data-type="income"
+      bindtap="onTypeTap"
+    >收入预算</view>
+  </view>
+
+  <view class="section">
+    <view class="label">分类</view>
+    <picker
+      mode="selector"
+      range="{{categories}}"
+      range-key="name"
+      value="{{categoryIndex}}"
+      bindchange="onCategoryChange"
+    >
+      <view class="picker-inner">
+        <text wx:if="{{categories.length > 0}}">
+          {{categories[categoryIndex].name}}
+        </text>
+        <text wx:else>全部分类</text>
+      </view>
+    </picker>
+  </view>
+
+  <view class="section">
+    <view class="label">项目（可选）</view>
+    <picker
+      mode="selector"
+      range="{{items}}"
+      range-key="name"
+      value="{{itemIndex}}"
+      bindchange="onItemChange"
+    >
+      <view class="picker-inner">
+        <text wx:if="{{items.length > 0}}">
+          {{items[itemIndex].name}}
+        </text>
+        <text wx:else>全部项目</text>
+      </view>
+    </picker>
+  </view>
+</block>
+
+<!-- 金额输入（两种模式都用） -->
+<view class="section">
+  <view class="label">预算金额</view>
+  <input
+    class="input"
+    type="digit"
+    placeholder="请输入本月预算金额"
+    value="{{amountInput}}"
+    bindinput="onAmountInput"
+  />
+</view>
+
+<view class="footer">
+  <button class="btn-save" type="primary" bindtap="onSubmit">
+    保存
+  </button>
+</view>
+</view>

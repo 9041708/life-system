@@ -1,0 +1,169 @@
+<!-- miniprogram/pages/budget/list.wxml -->
+<view class="page theme-{{theme}}">
+  <!-- 主 Tab 切换：订阅记录 / 资产管理 -->
+  <view class="main-tabs">
+    <view class="main-tab {{mainTab === 'subscription' ? 'active' : ''}}" bindtap="onMainTabSubscription">订阅记录</view>
+    <view class="main-tab {{mainTab === 'asset' ? 'active' : ''}}" bindtap="onMainTabAsset">资产管理</view>
+  </view>
+
+  <!-- ===== 订阅记录 ===== -->
+  <block wx:if="{{mainTab === 'subscription'}}">
+    <view class="tips">长按记录可编辑、续费或关闭，底部可新增。</view>
+
+    <view class="search-bar">
+      <input class="search-input" placeholder="搜索平台名称" value="{{keyword}}" bindinput="onKeywordInput" />
+      <button class="search-btn" size="mini" bindtap="onSearch">搜索</button>
+    </view>
+
+    <view class="tabs">
+      <view class="tab {{activeTab === 'subscription' ? 'active' : ''}}" bindtap="onTabSubscription">订阅</view>
+      <view class="tab {{activeTab === 'lifetime' ? 'active' : ''}}" bindtap="onTabLifetime">买断</view>
+    </view>
+
+    <scroll-view scroll-y="true" class="list">
+      <block wx:for="{{filteredList}}" wx:key="id">
+        <view class="sub-card" bindlongpress="onSubscriptionLongPress" data-sub="{{item}}">
+          <view class="sub-header">
+            <image wx:if="{{item.icon_url}}" class="icon" src="{{item.icon_url}}" mode="aspectFit" />
+            <view class="sub-title">{{item.platform}}</view>
+            <view class="badge" wx:if="{{item.type === 'subscription'}}">订阅</view>
+            <view class="badge badge-lifetime" wx:if="{{item.type === 'lifetime'}}">买断</view>
+          </view>
+
+          <view class="sub-body">
+            <view class="row">
+              <text class="label">价格</text>
+              <text class="value">{{item._priceDisplay}}</text>
+            </view>
+            <view class="row" wx:if="{{item.type === 'subscription'}}">
+              <text class="label">到期日</text>
+              <text class="value">{{item.expire_date || '--'}}</text>
+            </view>
+            <view class="row" wx:if="{{item.type === 'subscription'}}">
+              <text class="label">剩余天数</text>
+              <text class="value {{item._expireLevel}}">{{item._daysLabel}}</text>
+            </view>
+            <view class="row" wx:if="{{item.auto_renew}}">
+              <text class="label">续费方式</text>
+              <text class="value">自动续费</text>
+            </view>
+            <view class="row" wx:if="{{item.period}}">
+              <text class="label">周期</text>
+              <text class="value">{{item.period}}</text>
+            </view>
+            <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+          </view>
+        </view>
+      </block>
+      <view class="empty" wx:if="{{!loading && filteredList.length === 0}}">暂无记录</view>
+      <view class="loading" wx:if="{{loading}}">加载中…</view>
+    </scroll-view>
+
+    <view class="footer">
+      <button class="btn-add" type="primary" bindtap="onAddSubscription">新增订阅/买断</button>
+    </view>
+  </block>
+
+  <!-- ===== 资产管理 ===== -->
+  <block wx:if="{{mainTab === 'asset'}}">
+    <view class="summary">
+      <view class="summary-row">
+        <text class="label">在服役资产数：</text>
+        <text class="value">{{summary.assetCount}}</text>
+      </view>
+      <view class="summary-row">
+        <text class="label">总价值：</text>
+        <text class="value">{{summary.totalValue}}</text>
+      </view>
+      <view class="summary-row">
+        <text class="label">合计日均成本：</text>
+        <text class="value">{{summary.totalDailyCost}}</text>
+      </view>
+    </view>
+
+    <view class="tips">长按资产可编辑、转手或删除，底部可新增。</view>
+
+    <view class="tabs">
+      <view class="tab {{assetTab === 'active' ? 'active' : ''}}" bindtap="onTabActive">在服役中</view>
+      <view class="tab {{assetTab === 'transferred' ? 'active' : ''}}" bindtap="onTabTransferred">已转手</view>
+    </view>
+
+    <scroll-view scroll-y="true" class="list">
+      <block wx:if="{{assetTab === 'active'}}">
+        <block wx:for="{{assetsActive}}" wx:key="id">
+          <view class="asset-card" bindlongpress="onAssetLongPress" data-asset="{{item}}">
+            <view class="asset-header">
+              <image wx:if="{{item.icon_url}}" class="icon" src="{{item.icon_url}}" mode="aspectFit" />
+              <view class="asset-title">{{item.name}}</view>
+            </view>
+            <view class="asset-body">
+              <view class="row">
+                <text class="label">到手日期</text>
+                <text class="value">{{item.acquired_date || '--'}}</text>
+              </view>
+              <view class="row">
+                <text class="label">使用天数</text>
+                <text class="value">{{item.use_days}} 天</text>
+              </view>
+              <view class="row">
+                <text class="label">到手价格</text>
+                <text class="value">{{item._valueDisplay}}</text>
+              </view>
+              <view class="row">
+                <text class="label">日均成本</text>
+                <text class="value">{{item._dailyDisplay}}</text>
+              </view>
+              <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+            </view>
+          </view>
+        </block>
+        <view class="empty" wx:if="{{!loading && assetsActive.length === 0}}">暂无在服役资产</view>
+      </block>
+
+      <block wx:if="{{assetTab === 'transferred'}}">
+        <block wx:for="{{assetsTransferred}}" wx:key="id">
+          <view class="asset-card" bindlongpress="onAssetLongPress" data-asset="{{item}}">
+            <view class="asset-header">
+              <image wx:if="{{item.icon_url}}" class="icon" src="{{item.icon_url}}" mode="aspectFit" />
+              <view class="asset-title">{{item.name}}</view>
+            </view>
+            <view class="asset-body">
+              <view class="row">
+                <text class="label">到手日期</text>
+                <text class="value">{{item.acquired_date || '--'}}</text>
+              </view>
+              <view class="row">
+                <text class="label">转手日期</text>
+                <text class="value">{{item.transfer_date || '--'}}</text>
+              </view>
+              <view class="row">
+                <text class="label">使用天数</text>
+                <text class="value">{{item.use_days}} 天</text>
+              </view>
+              <view class="row">
+                <text class="label">到手价格</text>
+                <text class="value">{{item._valueDisplay}}</text>
+              </view>
+              <view class="row">
+                <text class="label">转手价格</text>
+                <text class="value">{{item._transferPriceDisplay}}</text>
+              </view>
+              <view class="row">
+                <text class="label">日均成本</text>
+                <text class="value">{{item._dailyDisplay}}</text>
+              </view>
+              <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+            </view>
+          </view>
+        </block>
+        <view class="empty" wx:if="{{!loading && assetsTransferred.length === 0}}">暂无已转手资产</view>
+      </block>
+
+      <view class="loading" wx:if="{{loading}}">加载中…</view>
+    </scroll-view>
+
+    <view class="footer">
+      <button class="btn-add" type="primary" bindtap="onAddAsset">新增资产</button>
+    </view>
+  </block>
+</view>

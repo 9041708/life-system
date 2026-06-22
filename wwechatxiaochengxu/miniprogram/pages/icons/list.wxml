@@ -1,0 +1,115 @@
+<!-- miniprogram/pages/icons/list.wxml -->
+<view class="page">
+  <view class="tip-text">
+    图标库用于集中管理常用的小图标，分类 / 项目 / 账户等页面可以直接复用这里的图标，避免重复上传。
+  </view>
+
+  <!-- 图标列表 -->
+  <view class="list-card">
+    <view class="list-header">
+      <view class="list-title">图标库列表</view>
+      <view class="list-count">共 {{icons.length}} 个</view>
+      <button class="btn-add" size="mini" bindtap="onAddIconTap">新增图标</button>
+    </view>
+
+    <view wx:if="{{loading}}" class="loading">加载中…</view>
+    <view wx:elif="{{!loading && icons.length === 0}}" class="empty">暂无图标，可在上方上传。</view>
+
+    <scroll-view wx:else scroll-y="true" class="icon-list">
+      <view
+        class="icon-row"
+        wx:for="{{icons}}"
+        wx:key="id"
+      >
+        <image
+          class="icon-img"
+          src="{{item.file_url}}"
+          mode="aspectFit"
+        />
+        <view class="icon-main">
+          <view class="icon-name">{{item.name}}</view>
+          <view class="icon-path">{{item.file_path}}</view>
+        </view>
+        <view class="icon-actions">
+          <text
+            class="action-link"
+            data-id="{{item.id}}"
+            bindtap="onEditTap"
+          >编辑</text>
+          <text
+            class="action-link danger"
+            data-id="{{item.id}}"
+            bindtap="onDeleteTap"
+          >删除</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 新增 / 编辑 图标弹窗 -->
+  <view wx:if="{{showFormModal}}" class="modal-mask">
+    <view class="modal-container">
+      <view class="modal-title">
+        {{editingId ? '编辑图标' : '新增图标'}}
+      </view>
+      <view class="modal-body">
+        <view class="form-item">
+          <input
+            class="input"
+            placeholder="图标名称，例如：微信、支付宝、工资（可选）"
+            value="{{formName}}"
+            bindinput="onFormNameInput"
+          />
+        </view>
+
+        <!-- 新增时：选择并预览图标文件 -->
+        <view wx:if="{{!editingId}}">
+          <view class="form-item">
+            <view class="icon-title">图标文件</view>
+            <view class="icon-upload-row">
+              <button class="btn-upload" bindtap="onChooseImage">选择图标</button>
+              <view class="upload-tip-small">
+                {{tempFilePath ? '已选择图片，可点击下方上传' : '请先选择要上传的图片'}}
+              </view>
+            </view>
+            <image
+              wx:if="{{tempFilePath}}"
+              class="preview-img"
+              src="{{tempFilePath}}"
+              mode="aspectFit"
+            />
+          </view>
+        </view>
+
+        <!-- 编辑时展示当前图标预览，并支持更换图标 -->
+        <view wx:elif="{{editingId}}">
+          <view class="form-item">
+            <view class="icon-title">当前图标</view>
+            <image
+              wx:if="{{formPreviewUrl}}"
+              class="preview-img"
+              src="{{formPreviewUrl}}"
+              mode="aspectFit"
+            />
+            <view class="icon-upload-row">
+              <button class="btn-upload" bindtap="onChangeImage">更换图标</button>
+            </view>
+            <view class="upload-tip-small">更换后会覆盖原有图标文件。</view>
+          </view>
+        </view>
+
+        <view class="upload-tip">建议使用正方形 PNG/JPG，小于 512KB。</view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn-secondary" bindtap="onCloseModal">取消</button>
+        <button
+          class="btn-primary"
+          loading="{{formUploading}}"
+          bindtap="onSubmitForm"
+        >
+          {{editingId ? '保存' : '上传'}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

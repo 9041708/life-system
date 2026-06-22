@@ -1,0 +1,14 @@
+<?php $d=$deds??[];$ym=$_GET['ym']??date('Y-m');$total=0;foreach($d as $dd){if($dd['deduction_month']==$ym)$total+=(float)$dd['amount'];}?>
+<h5>💸 扣款管理</h5>
+<div class="d-flex align-items-center gap-2 mb-2"><a href="?route=attendance-deduction&ym=<?=date('Y-m',strtotime($ym.' -1 month'))?>" class="btn btn-sm btn-outline-secondary">◀</a><span class="fw-bold"><?=$ym?></span><a href="?route=attendance-deduction&ym=<?=date('Y-m',strtotime($ym.' +1 month'))?>" class="btn btn-sm btn-outline-secondary">▶</a><button class="btn btn-sm btn-primary ms-2" onclick="new bootstrap.Modal(document.getElementById('dedModal')).show()">+ 新增扣款</button></div>
+<?php foreach($d as $dd):if($dd['deduction_month']==$ym):?>
+<div class="d-flex justify-content-between align-items-center border rounded p-2 mb-1" style="background:rgba(255,255,255,0.5)"><div><div class="fw-semibold small"><?=htmlspecialchars($dd['detail'])?></div><div class="text-muted small"><?=$dd['deduction_month']?></div></div><div class="text-end"><div class="text-danger fw-bold">-<?=number_format($dd['amount'],2)?></div><form method="post" class="d-inline"><input type="hidden" name="action" value="del_deduction"><input type="hidden" name="id" value="<?=$dd['id']?>"><button class="btn btn-sm btn-outline-danger py-0" style="font-size:0.6rem">✕</button></form></div></div>
+<?php endif;endforeach;?>
+<?php if(empty($d)):?><div class="text-muted small text-center py-3">暂无扣款</div><?php endif;?>
+<div class="fw-bold mt-2">当月合计：<span class="text-danger">-<?=number_format($total,2)?></span></div>
+
+<div class="modal fade" id="dedModal" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><div class="modal-content">
+<div class="modal-header py-2"><h6 class="modal-title">新增扣款</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><input type="hidden" id="dedMonth" value="<?=$ym?>"><label class="form-label small">日期</label><input id="dedDate" type="date" class="form-control form-control-sm mb-1" value="<?=date('Y-m-d')?>"><label class="form-label small">明细</label><input id="dedDetail" class="form-control form-control-sm mb-1" placeholder="如：迟到扣款"><label class="form-label small">金额</label><input id="dedAmt" type="number" step="0.01" class="form-control form-control-sm mb-2"><button class="btn btn-sm btn-primary w-100" onclick="addDed()">保存</button></div>
+</div></div></div></div>
+<script>function addDed(){var f=new FormData();f.append('action','add_deduction');f.append('month',document.getElementById('dedMonth').value);f.append('detail',document.getElementById('dedDetail').value);f.append('amount',document.getElementById('dedAmt').value);fetch('/public/index.php?route=attendance-api',{method:'POST',body:f}).then(function(r){return r.json()}).then(function(d){alert(d.message||d.error);if(d.ok)location.reload();});}</script>

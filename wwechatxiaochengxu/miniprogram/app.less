@@ -1,0 +1,32 @@
+/**app.wxss**/
+
+/* 全局主题：默认浅色，支持 theme-light / theme-dark 类 */
+page {
+  background-color: #f7f8fa;
+  color: #111827;
+}
+
+.page {
+  color: #111827;
+}
+
+.page.theme-light {
+  background-color: #f7f8fa;
+  color: #111827;
+}
+
+.page.theme-dark {
+  background-color: #020617;
+  color: #e5e7eb;
+}
+
+/* 可以复用的容器基础样式 */
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 200rpx 0;
+  box-sizing: border-box;
+}

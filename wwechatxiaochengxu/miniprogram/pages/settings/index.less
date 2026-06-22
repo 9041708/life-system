@@ -1,0 +1,372 @@
+.page {
+  padding: 24rpx 24rpx 40rpx;
+  box-sizing: border-box;
+}
+.section {
+  margin-top: 24rpx;
+}
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 12rpx;
+}
+.section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.label {
+  font-size: 28rpx;
+  color: #6b7280;
+  margin-bottom: 8rpx;
+}
+.value {
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+  background-color: #ffffff;
+  font-size: 28rpx;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+.value-left {
+  flex: 1;
+  min-width: 0;
+}
+.value-actions {
+  flex-shrink: 0;
+}
+.text-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.nickname-input {
+  border: none;
+  background-color: transparent;
+  font-size: 28rpx;
+  color: #333;
+}
+/* 顶部个人卡片样式 */
+.profile-card {
+  background-image: linear-gradient(135deg, #fde68a, #f97316);
+  border-radius: 24rpx;
+  padding: 24rpx 24rpx 20rpx;
+  color: #111827;
+  box-shadow: 0 12rpx 30rpx rgba(249, 115, 22, 0.35);
+}
+.profile-card-empty {
+  background-color: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.06);
+}
+.profile-main {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.avatar-button {
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+}
+.avatar-button::after {
+  border: none;
+}
+.avatar-img,
+.avatar-placeholder {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 999rpx;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52rpx;
+}
+.profile-text {
+  margin-left: 24rpx;
+  flex: 1;
+  min-width: 0;
+}
+.nickname-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nickname-text {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #111827;
+  max-width: 380rpx;
+}
+.mini-link {
+  font-size: 24rpx;
+  padding: 0 16rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  border-radius: 999rpx;
+}
+.mini-link::after {
+  border: none;
+}
+.user-id-text {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #f9fafb;
+  opacity: 0.85;
+}
+.profile-actions {
+  margin-top: 16rpx;
+  display: flex;
+  flex-direction: row;
+  gap: 16rpx;
+}
+.mini-outline {
+  flex: 1;
+  height: 64rpx;
+  line-height: 64rpx;
+  font-size: 26rpx;
+  border-radius: 999rpx;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #111827;
+  border: 1rpx solid rgba(255, 255, 255, 0.7);
+}
+.mini-outline::after {
+  border: none;
+}
+.stats-card {
+  margin-top: 20rpx;
+  background-color: #ffffff;
+  border-radius: 20rpx;
+  padding: 16rpx 12rpx;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  box-shadow: 0 6rpx 18rpx rgba(15, 23, 42, 0.08);
+}
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+.stat-number {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111827;
+}
+.stat-label {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #6b7280;
+}
+.cell-list {
+  background-color: #ffffff;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 6rpx 18rpx rgba(15, 23, 42, 0.06);
+}
+.cell {
+  padding: 18rpx 24rpx;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+.cell:last-child {
+  border-bottom-width: 0;
+}
+.cell-main {
+  display: flex;
+  flex-direction: column;
+}
+.cell-title {
+  font-size: 28rpx;
+  color: #111827;
+}
+.cell-desc {
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  color: #6b7280;
+}
+/* miniprogram/pages/settings/index.less */
+
+.page {
+  padding: 16rpx 24rpx 40rpx;
+  box-sizing: border-box;
+}
+
+.section {
+  margin-bottom: 24rpx;
+}
+
+/* 新增：用于块标题，例如“预算提醒” */
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+/* 新增：一行左右布局（左文字，右开关） */
+.section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 你原来的 label，这里继续复用做左侧文字 */
+.label {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}
+
+/* 你原来的 value 块，可以继续用于账号信息等 */
+.value {
+  padding: 20rpx 24rpx;
+  border-radius: 12rpx;
+  background-color: #f7f7f7;
+  font-size: 28rpx;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.value-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.avatar-img {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+}
+
+.avatar-placeholder {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+}
+
+.value-actions {
+  flex-shrink: 0;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nickname-input {
+  border: none;
+  background-color: transparent;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.mini-btn {
+  height: 56rpx;
+  line-height: 56rpx;
+  padding: 0 24rpx;
+  font-size: 24rpx;
+  color: #1677ff;
+  background: #fff;
+  border: 1rpx solid #1677ff;
+  border-radius: 999rpx;
+}
+
+.mini-btn::after {
+  border: none;
+}
+
+/* 新增：说明文字，例如“关闭后不再高亮……” */
+.tips {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #999;
+  line-height: 1.5;
+}
+
+.footer {
+  margin-top: 40rpx;
+}
+
+.btn-logout {
+  width: 70%;
+  margin: 0 auto;        /* 居中 */
+  border-radius: 999rpx;
+  font-size: 30rpx;
+  padding: 20rpx 0;
+}
+
+/* 底部操作按钮：更新日志 / 问题反馈 */
+/* 操作按钮栅格：四列，自动换行 */
+.action-grid {
+  margin-top: 16rpx;
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -8rpx;
+  margin-right: -8rpx;
+}
+
+.action-cell {
+  box-sizing: border-box;
+  padding: 0 8rpx 16rpx;
+  flex: 0 0 50%;
+}
+
+.action-btn {
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  background-color: #ffffff;
+  border: 1rpx solid #e5e7eb;
+}
+
+.action-btn::after {
+  border: none;
+}
+
+/* 垂直按钮组（用于图标库管理 / 扫码登录PC） */
+.action-col {
+  margin-top: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.action-btn.block {
+  width: 100%;
+}
+
+/* 强调主按钮（扫码登录PC） */
+.action-btn.primary {
+  background-color: #1677ff;
+  color: #ffffff;
+  border-color: #1677ff;
+  box-shadow: 0 6rpx 16rpx rgba(22, 119, 255, 0.25);
+}
+
+.action-btn.primary::after {
+  border: none;
+}

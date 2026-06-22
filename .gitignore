@@ -1,0 +1,32 @@
+# Config
+config/config.php
+
+# Runtime
+runtime/
+logs/
+backup/
+*.log
+
+# Uploads
+uploads/
+
+# System
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Git
+.git/
+
+# Node
+node_modules/
+
+# Misc
+*.tmp
+*.cache

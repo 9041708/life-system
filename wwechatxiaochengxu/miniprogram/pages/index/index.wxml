@@ -1,0 +1,48 @@
+<view class="page theme-{{theme}}">
+  <view class="login-card">
+    <view class="app-name">三石记账</view>
+    <view class="app-subtitle">微信小程序 · 随手记一笔</view>
+
+    <view class="logo-circle">
+      <text class="logo-text">记</text>
+    </view>
+
+    <button
+      class="btn-login"
+      type="primary"
+      bindtap="onWeChatLogin"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >
+      {{loading ? '正在登录…' : '微信一键登录'}}
+    </button>
+
+    <view class="hint">
+      登录后可在手机与电脑之间同步账本
+    </view>
+  </view>
+
+  <!-- 隐私协议弹窗，使用官方 agreePrivacyAuthorization 按钮 -->
+  <view wx:if="{{showPrivacy}}" class="privacy-mask">
+    <view class="privacy-dialog">
+      <view class="privacy-title">隐私政策提示</view>
+      <view class="privacy-content">
+        为向你提供记账等服务，我们需要收集和使用必要的信息。请先阅读并同意
+        {{privacyContractName || '《隐私保护指引》'}}。你可以点击下方“查看隐私协议”了解详情；若不同意，将无法继续登录和使用本小程序。
+      </view>
+      <button class="privacy-link-btn" bindtap="handleOpenPrivacyContract">查看隐私协议</button>
+      <view class="privacy-actions">
+        <button class="privacy-btn secondary" size="mini" bindtap="handleDisagreePrivacy">不同意</button>
+        <button
+          id="agree-btn"
+          class="privacy-btn primary"
+          size="mini"
+          open-type="agreePrivacyAuthorization"
+          bindagreeprivacyauthorization="handleAgreePrivacyAuthorization"
+        >
+          同意
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

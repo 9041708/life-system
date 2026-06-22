@@ -1,0 +1,141 @@
+<!-- miniprogram/pages/items/list.wxml -->
+<view class="page">
+  <!-- 分类选择 -->
+  <view class="filter">
+    <view class="filter-label">所属分类</view>
+    <picker
+      mode="selector"
+      range="{{categoryOptions}}"
+      range-key="name"
+      value="{{categoryIndex}}"
+      bindchange="onCategoryChange"
+    >
+      <view class="picker-value">
+        {{categoryOptions[categoryIndex].name}}
+      </view>
+    </picker>
+  </view>
+
+  <view class="tip-text">
+    项目用于细分分类下的具体收支事项，例如“餐饮”下的“早餐/午餐/晚餐”。
+  </view>
+
+  <!-- 项目列表 -->
+  <view class="list">
+    <view class="item-row" wx:for="{{items}}" wx:key="id">
+      <image
+        wx:if="{{item.icon_url}}"
+        class="item-icon"
+        src="{{item.icon_url}}"
+        mode="aspectFit"
+      />
+      <view class="item-main">
+        <view class="item-name">{{item.name}}</view>
+        <view class="item-sub">
+          所属分类：{{item.category_label || item.category_name || ('#' + item.category_id)}}
+          <text wx:if="{{item.sort_order}}"> · 排序：{{item.sort_order}}</text>
+        </view>
+      </view>
+      <view class="item-actions">
+        <text
+          class="action-link"
+          data-id="{{item.id}}"
+          bindtap="onEditTap"
+        >编辑</text>
+        <text
+          class="action-link danger"
+          data-id="{{item.id}}"
+          bindtap="onDeleteTap"
+        >删除</text>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{!loading && items.length === 0}}">
+      暂无项目
+    </view>
+    <view class="loading" wx:if="{{loading}}">
+      加载中…
+    </view>
+  </view>
+  <!-- 底部新增按钮 -->
+  <view class="footer-actions">
+    <button class="btn-primary" bindtap="onAddNew">新增项目</button>
+  </view>
+
+  <!-- 管理子菜单：账户列表 / 分类管理 / 项目管理 -->
+  <view class="manage-subtab">
+    <view class="manage-subtab-item" bindtap="onNavAccounts">账户列表</view>
+    <view class="manage-subtab-item" bindtap="onNavCategories">分类管理</view>
+    <view class="manage-subtab-item manage-active" bindtap="onNavItems">项目管理</view>
+  </view>
+
+  <!-- 新增 / 编辑 弹窗表单 -->
+  <view wx:if="{{showFormModal}}" class="modal-mask">
+    <view class="modal-container">
+      <view class="modal-title">
+        {{editingId ? '编辑项目' : '新增项目'}}
+      </view>
+      <view class="modal-body">
+        <view class="form-item">
+          <input
+            class="input"
+            placeholder="项目名称，如：早餐、午餐、打车"
+            value="{{nameInput}}"
+            bindinput="onNameInput"
+          />
+        </view>
+        <view class="form-item">
+          <input
+            class="input"
+            placeholder="排序（可选，数字越小越靠前）"
+            value="{{sortInput}}"
+            bindinput="onSortInput"
+          />
+        </view>
+
+        <!-- 图标上传与图标库选择 -->
+        <view class="icon-section">
+          <view class="icon-title">图标设置（可选）</view>
+          <view class="icon-upload-row">
+            <input
+              class="input icon-name-input"
+              placeholder="图标名称（用于图标库显示，可选）"
+              value="{{newIconName}}"
+              bindinput="(e)=>{this.setData({newIconName: e.detail.value})}"
+            />
+            <button
+              class="btn-upload"
+              loading="{{uploadingIcon}}"
+              bindtap="onUploadIcon"
+            >上传图标</button>
+          </view>
+
+          <view class="icon-grid" wx:if="{{iconLibrary.length > 0}}">
+            <view
+              class="icon-item {{item.id === selectedIconId ? 'active' : ''}}"
+              wx:for="{{iconLibrary}}"
+              wx:key="id"
+              data-id="{{item.id}}"
+              bindtap="onIconSelect"
+            >
+              <image class="icon-img" src="{{item.file_url}}" mode="aspectFit" />
+            </view>
+          </view>
+          <view class="icon-actions">
+            <text class="action-link" bindtap="onClearIcon">清除图标</text>
+          </view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn-secondary" bindtap="onCloseModal">取消</button>
+        <button
+          class="btn-primary"
+          loading="{{submitting}}"
+          bindtap="onSubmit"
+        >
+          {{editingId ? '保存修改' : '新增项目'}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,258 @@
+<!-- miniprogram/pages/settings/index.wxml -->
+<view class="page theme-{{theme}}">
+  <!-- 顶部个人卡片 -->
+  <view class="profile-card" wx:if="{{user}}">
+    <view class="profile-main">
+      <button
+        class="avatar-button"
+        open-type="chooseAvatar"
+        bind:chooseavatar="onChooseAvatar"
+      >
+        <image
+          wx:if="{{user && user.avatar_url}}"
+          class="avatar-img"
+          mode="aspectFill"
+          src="{{user.avatar_url}}"
+        />
+        <view wx:else class="avatar-placeholder">👤</view>
+      </button>
+      <view class="profile-text">
+        <view class="nickname-row">
+          <text class="nickname-text">{{nickInput || user.nickname || user.username}}</text>
+          <button class="mini-link" size="mini" bindtap="onEditNickname">编辑</button>
+        </view>
+        <view class="user-id-text">ID：{{displayUserId || user.id}}</view>
+      </view>
+    </view>
+    <view class="profile-actions">
+      <button class="mini-outline" size="mini" bindtap="onViewQrLogin">PC扫码登录</button>
+    </view>
+  </view>
+
+  <view class="profile-card profile-card-empty" wx:else>
+    <view class="profile-main">
+      <view class="avatar-placeholder">👤</view>
+      <view class="profile-text">
+        <view class="nickname-text">未登录</view>
+        <view class="user-id-text">请在首页完成登录后使用"我的"</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 统计条：注册天数 / 记账天数 / 连续记账 / 记账笔数 -->
+  <view class="stats-card" wx:if="{{user}}">
+    <view class="stat-item">
+      <view class="stat-number">{{stats.registerDays}}</view>
+      <view class="stat-label">注册天数</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{stats.bookDays}}</view>
+      <view class="stat-label">记账天数</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{stats.streakDays}}</view>
+      <view class="stat-label">连续记账</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{stats.transactionCount}}</view>
+      <view class="stat-label">记账笔数</view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{user}}">
+    <view class="label">用户名</view>
+    <view class="value">
+      <view class="value-left">
+        <text class="text-ellipsis">{{user.username}}</text>
+      </view>
+      <view class="value-actions">
+        <button class="mini-btn" size="mini" bindtap="onChangeUsername">修改</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="label">当前账本</view>
+    <view class="value">
+      <view class="value-left">
+        <text wx:if="{{user}}" class="text-ellipsis">{{activeLedgerDisplay}}</text>
+        <text wx:else>未登录</text>
+      </view>
+      <view class="value-actions" wx:if="{{user}}">
+        <picker
+          mode="selector"
+          range="{{ledgerLabels}}"
+          bindchange="onLedgerPickerChange"
+          value="{{activeLedgerIndex}}"
+        >
+          <button class="mini-btn" size="mini">切换</button>
+        </picker>
+      </view>
+    </view>
+    <view class="tips" wx:if="{{user}}">
+      个人账本仅自己可见；共享账本支持多人协作（成员/管理员）。
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{user}}">
+    <view class="section-title">账本管理</view>
+    <view class="section-row">
+      <view class="label">新建共享账本</view>
+      <view class="value">
+        <button class="mini-btn" size="mini" bindtap="onCreateSharedLedger" loading="{{creatingLedger}}" disabled="{{creatingLedger}}">创建</button>
+      </view>
+    </view>
+    <view class="section-row">
+      <view class="label">通过邀请码加入</view>
+      <view class="value">
+        <button class="mini-btn" size="mini" bindtap="onJoinLedgerByCode" loading="{{joiningLedger}}" disabled="{{joiningLedger}}">输入邀请码</button>
+        <button class="mini-btn" size="mini" bindtap="onScanJoinLedger">扫码加入</button>
+      </view>
+    </view>
+    <view class="tips">
+      可在 PC 端"系统设置 &gt; 账本管理"中为共享账本生成邀请二维码，让成员使用本页的"扫码加入"完成加入。
+    </view>
+  </view>
+
+  <!-- 账户与服务列表 -->
+  <view class="section" wx:if="{{user}}">
+    <view class="section-title">账户与服务</view>
+    <view class="cell-list">
+      <view class="cell" bindtap="onSetEmail">
+        <view class="cell-main">
+          <view class="cell-title">绑定邮箱</view>
+          <view class="cell-desc">
+            <block wx:if="{{user && user.email && !emailIsPlaceholder}}">{{user.email}}</block>
+            <block wx:elif="{{user && emailIsPlaceholder}}">尚未填写有效邮箱</block>
+            <block wx:else>保障账号安全</block>
+          </view>
+        </view>
+      </view>
+
+      <view class="cell" bindtap="onBindPcAccount">
+        <view class="cell-main">
+          <view class="cell-title">绑定PC账号</view>
+          <view class="cell-desc">使用用户名+密码绑定现有网页端账号</view>
+        </view>
+      </view>
+
+      <view class="cell" bindtap="onViewFeedback">
+        <view class="cell-main">
+          <view class="cell-title">意见反馈</view>
+          <view class="cell-desc">告诉我们你的想法</view>
+        </view>
+      </view>
+
+      <view class="cell" bindtap="onViewIcons">
+        <view class="cell-main">
+          <view class="cell-title">图标库管理</view>
+          <view class="cell-desc">管理记账中使用的图标</view>
+        </view>
+      </view>
+
+      <view class="cell" bindtap="onSetPassword">
+        <view class="cell-main">
+          <view class="cell-title">设置密码</view>
+          <view class="cell-desc">为网页端登录设置/重置密码</view>
+        </view>
+      </view>
+
+      <view class="cell" bindtap="onViewChangelog">
+        <view class="cell-main">
+          <view class="cell-title">更新日志</view>
+          <view class="cell-desc">了解最近的功能更新</view>
+        </view>
+      </view>
+
+      <view class="cell" bindtap="onCheckUpdate">
+        <view class="cell-main">
+          <view class="cell-title">检查更新</view>
+          <view class="cell-desc">手动检查小程序新版本</view>
+        </view>
+      </view>
+
+      <view class="cell" bindtap="onOpenPrivacyContract">
+        <view class="cell-main">
+          <view class="cell-title">隐私协议</view>
+          <view class="cell-desc">查看《小程序用户隐私保护指引》</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">预算提醒</view>
+    <view class="section-row">
+      <view class="label">接近上限 / 超支提醒</view>
+      <switch
+        checked="{{budgetReminderEnabled}}"
+        bindchange="onBudgetReminderChange"
+      />
+    </view>
+    <view class="tips">
+      关闭后，小程序和 PC 端仍会显示预算进度条，但不再高亮或提示"接近上限 / 已超支"。
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">转账功能</view>
+    <view class="section-row">
+      <view class="label">账户间转账</view>
+      <switch
+        checked="{{transferEnabled}}"
+        bindchange="onTransferChange"
+      />
+    </view>
+    <view class="tips">
+      开启后，可在记一笔时选择"转账"类型，并为其维护独立的分类和项目；关闭后仅保留支出 / 收入两种类型。
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">账户余额为负数</view>
+    <view class="section-row">
+      <view class="label">允许账户为负数</view>
+      <switch
+        checked="{{allowNegativeBalance}}"
+        bindchange="onAllowNegativeBalanceChange"
+      />
+    </view>
+    <view class="tips">
+      开启后，账户余额不足时仍可记录支出流水，账户余额会变为负数；关闭后，账户余额不足时将无法保存该支出。
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">报销管理</view>
+    <view class="section-row">
+      <view class="label">开启报销管理</view>
+      <switch
+        checked="{{reimbursementEnabled}}"
+        bindchange="onReimbursementChange"
+      />
+    </view>
+    <view class="tips">
+      开启后，可在"管理"页面使用报销管理功能，记录和统计日常报销。
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">外观与主题</view>
+    <view class="section-row">
+      <view class="label">夜间模式</view>
+      <switch
+        checked="{{theme === 'dark'}}"
+        bindchange="onThemeSwitchChange"
+      />
+    </view>
+    <view class="tips">
+      开启后，将在支持的页面使用深色背景和浅色文字显示。
+    </view>
+  </view>
+
+  <view class="footer">
+    <button class="btn-logout" type="warn" bindtap="onLogoutTap">
+      退出登录
+    </button>
+  </view>
+</view>

@@ -1,0 +1,87 @@
+<!-- miniprogram/pages/reimbursement/list.wxml -->
+<view class="page theme-{{theme}}">
+  <view class="title">报销管理</view>
+
+  <view class="tabs">
+    <view class="tab {{activeTab === 'situation' ? 'active' : ''}}" bindtap="onTabSituation">报销情况</view>
+    <view class="tab {{activeTab === 'statistics' ? 'active' : ''}}" bindtap="onTabStatistics">报销统计</view>
+  </view>
+
+  <!-- 概览 -->
+  <view class="overview-bar" wx:if="{{overview}}">
+    <view class="overview-item">
+      <text class="overview-label">待报销总额</text>
+      <text class="overview-value red">{{overview.pendingAmount}}</text>
+    </view>
+    <view class="overview-item">
+      <text class="overview-label">已报销总额</text>
+      <text class="overview-value green">{{overview.reimbursedAmount}}</text>
+    </view>
+  </view>
+
+  <!-- 报销情况（全部记录，统一显示状态badge） -->
+  <scroll-view scroll-y="true" class="list" wx:if="{{activeTab === 'situation'}}">
+    <block wx:for="{{items}}" wx:key="id">
+      <view class="reimb-card" bindlongpress="onItemLongPress" data-item="{{item}}">
+        <view class="reimb-header">
+          <view class="reimb-title">{{item.title}}</view>
+          <view class="reimb-status-badge {{item.status}}">{{item.status_text}}</view>
+        </view>
+        <view class="reimb-body">
+          <view class="row">
+            <text class="label">金额</text>
+            <text class="value">¥{{item.amountDisplay}}</text>
+          </view>
+          <view class="row" wx:if="{{item.category_name}}">
+            <text class="label">分类</text>
+            <text class="value">{{item.category_name}}</text>
+          </view>
+          <view class="row" wx:if="{{item.description}}">
+            <text class="label">描述</text>
+            <text class="value">{{item.description}}</text>
+          </view>
+          <view class="row">
+            <text class="label">创建时间</text>
+            <text class="value">{{item.created_at}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view class="empty" wx:if="{{!loading && items.length === 0}}">暂无报销记录</view>
+    <view class="loading" wx:if="{{loading}}">加载中…</view>
+
+    <view class="footer">
+      <button class="btn-add" type="primary" bindtap="onAddReimbursement">新增报销记录</button>
+    </view>
+  </scroll-view>
+
+  <!-- 报销统计 -->
+  <scroll-view scroll-y="true" class="list" wx:if="{{activeTab === 'statistics'}}">
+    <view class="stat-overview">
+      <view class="stat-item">
+        <text class="stat-label">待报销</text>
+        <text class="stat-value red">{{overview.pendingAmount}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">已报销</text>
+        <text class="stat-value green">{{overview.reimbursedAmount}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">总计数</text>
+        <text class="stat-value">{{overview.totalCount}} 笔</text>
+      </view>
+    </view>
+
+    <view class="stat-section-title" wx:if="{{monthly.length > 0}}">月度统计</view>
+    <block wx:for="{{monthly}}" wx:key="month">
+      <view class="stat-row">
+        <text class="stat-month">{{item.month}}</text>
+        <text class="stat-count">{{item.count}} 笔</text>
+        <text class="stat-amount">¥{{item.amountDisplay}}</text>
+      </view>
+    </block>
+
+    <view class="empty" wx:if="{{!loading && monthly.length === 0 && category.length === 0}}">暂无统计数据</view>
+    <view class="loading" wx:if="{{loading}}">加载中…</view>
+  </scroll-view>
+</view>
