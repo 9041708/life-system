@@ -61,6 +61,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/editor.md@1.5.0/editormd.min.js"></script>
+<script src="/public/plugins/image-handle-paste/image-handle-paste.js"></script>
 <script>
 var currentDocId = <?= $docId ?: 0 ?>;
 var autoSaveTimer = null;
@@ -68,65 +69,8 @@ var lastContent = '';
 var lastTitle = '';
 
 // ========== 粘贴上传图片（独立实现，不依赖 Editor.md 内部） ==========
-// 用捕获模式监听整个 document 的 paste 事件
-$(function() {
-    // 延迟绑定，确保 Editor.md 已加载
-    setTimeout(function() {
-        document.addEventListener('paste', function(e) {
-            // 只有当焦点在编辑器内才处理
-            var active = document.activeElement;
-            if (!active || !$(active).closest('#kbEditor').length) return;
+// 插件 image-handle-paste 已在页面中引入，初始化后启用
 
-            var cd = e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData);
-            if (!cd || !cd.items) return;
-
-            for (var i = 0; i < cd.items.length; i++) {
-                if (cd.items[i].type && cd.items[i].type.indexOf('image') === 0) {
-                    e.preventDefault();
-                    var file = cd.items[i].getAsFile();
-                    if (!file) return;
-
-                    var docId = currentDocId || 0;
-                    if (docId <= 0) { alert('请先保存文档后再上传图片'); return; }
-
-                    var fd = new FormData();
-                    fd.append('image', file);
-
-                    // 显示上传提示
-                    var statusEl = document.getElementById('saveStatus');
-                    if (statusEl) statusEl.textContent = '正在上传图片...';
-
-                    $.ajax({
-                        url: '/public/index.php?route=kb-api&action=upload_image&doc_id=' + docId,
-                        type: 'POST',
-                        data: fd,
-                        processData: false,
-                        contentType: false,
-                        success: function(d) {
-                            if (statusEl) statusEl.textContent = '';
-                            if (d.success === 1 && d.url) {
-                                // 插入 markdown 图片到编辑器
-                                if (editor && editor.codemirror) {
-                                    editor.codemirror.replaceSelection('![](' + d.url + ')');
-                                    autoSave();
-                                }
-                            } else {
-                                alert('上传失败：' + (d.message || '未知错误'));
-                            }
-                        },
-                        error: function() {
-                            if (statusEl) statusEl.textContent = '';
-                            alert('上传请求失败');
-                        }
-                    });
-                    return;
-                }
-            }
-        }, true); // 捕获模式，确保能拿到 paste 事件
-    }, 800);
-});
-
-// ========== 自动保存 ==========
 function autoSave() {
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(function() {
@@ -224,7 +168,11 @@ $(function(){
         imageUploadField: 'image',
         flowChart: false,
         sequenceDiagram: false,
-        onchange: function() { autoSave(); }
+        onchange: function() { autoSave(); },
+        onload: function() {
+            // 激活粘贴上传插件
+            this.imagePaste();
+        }
     });
     lastContent = editor.codemirror.getValue();
     lastTitle = $('#docTitle').val();
