@@ -341,4 +341,94 @@ class Upload
             @unlink($fullPath);
         }
     }
+
+    /**
+     * 保存知识库图片到 uploads/{user_id}/{doc_id}/ 目录
+     * 用于 editor.md 图片粘贴/拖拽上传
+     */
+    public static function saveKbImage(int $userId, int $docId, array $file): ?string
+    {
+        if (empty($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+        if ($file['size'] > 10 * 1024 * 1024) {
+            return null;
+        }
+
+        $baseDir = Config::get('app.upload_dir');
+        if (!$baseDir) {
+            return null;
+        }
+
+        $subPath = $userId . '/' . $docId;
+        $targetDir = rtrim($baseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $subPath;
+
+        if (!is_dir($targetDir)) {
+            if (!mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
+                return null;
+            }
+        }
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'], true)) {
+            $ext = 'jpg';
+        }
+
+        $safeName = uniqid('img_', true) . '.' . $ext;
+        $safeName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $safeName);
+        $targetPath = $targetDir . DIRECTORY_SEPARATOR . $safeName;
+
+        if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+            return null;
+        }
+
+        return $subPath . '/' . $safeName;
+    }
+
+    /**
+     * 删除 uploads/{user_id}/{doc_id}/ 整个目录
+     */
+    public static function deleteKbDocDir(int $userId, int $docId): void
+    {
+        $baseDir = Config::get('app.upload_dir');
+        if (!$baseDir) {
+            return;
+        }
+        $dir = rtrim($baseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $userId . DIRECTORY_SEPARATOR . $docId;
+        if (is_dir($dir)) {
+            self::rmDirRecursive($dir);
+        }
+    }
+
+    /**
+     * 递归删除目录
+     */
+    private static function rmDirRecursive(string $dir): void
+    {
+        if (!is_dir($dir)) return;
+        $items = array_diff(scandir($dir), ['.', '..']);
+        foreach ($items as $item) {
+            $path = $dir . DIRECTORY_SEPARATOR . $item;
+            is_dir($path) ? self::rmDirRecursive($path) : @unlink($path);
+        }
+        @rmdir($dir);
+    }
+
+    /**
+     * 从文章内容中提取所有 uploads 图片相对路径
+     * 返回格式: ['user_id/doc_id/filename', ...]
+     */
+    public static function extractKbImagePaths(string $content): array
+    {
+        $paths = [];
+        // Markdown 格式: ![alt](/uploads/...)
+        if (preg_match_all('#!\[.*?\]\(/uploads/([^)\s]+)#i', $content, $m)) {
+            foreach ($m[1] as $p) $paths[] = $p;
+        }
+        // HTML 格式: <img src="/uploads/..." />
+        if (preg_match_all('#<img[^>]+src=["\']/uploads/([^"\'<>]+)["\']#i', $content, $m)) {
+            foreach ($m[1] as $p) $paths[] = $p;
+        }
+        return array_unique($paths);
+    }
 }

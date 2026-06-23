@@ -96,7 +96,7 @@ class KbController
     {
         $userId = $this->requireLogin();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { $this->json(['ok' => false, 'error' => '无效请求']); }
-        $action = $_POST['action'] ?? '';
+        $action = $_POST['action'] ?? $_GET['action'] ?? '';
         try {
             ob_start();
             switch ($action) {
@@ -145,7 +145,18 @@ class KbController
         $data = [];
         if (isset($_POST['title'])) $data['title'] = trim($_POST['title']);
         if (isset($_POST['content'])) {
-            $data['content'] = $_POST['content'];
+            $oldContent = $doc['content'] ?? '';
+            $newContent = $_POST['content'];
+            // 清理已删除的图片文件
+            $oldImages = Upload::extractKbImagePaths($oldContent);
+            $newImages = Upload::extractKbImagePaths($newContent);
+            $removed = array_diff($oldImages, $newImages);
+            $baseDir = Config::get('app.upload_dir');
+            foreach ($removed as $relPath) {
+                $fullPath = rtrim($baseDir, '/\\') . DIRECTORY_SEPARATOR . ltrim($relPath, '/\\');
+                if (is_file($fullPath)) @unlink($fullPath);
+            }
+            $data['content'] = $newContent;
             $data['content_html'] = $_POST['content_html'] ?? '';
         }
         if (isset($_POST['parent_id'])) $data['parent_id'] = (int)$_POST['parent_id'];
@@ -167,6 +178,8 @@ class KbController
     private function deleteDoc(int $userId): void
     {
         $id = (int)($_POST['id'] ?? 0);
+        // 先删除该文档对应的图片目录
+        Upload::deleteKbDocDir($userId, $id);
         KbDocument::deleteRecursive($id, $userId);
         $this->json(['ok' => true]);
     }
@@ -230,13 +243,24 @@ class KbController
 
     private function uploadImage(int $userId): void
     {
-        if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-            $this->json(['ok' => false, 'error' => '上传失败']);
+        // Editor.md 通过 URL query 传参，不从 POST 取 action
+        $docId = (int)($_GET['doc_id'] ?? 0);
+        if ($docId <= 0) {
+            $this->json(['success' => 0, 'message' => '文档ID无效']);
         }
-        $path = Upload::saveAttachment($userId, $_FILES['image']);
-        if (!$path) $this->json(['ok' => false, 'error' => '保存失败']);
-        $url = '/uploads/' . $path;
-        $this->json(['ok' => true, 'url' => $url]);
+        $doc = KbDocument::findById($docId, $userId);
+        if (!$doc) {
+            $this->json(['success' => 0, 'message' => '文档不存在']);
+        }
+        if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            $this->json(['success' => 0, 'message' => '上传失败，请重试']);
+        }
+        $path = Upload::saveKbImage($userId, $docId, $_FILES['image']);
+        if (!$path) {
+            $this->json(['success' => 0, 'message' => '图片保存失败']);
+        }
+        // Editor.md 要求返回 {success:1, url:"..."}
+        $this->json(['success' => 1, 'url' => '/uploads/' . $path]);
     }
 
     private function saveSpaceConfig(int $userId): void
