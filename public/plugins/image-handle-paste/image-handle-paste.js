@@ -34,7 +34,7 @@
 
                         console.log('[imagePaste] 检测到图片粘贴，准备上传', file);
 
-                        var fieldName = settings.imageUploadField || 'editormd-image-file';
+                        var fieldName = settings.imageUploadField || 'image';
                         var formData = new FormData();
                         formData.append(fieldName, file, 'paste_' + Date.now() + '.png');
 
