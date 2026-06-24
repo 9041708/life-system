@@ -694,24 +694,6 @@ switch ($route) {
         $controller->api();
         break;
 
-    // 知识库
-    case 'kb-editor':
-        $controller = new \App\Controller\KbController();
-        $controller->editor();
-        break;
-    case 'kb-read':
-        $controller = new \App\Controller\KbController();
-        $controller->read();
-        break;
-    case 'kb-share':
-        $controller = new \App\Controller\KbController();
-        $controller->share();
-        break;
-    case 'kb-api':
-        $controller = new \App\Controller\KbController();
-        $controller->api();
-        break;
-
     case 'license-activate':
         $view = 'license/activate';
         $pageTitle = '授权激活';
