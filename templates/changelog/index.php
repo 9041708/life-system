@@ -13,7 +13,14 @@ $appVersion = Config::get('app.version', 'v2.0.0');
         </div>
 
         <div id="changelog-latest">
-        <h3 class="h6">v2.8.0 <span class="badge bg-success ms-1">最新</span></h3>
+        <h3 class="h6">v2.8.1 <span class="badge bg-success ms-1">最新</span></h3>
+        <ul class="small mb-3">
+            <li><strong>修复简历菜单：</strong>补全缺失的二级菜单（简历配置/简历预览）。</li>
+            <li><strong>修复正念菜单：</strong>菜单移出 sidebar 层叠上下文，不再被页面卡片遮挡。</li>
+            <li><strong>知识库编辑器：</strong>移除粘贴上传插件，还原至稳定版本。</li>
+        </ul>
+
+        <h3 class="h6">v2.8.0</h3>
         <ul class="small mb-3">
             <li><strong>新增「考勤」模块：</strong>📋菜单组（报销后），包含排班管理、出勤管理、薪资计算、扣款管理、社保公积金五个页面。日历式排班（按日期独立设置早班/晚班/休息），出勤日历（点击标记出勤/缺勤/迟到/请假/休息，支持清空和单日清除），应出勤按排班自动统计。加入企业+离职功能（历史企业列表显示在职/已离职和天数）。扣款管理弹窗新增（日期+明细+金额列表）。社保公积金弹窗配置（时间段+长期有效勾选）。薪资计算自动从扣款和社保页面汇总（应发-应扣=实发），薪资配置弹窗+实际到手录入。所有弹窗修复为原生Bootstrap（不依赖jQuery）。页面背景优化（白色88%不透明度+暗黑适配）。</li>
             <li><strong>正念自动签到：</strong>任意页面访问时当天自动签到（全局生效），签到页开关控制。</li>
