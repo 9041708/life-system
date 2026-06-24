@@ -192,13 +192,6 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
                 </div>
             </div>
 
-            <!-- 知识库 -->
-            <div class="sidebar-section sidebar-flyout-trigger" id="flyout-kb">
-                <div class="sidebar-section-header">
-                    <span>📝 知识库</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
-                </div>
-            </div>
-
             <!-- 图书 -->
             <div class="sidebar-section sidebar-flyout-trigger" id="flyout-books">
                 <div class="sidebar-section-header">
@@ -240,13 +233,6 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
                     <span>💊 正念</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
                 </div>
             </div>
-
-    <!-- 正念 -->
-    <div class="sidebar-flyout" id="flyout-mindfulness-menu">
-        <a href="/public/index.php?route=mindfulness-checkin" class="flyout-item"><span class="menu-icon">💊</span>签到</a>
-        <a href="/public/index.php?route=mindfulness-treasure" class="flyout-item"><span class="menu-icon">🕳️</span>树洞</a>
-        <a href="/public/index.php?route=mindfulness-config" class="flyout-item"><span class="menu-icon">⚙️</span>配置</a>
-    </div>
 
     <!-- 娱乐 -->
             <div class="sidebar-section sidebar-flyout-trigger" id="flyout-entertainment">
@@ -341,12 +327,6 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
         <a href="/public/index.php?route=easytodo-memos" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>备忘录</a>
     </div>
 
-    <!-- 知识库 -->
-    <div class="sidebar-flyout" id="flyout-kb-menu">
-        <a href="/public/index.php?route=kb-editor" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>文档编辑</a>
-        <a href="/public/index.php?route=kb-read" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>文档阅读</a>
-    </div>
-
     <!-- 图书 -->
     <div class="sidebar-flyout" id="flyout-books-menu">
         <a href="/public/index.php?route=books" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>在线阅览</a>
@@ -415,6 +395,19 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
         <a href="/public/index.php?route=license-admin" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>系统日志</a>
         <a href="/public/index.php?route=scheduler" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>定时任务</a>
         <?php endif; ?>
+    </div>
+
+    <!-- 正念 -->
+    <div class="sidebar-flyout" id="flyout-mindfulness-menu">
+        <a href="/public/index.php?route=mindfulness-checkin" class="flyout-item"><span class="menu-icon">💊</span>签到</a>
+        <a href="/public/index.php?route=mindfulness-treasure" class="flyout-item"><span class="menu-icon">🕳️</span>树洞</a>
+        <a href="/public/index.php?route=mindfulness-config" class="flyout-item"><span class="menu-icon">⚙️</span>配置</a>
+    </div>
+
+    <!-- 简历 -->
+    <div class="sidebar-flyout" id="flyout-resume-menu">
+        <a href="/public/index.php?route=resume-builder" class="flyout-item"><span class="menu-icon">📝</span>简历配置</a>
+        <a href="/public/index.php?route=resume-preview" class="flyout-item"><span class="menu-icon">👁️</span>简历预览</a>
     </div>
 
     <!-- 右侧主内容区域 -->

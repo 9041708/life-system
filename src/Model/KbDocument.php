@@ -90,8 +90,6 @@ class KbDocument
 
     public static function delete(int $id, int $userId): void
     {
-        // 先删除该文档对应的图片目录
-        \App\Service\Upload::deleteKbDocDir($userId, $id);
         $pdo = Database::getConnection();
         $pdo->prepare('DELETE FROM kb_doc_versions WHERE doc_id = :id AND user_id = :uid')->execute([':id' => $id, ':uid' => $userId]);
         $pdo->prepare('DELETE FROM kb_documents WHERE id = :id AND user_id = :uid')->execute([':id' => $id, ':uid' => $userId]);
