@@ -37,14 +37,13 @@ class Upload
             return null;
         }
 
-        // 返回相对路径，供前端访问时拼接 /uploads/
+        // 杩斿洖鐩稿璺緞锛屼緵鍓嶇璁块棶鏃舵嫾鎺?/uploads/
         return $subPath . '/' . $safeName;
     }
 
     /**
-     * 保存文本内容为 uploads 下的文件（例如粘贴的 SVG）。
-     *
-     * 返回相对路径，供前端访问时拼接 /uploads/
+     * 淇濆瓨鏂囨湰鍐呭涓?uploads 涓嬬殑鏂囦欢锛堜緥濡傜矘璐寸殑 SVG锛夈€?     *
+     * 杩斿洖鐩稿璺緞锛屼緵鍓嶇璁块棶鏃舵嫾鎺?/uploads/
      */
     public static function saveTextFile(int $userId, string $content, string $ext, string $prefix = 'att_'): ?string
     {
@@ -53,7 +52,7 @@ class Upload
             return null;
         }
 
-        // 简单限制：避免异常超大文本
+        // 绠€鍗曢檺鍒讹細閬垮厤寮傚父瓒呭ぇ鏂囨湰
         if (strlen($content) > 512 * 1024) {
             return null;
         }
@@ -92,10 +91,8 @@ class Upload
     }
 
     /**
-     * 将 base64 编码的图片保存为附件文件。
-     *
-     * 支持格式：data:image/jpeg;base64,... 或纯 base64 字符串。
-     * 返回相对路径，供前端访问时拼接 /uploads/
+     * 灏?base64 缂栫爜鐨勫浘鐗囦繚瀛樹负闄勪欢鏂囦欢銆?     *
+     * 鏀寔鏍煎紡锛歞ata:image/jpeg;base64,... 鎴栫函 base64 瀛楃涓层€?     * 杩斿洖鐩稿璺緞锛屼緵鍓嶇璁块棶鏃舵嫾鎺?/uploads/
      */
     public static function saveBase64Image(int $userId, string $base64Data): ?string
     {
@@ -105,7 +102,7 @@ class Upload
         }
 
         $ext = 'jpg';
-        // 解析 data URI 格式：data:image/png;base64,xxxxx
+        // 瑙ｆ瀽 data URI 鏍煎紡锛歞ata:image/png;base64,xxxxx
         if (preg_match('#^data:image/(\w+);base64,#i', $base64Data, $m)) {
             $typeExt = strtolower($m[1]);
             if (in_array($typeExt, ['jpeg', 'jpg', 'png', 'gif', 'webp', 'bmp'], true)) {
@@ -119,7 +116,7 @@ class Upload
             return null;
         }
 
-        // 限制单张图片 10MB
+        // 闄愬埗鍗曞紶鍥剧墖 10MB
         if (strlen($binary) > 10 * 1024 * 1024) {
             return null;
         }
@@ -150,14 +147,13 @@ class Upload
     }
 
     /**
-     * 为用户保存头像文件（来自表单上传）。
-     */
+     * 涓虹敤鎴蜂繚瀛樺ご鍍忔枃浠讹紙鏉ヨ嚜琛ㄥ崟涓婁紶锛夈€?     */
     public static function saveAvatar(int $userId, array $file): ?string
     {
         if (empty($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
             return null;
         }
-        // 头像限制为 5MB 以内
+        // 澶村儚闄愬埗涓?5MB 浠ュ唴
         if ($file['size'] > 5 * 1024 * 1024) {
             return null;
         }
@@ -192,8 +188,7 @@ class Upload
     }
 
     /**
-     * 从远程 URL 下载头像并保存到 uploads 目录。
-     */
+     * 浠庤繙绋?URL 涓嬭浇澶村儚骞朵繚瀛樺埌 uploads 鐩綍銆?     */
     public static function saveAvatarFromUrl(int $userId, string $url): ?string
     {
         $url = trim($url);
@@ -220,7 +215,7 @@ class Upload
             return null;
         }
 
-        // 简单限制：不超过 5MB
+        // 绠€鍗曢檺鍒讹細涓嶈秴杩?5MB
         if (strlen($data) > 5 * 1024 * 1024) {
             return null;
         }
@@ -264,9 +259,7 @@ class Upload
     }
 
     /**
-     * 保存 PC 端背景图到 uploads 目录。
-     * 限制 5MB，支持 jpg/png/webp，返回相对路径（存 DB 用）。
-     */
+     * 淇濆瓨 PC 绔儗鏅浘鍒?uploads 鐩綍銆?     * 闄愬埗 5MB锛屾敮鎸?jpg/png/webp锛岃繑鍥炵浉瀵硅矾寰勶紙瀛?DB 鐢級銆?     */
     public static function saveBgImage(array $file): ?string
     {
         if (empty($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
@@ -304,9 +297,7 @@ class Upload
     }
 
     /**
-     * 保存小程序码图片到 uploads/miniapp 目录。
-     * 限制 2MB，支持 jpg/png/webp，返回相对路径。
-     */
+     * 淇濆瓨灏忕▼搴忕爜鍥剧墖鍒?uploads/miniapp 鐩綍銆?     * 闄愬埗 2MB锛屾敮鎸?jpg/png/webp锛岃繑鍥炵浉瀵硅矾寰勩€?     */
     public static function saveMiniappQrcode(array $file): string
     {
         $baseDir = Config::get('app.upload_dir');
@@ -324,8 +315,7 @@ class Upload
     }
 
     /**
-     * 删除 uploads 目录下的相对路径文件（头像或附件）。
-     */
+     * 鍒犻櫎 uploads 鐩綍涓嬬殑鐩稿璺緞鏂囦欢锛堝ご鍍忔垨闄勪欢锛夈€?     */
     public static function deleteByRelativePath(?string $relativePath): void
     {
         if ($relativePath === null || $relativePath === '') {

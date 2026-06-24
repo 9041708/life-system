@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /** @var string $appName */
 use App\Service\Config;
 use App\Model\SystemSetting;
