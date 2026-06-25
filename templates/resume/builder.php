@@ -472,6 +472,8 @@ window.uploadAvatar = function() {
 };
 
 document.getElementById('templateSelect').onchange = function() {
+    currentTemplate = this.value;
+    updatePreview();
     autoSave();
 };
 

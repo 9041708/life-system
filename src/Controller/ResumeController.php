@@ -74,7 +74,9 @@ class ResumeController
                 $resume = ResumeData::getById($id, $userId);
                 if ($resume) {
                     $resumeData = $resume['data'] ?? $resumeData;
-                    $template = $resume['template'] ?? $template;
+                    if (!isset($_GET['template'])) {
+                        $template = $resume['template'] ?? $template;
+                    }
                 }
             }
             $tpl = in_array($template, ['simple','pro','creative']) ? $template : 'simple';
