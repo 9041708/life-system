@@ -15,6 +15,7 @@ $appVersion = Config::get('app.version', 'v2.0.0');
         <div id="changelog-latest">
         <h3 class="h6">v2.8.1 <span class="badge bg-success ms-1">最新</span></h3>
         <ul class="small mb-3">
+            <li><strong>修复简历预览：</strong>模板切换下拉框切换后立即生效（standalone 模式尊重 URL 模板参数）。</li>
             <li><strong>修复简历菜单：</strong>补全缺失的二级菜单（简历配置/简历预览）。</li>
             <li><strong>修复正念菜单：</strong>菜单移出 sidebar 层叠上下文，不再被页面卡片遮挡。</li>
             <li><strong>知识库编辑器：</strong>移除粘贴上传插件，还原至稳定版本。</li>
