@@ -13,6 +13,238 @@ $appVersion = Config::get('app.version', 'v2.0.0');
         </div>
 
         <div id="changelog-latest">
+        <h3 class="h6">v2.16.0 <span class="badge bg-success ms-1">最新</span></h3>
+        <ul class="small mb-3">
+            <li><strong>📊 模拟炒股交易时间延长：</strong>交易时段合并为连续 08:00-23:59（原三端分段 08:00-12:00、13:00-17:00、19:00-22:00），去掉午休和晚休间隔；休市时间调整为 00:00-07:59。时间轴UI简化为休市/交易两段式，交易覆盖16小时。</li>
+        </ul>
+
+        <h3 class="h6">v2.15.0</h3>
+        <ul class="small mb-3">
+            <li><strong>📊 模拟炒股价格模型重构：</strong>新闻 bias 改为首次生效一次性施加（strength×50），后续每次刷新×0.95 衰减（效果更持久）；新增交易供需压力（近5分钟净买入推动价格上涨）；涨跌停改为 base_price ±30%；疯涨股价一次性修复；移除 day_open_price 基准。</li>
+            <li><strong>📈 折线图自动更新：</strong>10秒刷新回调中追加 lineSeries.update() 数据点，分时图实时跟随行情。新增刷新倒计时显示「刷新 Ns」每秒更新。</li>
+            <li><strong>📋 排行榜增强：</strong>新增可用资金、盈亏、胜率、总资产四列，按总资产排名。后端 SQL 简化避免超时。</li>
+            <li><strong>🏷️ 股票管理：</strong>支持退市/重新上市，行情页选股时退市股票显示黄色警告条。用户管理奖励/扣减改为直接操作虚拟资金（不再操作股票持仓）。</li>
+            <li><strong>📰 新闻管理：</strong>取消 30 条限制；搜索改用 data-filter 属性替代 textContent 查询。行情页个股新闻显示发布时间（刚刚/N分钟前/N小时前）。</li>
+            <li><strong>📢 系统公告：</strong>支持列表展示+新增公告（自动加时间戳）+ 一键清空。</li>
+            <li><strong>🧭 导航推送优化：</strong>推送详情页修复（非创建者用户可查看推送书签）；推送弹窗改为搜索+多选批量推送；一键取消所有推送。</li>
+            <li><strong>📨 邀请独立选项卡：</strong>邀请码+链接+已邀请人数+邀请记录从个人资料移出，独立展示「邀请」标签页。</li>
+            <li><strong>🔄 持仓实时刷新：</strong>总资产/可用资金/持仓市值每10秒随行情同步更新。</li>
+            <li><strong>🔧 论坛助手优化：</strong>忽略作者过滤修复（预过滤+UID为0时name无法匹配UID问题）；日志刷新加时间戳提示。</li>
+            <li><strong>🔒 PHP Warning 隔离：</strong>关闭 display_errors=0，防止 PHP 警告输出到 HTML 污染 JS 解析。</li>
+        </ul>
+
+        <h3 class="h6">v2.14.0</h3>
+        <ul class="small mb-3">
+            <li><strong>🪙 L币系统：</strong>全新虚拟货币体系，支持余额、流水、套餐购买AI次数。L币可通过邀请注册、签到奖励、记账奖励、管理员发放等方式获取，支持小数精度（小数点后两位）。</li>
+            <li><strong>🤖 AI Token 计费：</strong>AI 调用改为按 DeepSeek 返回的 actual total_tokens 计费，通过 L币自动扣除（向上取整）。管理端可配置 1 L币 = N Token 汇率。</li>
+            <li><strong>📨 邀请注册：</strong>邀请码生成、注册奖励（双方各获 L币）、落地页显示邀请人信息、阶梯式 L币 奖励配置。</li>
+            <li><strong>📈 股市 L币 集成：</strong>默认资金改为 0，进入股市需 L币兑换虚拟资金，支持反向赎回（含手续费）。管理端可配置汇率和手续费率。</li>
+            <li><strong>🏠 首页 L币卡片：</strong>仪表盘增加 L币余额卡片。</li>
+            <li><strong>✅ 签到/记账 L币 奖励：</strong>连续签到 N 天奖 L币（阶梯制），记账每笔奖 L币（日上限50笔），管理员可开关+配置金额。</li>
+            <li><strong>⚙️ L币管理：</strong>管理员专用选项卡，含套餐弹窗增删改、发放/扣除 L币弹窗（支持用户搜索+批量操作）、Token汇率、签到/记账奖励规则、股市兑换参数统一配置。</li>
+            <li><strong>🔧 性能优化：</strong>启动阶段 DDL 迁移改为一次性标记检查，每次请求减少 ~42 条数据库查询；预算 N+1 改为批量聚合；PDO 启用持久连接。</li>
+            <li><strong>🐛 Bug 修复：</strong>修复多处 PHP 语法错误（括号误写分号、正则未转义、BOM头）；论坛助手忽略作者过滤；股市兑换弹窗实时计算；settings 页面模块化保存。</li>
+        </ul>
+
+        <h3 class="h6">v2.13.1</h3>
+        <ul class="small mb-3">
+            <li><strong>性能优化：</strong>启动阶段无条件 DDL 迁移改为一次性标记检查，每次 API 请求减少 ~42 条数据库查询；预算统计 N+1 查询改为批量聚合；PDO 启用持久连接。</li>
+            <li><strong>修复：</strong>DiscuzService 正则表达式字符类中未转义单引号导致 PHP 语法错误；api.php 与 NavController 中 trim() 参数括号错写为分号导致解析失败；移除 DiscuzService.php 文件 BOM 头。</li>
+            <li><strong>修复：</strong>论坛助手自动回帖「加载列表」报「操作异常」及「服务器返回异常」问题。</li>
+            <li><strong>修复：</strong>TransactionController 中 (int) 类型转换括号误写为分号导致解析失败。</li>
+            <li><strong>优化：</strong>论坛助手自动回帖取消「回帖起始时间」限制，开启后 24 小时持续轮询，仅靠回复间隔控制频率；移除 UI 中对应配置项。</li>
+        </ul>
+
+        <h3 class="h6">v2.13.0</h3>
+        <ul class="small mb-3">
+            <li><strong>忽略作者功能升级：</strong>改用 UID 精确匹配（不再依赖帖子标题中的作者名），过滤更可靠；支持在帖子页 URL 中查看 uid=数字。</li>
+            <li><strong>忽略作者 UI 交互优化：</strong>改为输入框 +「添加」按钮 + 标签×删除，纯数字操作，无需手动写 +/- 前缀。</li>
+            <li><strong>修复自动回帖不扣 AI 次数：</strong>增强 `reply()` 成功检测（新增 `post_newreply_succeed`、`恭喜您回复成功` 等关键字）；`consume()` 调用前后增加日志追踪，失败时写 `error` 日志。</li>
+        </ul>
+
+        <h3 class="h6">v2.12.0</h3>
+        <ul class="small mb-3">
+            <li><strong>修复负债「每月应还」表格列错位：</strong>表体多出一个重复按钮列，且「状态」「操作」两列内容互换，导致表头表体对不上。已删除多余列并对调顺序。</li>
+            <li><strong>修复负债「补还款」无法变已还款：</strong>前端弹窗默认值传「已还金额」（旧值），后端为「替换语义」，确认后原地覆盖、状态保持逾期。已将默认值改为「本期总额」，确认后直接变已还款。</li>
+        </ul>
+
+        <h3 class="h6">v2.11.0</h3>
+        <ul class="small mb-3">
+            <li><strong>论坛助手 - 忽略作者：</strong>设置页面新增「忽略作者」输入框（逗号分隔多个作者），助手不会回复忽略列表中的作者发的帖子；默认自动忽略助手账号自己发的帖子，避免自问自答。</li>
+            <li><strong>论坛助手 - 修复 AI 次数扣除 bug：</strong>web 端回帖时 consume() 调用时机错误（在 reply() 之前调用），已修复；json() 返回后缺少 return 导致逻辑继续执行的问题也已修复。</li>
+        </ul>
+
+        <h3 class="h6">v2.10.0</h3>
+        <ul class="small mb-3">
+            <li><strong>笔记模块（原备忘录）重构：</strong>三栏布局（分类管理 | 笔记列表 | 富文本编辑器），从 Markdown 升级为 TinyMCE 5 富文本编辑器，支持分类管理、排序功能、Ctrl+S 快捷保存、图片粘贴上传与自动清理。</li>
+            <li><strong>功能重命名：</strong>菜单和页面从"备忘录"统一改为"笔记"。</li>
+        </ul>
+
+        <h3 class="h6">v2.9.0</h3>
+        <ul class="small mb-3">
+            <li><strong>笔记模块开发：</strong>数据库新增 format、category、share_token 等字段，后端接口支持富文本格式。</li>
+        </ul>
+
+        <h3 class="h6">v2.8.1</h3>
+        <ul class="small mb-3">
+            <li><strong>修复简历预览：</strong>模板切换下拉框切换后立即生效（standalone 模式尊重 URL 模板参数）。</li>
+            <li><strong>修复简历菜单：</strong>补全缺失的二级菜单（简历配置/简历预览）。</li>
+            <li><strong>修复正念菜单：</strong>菜单移出 sidebar 层叠上下文，不再被页面卡片遮挡。</li>
+            <li><strong>知识库编辑器：</strong>移除粘贴上传插件，还原至稳定版本。</li>
+        </ul>
+
+        <h3 class="h6">v2.8.0</h3>
+        <ul class="small mb-3">
+            <li><strong>新增「考勤」模块：</strong>📋菜单组（报销后），包含排班管理、出勤管理、薪资计算、扣款管理、社保公积金五个页面。日历式排班（按日期独立设置早班/晚班/休息），出勤日历（点击标记出勤/缺勤/迟到/请假/休息，支持清空和单日清除），应出勤按排班自动统计。加入企业+离职功能（历史企业列表显示在职/已离职和天数）。扣款管理弹窗新增（日期+明细+金额列表）。社保公积金弹窗配置（时间段+长期有效勾选）。薪资计算自动从扣款和社保页面汇总（应发-应扣=实发），薪资配置弹窗+实际到手录入。所有弹窗修复为原生Bootstrap（不依赖jQuery）。页面背景优化（白色88%不透明度+暗黑适配）。</li>
+            <li><strong>正念自动签到：</strong>任意页面访问时当天自动签到（全局生效），签到页开关控制。</li>
+            <li><strong>炒股模块优化：</strong>分时折线图（addLineSeries）、休市不刷新、新闻定时发布（scheduled_at）、管理页新增股票、个人交易记录分页。</li>
+            <li><strong>理财记账优化：</strong>交易编辑弹窗类型切换自动过滤分类（支出只显示支出分类）。</li>
+            <li><strong>系统设置修复：</strong>PC端背景图点击改用AJAX独立切换（不再影响其他参数），表单恢复「保存系统设置」按钮。修复多余HTML标签导致布局错乱。</li>
+            <li><strong>负债还款修复：</strong>$isPaid变量名更正+部分还款显示优化。</li>
+        </ul>
+
+        <h3 class="h6">v2.7.2</h3>
+        <ul class="small mb-3">
+            <li><strong>正念自动签到：</strong>签到页面新增开关，开启后任意页面访问时当天自动签到（+0.3分）。全局生效无需手动操作。saveConfig改为部分更新（不覆盖正负念列表）。</li>
+            <li><strong>炒股模块优化：</strong>分时K线改为蓝色折线图（addLineSeries）替代蜡烛图，走势更直观。休市时段不执行价格刷新减少服务器压力。管理页新增股票创建功能。新闻支持定时发布（scheduled_at字段）。个人Tab新增交易记录列表（每页20条+分页）。</li>
+            <li><strong>记账分类过滤：</strong>编辑明细时切换类型自动过滤对应分类（支出只显示支出分类）。</li>
+            <li><strong>密码重置邮件优化：</strong>邮件模板重构，密码用橙色大框居中醒目显示。</li>
+            <li><strong>负债还款修复：</strong>$isPaid变量名更正。</li>
+        </ul>
+
+        <h3 class="h6">v2.7.1</h3>
+        <ul class="small mb-3">
+            <li><strong>炒股模块优化：</strong>分时K线从开盘08:00到当前完整显示，10秒后台静默更新委托（不跳转页面）。休市可委托、开盘自动撮合（价格优先+时间优先）。持仓快捷买卖弹窗选择比例。管理员用户列表支持奖励/扣减股票。K线横向时间轴对齐优化。</li>
+            <li><strong>密码重置邮件优化：</strong>邮件模板重构，密码用橙色大框居中醒目显示，1.8rem等宽字体。</li>
+            <li><strong>负债还款修复：</strong>变量名$isPaid更正为$isFullyPaid，修复partial payment显示。</li>
+        </ul>
+
+        <h3 class="h6">v2.7.0</h3>
+        <ul class="small mb-3">
+            <li><strong>新增「娱乐·炒股」模块：</strong>🎮菜单组虚拟股票交易游戏，40只虚拟股票（金融/科技/地产/能源等行业），仿百度财经K线图（lightweight-charts，支持分时/日K/五日/周K/月K）。100万股币初始资金，全仓/半仓/1/3/1/4快速交易，买0.1%卖0.2%手续费。价格随机波动±5%（交易时间），管理端可发布利好/利空新闻影响股价，买卖供需推动价格。支持限价委托挂单，休市可挂单开盘自动撮合（价格优先+时间优先）。持仓盈亏实时刷新（10秒），详细行情参数（今开/昨收/市值/市盈率/换手率等13项），个股公司简介卡片。破产借贷系统（等额本息/先息后本/等额本金），逾期提醒+破产清算。排行榜+每人限购+总股本管理。仅供娱乐提示。</li>
+        </ul>
+
+        <h3 class="h6">v2.6.0</h3>
+        <ul class="small mb-3">
+            <li><strong>负债管理优化：</strong>配置列表新增"已结清"折叠分组，已完成进度的负债自动归类。配置表单加返回按钮和防重复提交。更新配置后自动删除旧还款计划并重新生成。还款日期生成改用first-day-of-month定位后取min(day,lastDay)，修复月末日期溢出。每月应还支持部分还款（输入金额<应还金额时显示"已还部分"状态），逾期+部分还款红色加粗警告。已还金额/笔数按due_date统计修复。列表加序号列。账户管理页面加搜索框。</li>
+            <li><strong>PHP兼容性修复：</strong>箭头函数fn()替换为传统写法兼容PHP 7.3（NAS Synology）。引导文件bootstrap调度器区块括号修复。</li>
+            <li><strong>数据库备份修复：</strong>encryptFile改为64KB分块流式加密，修复479MB大数据库内存溢出。</li>
+        </ul>
+
+        <h3 class="h6">v2.5.1</h3>
+        <ul class="small mb-3">
+            <li><strong>负债配置修复：</strong>更新配置后删除旧还款计划并重新生成（之前INSERT IGNORE导致更新无效）。还款日期改用first day of month定位后再取min(day, lastDay)，避免月末日期溢出到下月（如1月31日+1月不再跳到3月3日）。列表查询按due_date统计而非paid_date，已还金额/笔数统计修复。编辑表单按用户ID查找配置，不再受账本切换影响。表单加防重复提交保护。</li>
+            <li><strong>库存管理优化：</strong>期货操作增加"按码数"和"按公斤"两种出库模式，支持净重/毛重。</li>
+        </ul>
+
+        <h3 class="h6">v2.5.0</h3>
+        <ul class="small mb-3">
+            <li><strong>AI使用日志：</strong>新增ai_usage_logs表，树洞AI/论坛回帖/自动回帖/@回复四处均记录消耗日志。用户可在"设置→AI服务"tab查看个人日志（保留10天、每页20条、分页浏览）。管理员可在"系统日志"页面查看全平台AI日志，支持手动清理（90天/60天/30天/7天前）。</li>
+            <li><strong>AI配额管理优化：</strong>发放弹窗改为搜索选用户→输入配额（正增负减），弹窗防重复点击、AJAX返回JSON。AI套餐列表默认加载并分页。</li>
+            <li><strong>论坛助手优化：</strong>@回复改为引用回复格式、同帖1小时内不重复回、AI回帖均扣配额。</li>
+            <li><strong>正念签到修复：</strong>负念记录会导致连续签到归零重新计算。树洞每天最多3条防刷分。</li>
+        </ul>
+
+        <h3 class="h6">v2.4.0</h3>
+        <ul class="small mb-3">
+            <li><strong>新增「知识库」模块：</strong>全新菜单组📝知识库，支持Markdown文档管理、多级文件夹、editor.md编辑器、阅读+目录导航、外部分享（无需登录）、版本历史。</li>
+            <li><strong>系统性能优化：</strong>SystemSetting/miniapps查询加静态缓存。TodayDoService::initTables加flag标记只执行一次。调度器状态检查限频60秒。减少每次请求3-4次数据库查询。</li>
+            <li><strong>数据库备份修复：</strong>encryptFile改为64KB分块流式加密，修复479MB大数据库内存溢出。</li>
+            <li><strong>小程序Token隔离修复：</strong>createToken扩展为4参数，小程序token标记client_type='miniapp'不计入3个上限。</li>
+            <li><strong>正念模块新增：</strong>签到/树洞/配置，AI次数管理，管理员发放+套餐定价。</li>
+        </ul>
+
+        <h3 class="h6">v2.3.1</h3>
+        <ul class="small mb-3">
+            <li><strong>新增「项目」模块：</strong>全新菜单组📂项目，支持项目管理与协同。创建项目（规划中/进行中/已完成/已归档），每条进度节点支持标题、内容、进度值（0-100%）、图片/文件附件（按用户ID隔离存储）。垂直时间轴展示项目发展历程，进度自动同步。项目创建者可搜索添加协作者，成员均可新增进度。支持待办任务清单（可勾选完成状态），项目卡片显示任务完成进度。</li>
+            <li><strong>论坛助手@回复优化：</strong>@提及回复改为引用回复格式（显示对方原帖内容链接），1小时内同一帖子不重复回复，未被再次@不持续回复。</li>
+            <li><strong>论坛助手AI配额：</strong>自动回帖、@提及回复均扣减AI次数，三个入口统一接入配额检查。</li>
+            <li><strong>页面性能优化：</strong>bootstrap迁移检查加文件缓存标记。Service Worker扩展缓存范围，assets和uploads目录添加浏览器缓存头。日夜切换改为即时CSS切换+后台同步。</li>
+            <li><strong>系统设置优化：</strong>新增管理员联系方式和收款码图片配置。AI套餐编辑按钮修复。背景图显示路径修复。</li>
+        </ul>
+
+        <h3 class="h6">v2.2.0</h3>
+        <ul class="small mb-3">
+            <li><strong>新增「正念」模块：</strong>全新菜单组💊正念，包含签到、树洞、配置三个页面。签到支持日历打卡（日程式显示签到/正念/负念标签）、补录正负念、连续签到奖励、分数颜色分级显示。树洞支持提交心事并由AI暖心回复，自动判断正负能量并加减分，连续负面自动提醒，列表分页（10条/页）。配置页面支持自定义正负念项目、签到奖励规则、AI模式切换。</li>
+            <li><strong>AI次数管理系统：</strong>新增AI配额统一管理（树洞+论坛助手共用），系统配置模式限次使用，自定义API不限。管理员在用户管理页面通过搜索用户发放次数，配额列表默认加载并支持分页。新增AI套餐定价管理，支持多套餐配置（原价+折扣价+折扣标签显示）。用户个人中心新增「AI服务」tab，显示剩余次数和购买入口，联系管理员弹窗展示联系方式和收款码。管理员同样受次数限制。</li>
+            <li><strong>页面性能优化：</strong>bootstrap迁移检查加文件缓存标记，避免每次请求重复执行SHOW TABLES/COLUMNS。Service Worker扩展缓存范围，assets和uploads目录添加浏览器缓存头。日夜切换改为即时CSS切换+后台同步，禁用按钮防重复点击。</li>
+            <li><strong>系统设置优化：</strong>系统参数新增管理员联系方式和收款码图片配置。AI套餐编辑按钮修复。背景图显示路径修复。</li>
+            <li><strong>今天干嘛异常修复：</strong>种子数据INSERT循环添加异常处理，单条数据失败不影响整体迁移。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.5</h3>
+        <ul class="small mb-3">
+            <li><strong>@提及回复修复：</strong>通知解析从 &lt;li&gt; 改为 &lt;dd class="ntc_body"&gt; 匹配，修复了一直返回 0 的问题。新增多 URL 尝试（&type=at、&inajax=1 等），确保不同 Discuz 版本兼容。@回复基于帖子内容和坛友回复生成上下文感知回复。</li>
+            <li><strong>彩蛋每日独立任务：</strong>claimDailyEggs() 不再依赖回帖触发，遍历所有已回复帖子逐个访问页面检测并领取彩蛋。isEligibleForEgg() 仅校验当日是否已领取同帖。每轮最多扫描 15 个帖子，每天上限 10 次。</li>
+            <li><strong>跟进回复精简：</strong>关闭了主动扫描（checkRepliedThreadsForActivity），仅保留 @提及触发回复。移除 UI 中的「跟进回复」开关。isSelfPost() 新增 AI 回帖标识检测，防止重复回复。</li>
+            <li><strong>引用回复优化：</strong>formatQuoteReply() 修复了错误引用自己文本的问题，改为引用对方实际回复内容。AI 提示词加强针对性，要求先理解对方具体说了什么再回应。</li>
+            <li><strong>操作日志清理：</strong>移除每分钟产生的"没有可回复的帖子"冗余日志（峰值 12602 条/天）。日志保留期从 3 天缩至 1 天。新增 clean_logs.php 一键清理存量。</li>
+        </ul>
+
+        <details class="mt-3 mb-3">
+            <summary class="small fw-semibold" style="cursor:pointer;color:#667eea">📜 更多历史日志（v2.1.4 及更早）</summary>
+            <div class="mt-2">
+
+        <h3 class="h6">v2.1.4</h3>
+        <ul class="small mb-3">
+            <li><strong>跟进回复重大修复：</strong>自动回帖成功后写入 forum_replied_threads 表（之前缺失导致跟进系统无帖可查），checkRepliedThreadsForActivity() 改为从 forum_replied_threads 直接获取 TID（替代从 target_info 中提取的不可靠方式）。扫描频率从 2 帖/30 分钟提升至 5 帖/15 分钟，全量覆盖从 22 小时缩短至 27 分钟。</li>
+            <li><strong>引用回复（Quote Reply）：</strong>坛友引用助手帖子后，助手自动检测 blockquote/[quote] BBcode 并引用回应。formatQuoteReply() 生成标准 Discuz 引用格式（含对方帖子链接），末尾追加 AI 回帖标识。修复了错误引用自己文本的问题。</li>
+            <li><strong>AI 上下文感知增强：</strong>generateFollowUpReply() 新增"助手自己的上一条回复"上下文参数。getThreadLatestReplyContent() 同时返回倒数第二帖（助手发的）内容，AI 不再"乱回复"——它知道自己之前说了什么，能理解对方是针对哪句话回应的。</li>
+            <li><strong>今天干嘛数据扩充：</strong>旅游景点从 286 增加至 394 个，新增覆盖北京、山东、河北、山西、陕西、甘肃、新疆、西藏、青海、贵州、四川、江西、安徽、河南、湖南、广西、海南、辽宁、吉林、黑龙江等 30+ 省市。独立 SQL 种子文件 + ress seed_places.php 绕过 OPcache 直接写入。</li>
+            <li><strong>移除高德 API 集成：</strong>NAS 网络环境无法稳定连接外部 API，改用纯本地种子数据库（394 个景点），删除 getPlaceFromAmap() / guessCategory() 方法及 amap_key 配置。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.3</h3>
+        <ul class="small mb-3">
+            <li><strong>新增「今天干嘛」工具（工具箱）：</strong>三个随机选择模块——今天吃什么（95 道菜，含菜谱链接、食材、耗时）、今天去哪里（286 个景点覆盖 30+ 城市）、今天看什么（59 部影视综艺，含上映日期）。支持高德地图 API 实时获取景点数据。</li>
+            <li><strong>高德地图 API 集成：</strong>「今天去哪里」支持接入高德 POI 搜索 API（需配置 amap_key），自动获取真实景点信息（名称/地址/评分/电话），6 小时本地缓存，API 不可用时自动降级到种子数据。</li>
+            <li><strong>系统更新按钮（系统设置）：</strong>管理员可在「系统设置 → 系统参数」页面点击「执行系统更新」按钮，一键完成数据库迁移和种子数据写入。新老用户均可使用。</li>
+            <li><strong>数据库自动重连：</strong>Database.php 新增连接存活检测（SELECT 1 ping），MySQL 连接断开后自动重连，解决长时间运行后 MySQL server has gone away 问题。</li>
+            <li><strong>config.example.php 模板：</strong>新增配置占位文件，config.php 加入 .gitignore，避免数据库密码等敏感信息上传到 GitHub。</li>
+            <li><strong>修复 forum_action_logs 列名：</strong>getRepliedTids() 和 checkRepliedThreadsForActivity() 中 detail 列改为 target_info，修复 SQL Column not found 错误。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.2</h3>
+        <ul class="small mb-3">
+            <li><strong>AI 回复防截断：</strong>max_tokens 从 150 提升至 300，新增 cleanReply() 后处理——当 API 返回 finish_reason=length 时自动截断到最后一个完整句子并补句号，不再出现"话说到一半"的情况。</li>
+            <li><strong>修复回复重复发送：</strong>助手在同一个帖子连续回复多次的问题已修复。新增 isSelfPost() 方法，跟进回复和历史帖子检查时自动识别助手自己发的帖子并跳过。</li>
+            <li><strong>跟进回复开关：</strong>账号配置新增"跟进回复（坛友回复后AI再回复）"开关。关闭时助手只回帖一次；开启时检测到坛友回复助手才会再次回复。不再受 reply_time 时间窗口限制。</li>
+            <li><strong>自动领取寻宝彩蛋：</strong>账号配置新增"自动领取彩蛋奖励"开关，支持 nm_treasure_egg 插件。助手每次回帖/跟进回复后自动检测页面彩蛋并领取，日志面板显示🎁彩蛋领取结果（含获得金币数）。每日上限10次，不额外增加论坛负担。</li>
+            <li><strong>系统日志优化：</strong>Log 模型新增 searchUnified()/countUnified()，通过 UNION 合并系统操作日志和论坛操作日志，统一展示和搜索。页面新增操作类型分组筛选、来源列（系统/论坛）。账户/分类管理、用户注册、退出登录均已接入操作日志。</li>
+            <li><strong>修复仪表盘干支计算错误：</strong>dashboard 模板中干支月干计算公式 operator precedence 错误，导致 6-12 月数组越界。已修复括号优先级。</li>
+            <li><strong>论坛助手 @提及修复：</strong>getNeedMentionReply() 与通知检查共享 last_notice_check 时间戳导致@回复始终被跳过，现使用独立 last_mention_reply 列。</li>
+        </ul>
+
+        <h3 class="h6">v2.1.1</h3>
+        <ul class="small mb-3">
+            <li><strong>项目开源：</strong>代码已托管至 <a href="https://github.com/9041708/life-system" target="_blank">GitHub</a>，欢迎 Star ⭐</li>
+            <li><strong>论坛助手 AI 回复优化：</strong>移除鸡汤/自定义回复模式，统一使用 AI 生成回复，AI 失败则跳过不再发鸡汤，回复质量大幅提升。</li>
+            <li><strong>论坛助手钱财检测：</strong>新增钱财关键词检测（借钱、投资、转账等 20+ 词），检测到涉及钱财的帖子自动回复"抱歉，目前不支持涉及钱财相关问题的自动回复"。</li>
+            <li><strong>后台任务完善：</strong>调度器守护进程和 shutdown 定时任务现均包含 @提及回复和备份检查执行，不再仅依赖外部 cron 触发。</li>
+            <li><strong>修复备份不执行：</strong>之前备份仅通过外部 cron 触发，现内置到调度器循环中，面板状态页可实时查看执行记录。</li>
+            <li><strong>修复 @提及不回复：</strong>调度器内部任务循环遗漏了 @提及回复处理，现已补全。</li>
+            <li><strong>论坛助手 UI 精简：</strong>编辑卡片去掉回帖模式选择（随机/自定义）、@回复模式选择，统一为 AI 智能回复。所有自动回帖和 @提及回复均使用 AI 生成。</li>
+            <li><strong>钱财检测优化：</strong>完善关键词库至 30+ 词（新增赌、诈骗、欠条等），同时排除论坛虚拟币（金币/积分/铜币等），避免误拦截正常论坛讨论。</li>
+            <li><strong>AI 提示词增强：</strong>优化 System Prompt，要求 AI 理解帖子核心、口语化表达、自然交流，更像真人回复。</li>
+            <li><strong>@回复链式对话：</strong>@提及回复时传入对方的回复内容作为上下文，使 AI 能延续对话。新增"回复了你的回复""评论了你的"等通知检测模式，覆盖更多回复场景。</li>
+            <li><strong>文档完善：</strong>新增 README.md 部署文档、CHANGELOG.md 更新日志，config.php 配置模板含完整注释。</li>
+        </ul>
+
+        <h3 class="h6">v2.0.3</h3>
+        <ul class="small mb-3">
+            <li>论坛助手AI回帖字数上限提升：max_tokens 从 100 调整为 300，提示词要求从 50-150 字提升至 80-200 字，解决回复内容被截断的问题。</li>
+            <li>论坛助手敏感词过滤：新增回帖内容敏感词自动过滤机制，在 reply() 统一入口处对所有回帖内容（AI/随机/自定义/@提及）进行敏感词替换（首字保留+星号），词库通过 config.php 的 ai.forum_reply.filter_words 配置，默认包含卧槽、草泥马、TMD、SB、傻逼等常见敏感词。</li>
+        </ul>
+
+        <h3 class="h6">v2.0.2</h3>
+        <ul class="small mb-3">
+            <li>修复登录页验证码始终报错的问题：登录入口 session 名称改为基于站点 URL 自动生成（SANSESS_ 前缀 + MD5 哈希），与验证码图片生成器 session 名称保持一致，确保验证码校验正常。</li>
+            <li>Session 隔离增强：不同安装站点根据各自 site_url 自动获得不同 session 名，避免多站点部署时 cookie 冲突。</li>
+            <li>支持通过 config.php 的 app.session_name 配置项手动指定 session 名称。</li>
+            <li>API 入口同步 session 名称修复，保证小程序等客户端接口也使用统一 session。</li>
+            <li>修复登录页标题显示配置文件中的站点名称而非数据库「站点名称」的问题，现在登录/注册/auth 页面标题、首页导航栏品牌名、页脚版权名均同步使用系统设置中的站点名称。</li>
+        </ul>
+
         <h3 class="h6">v2.0.1</h3>
         <ul class="small mb-3">
             <li>论坛助手核心修复：解密方法 openssl_decrypt 失败时不再抛出 TypeError，改为返回空串，解决编辑弹窗无数据、任意按钮报"服务器返回异常"问题。</li>
@@ -603,6 +835,8 @@ $appVersion = Config::get('app.version', 'v2.0.0');
             <li>支持上传图片凭证，并按用户隔离数据与文件。</li>
             <li>采用自定义 MVC 结构与 PDO + MySQL，保证在群晖 NAS 环境下零依赖运行。</li>
         </ul>
+            </div>
+        </details>
         </div>
         </div>
     </div>
