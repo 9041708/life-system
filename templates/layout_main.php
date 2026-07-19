@@ -1,22 +1,56 @@
-﻿<?php
+<?php
+if (defined('IS_MOBILE') && IS_MOBILE) {
+    include __DIR__ . '/mobile/layout.php';
+    return;
+}
 /** @var string $appName */
 use App\Service\Config;
 use App\Model\SystemSetting;
 use App\Model\Ledger;
 use App\Service\LedgerContext;
+use App\License\LicenseBootstrap;
+use App\License\LicenseClient;
 
 $appVersion = Config::get('app.version', 'v1.0.0');
 $cssPath = __DIR__ . '/../assets/css/app.css';
 $cssVersion = is_file($cssPath) ? (string)filemtime($cssPath) : $appVersion;
+
+// 授权检查
+LicenseClient::init();
+$licStatus = LicenseBootstrap::check();
+$licTrial = $licStatus['trial_days'];
+$licActivated = $licStatus['activated'];
+$licExpired = $licStatus['expired'];
+$currentRoute = $_GET['route'] ?? '';
+
+// 正念自动签到：开启后任意页面访问时，当天未签则自动签
+if (isset($_SESSION['user_id']) && (int)$_SESSION['user_id'] > 0) {
+    try {
+        $autoCheckinUid = (int)$_SESSION['user_id'];
+        $autoCfg = \App\Model\MindfulnessConfig::get($autoCheckinUid);
+        if (!empty($autoCfg['auto_checkin'])) {
+            $today = date('Y-m-d');
+            if (!\App\Model\MindfulnessCheckin::isCheckedIn($autoCheckinUid, $today)) {
+                \App\Model\MindfulnessCheckin::checkin($autoCheckinUid, $today, (float)$autoCfg['checkin_score']);
+            }
+        }
+    } catch (\Throwable $e) {}
+}
 $systemSetting = SystemSetting::get();
 $siteIconSvg = isset($systemSetting['site_icon_svg']) ? $systemSetting['site_icon_svg'] : null;
 $miniappEnabled = (bool)Config::get('wechat.enable_miniapp', true);
 $miniappsList = [];
 if ($miniappEnabled) {
-    try {
-        $pdoMa = \App\Service\Database::getConnection();
-        $miniappsList = $pdoMa->query("SELECT * FROM miniapps ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    } catch (\Throwable $e) { $miniappsList = []; }
+    static $miniappsCache = null;
+    if ($miniappsCache !== null) {
+        $miniappsList = $miniappsCache;
+    } else {
+        try {
+            $pdoMa = \App\Service\Database::getConnection();
+            $miniappsList = $pdoMa->query("SELECT * FROM miniapps ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $e) { $miniappsList = []; }
+        $miniappsCache = $miniappsList;
+    }
 }
 
 $ledgerList = [];
@@ -179,7 +213,14 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
             <!-- 报销 -->
             <div class="sidebar-section sidebar-flyout-trigger" id="flyout-reimbursement">
                 <div class="sidebar-section-header">
-                    <span>📋 报销</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
+                    <span>🧾 报销</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
+                </div>
+            </div>
+
+            <!-- 考勤 -->
+            <div class="sidebar-section sidebar-flyout-trigger" id="flyout-attendance">
+                <div class="sidebar-section-header">
+                    <span>📋 考勤</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
                 </div>
             </div>
 
@@ -187,6 +228,27 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
             <div class="sidebar-section sidebar-flyout-trigger" id="flyout-resume">
                 <div class="sidebar-section-header">
                     <span>📄 简历</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
+                </div>
+            </div>
+
+    <!-- 正念 -->
+            <div class="sidebar-section sidebar-flyout-trigger" id="flyout-mindfulness">
+                <div class="sidebar-section-header">
+                    <span>💊 正念</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
+                </div>
+            </div>
+
+    <!-- 娱乐 -->
+            <div class="sidebar-section sidebar-flyout-trigger" id="flyout-entertainment">
+                <div class="sidebar-section-header">
+                    <span>🎮 娱乐</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
+                </div>
+            </div>
+
+            <!-- 项目 -->
+            <div class="sidebar-section sidebar-flyout-trigger" id="flyout-project">
+                <div class="sidebar-section-header">
+                    <span>📂 项目</span><span class="section-arrow" style="transform:rotate(90deg)">▸</span>
                 </div>
             </div>
 
@@ -266,7 +328,7 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
         <a href="/public/index.php?route=easytodo-tasks" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>待办管理</a>
         <a href="/public/index.php?route=easytodo-countdowns" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>倒计时</a>
         <a href="/public/index.php?route=easytodo-pomodoro" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>番茄钟</a>
-        <a href="/public/index.php?route=easytodo-memos" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>备忘录</a>
+        <a href="/public/index.php?route=easytodo-memos" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>笔记</a>
     </div>
 
     <!-- 图书 -->
@@ -284,15 +346,30 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
 
     <!-- 报销 -->
     <div class="sidebar-flyout" id="flyout-reimbursement-menu">
-        <a href="/public/index.php?route=reimbursement" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>报销情况</a>
-        <a href="/public/index.php?route=reimbursement-statistics" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>报销统计</a>
+        <a href="/public/index.php?route=reimbursement-list" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>报销列表</a>
         <a href="/public/index.php?route=reimbursement-config" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>报销配置</a>
     </div>
 
-    <!-- 简历 -->
-    <div class="sidebar-flyout" id="flyout-resume-menu">
-        <a href="/public/index.php?route=resume-preview" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>在线预览</a>
-        <a href="/public/index.php?route=resume-builder" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>简历配置</a>
+    <!-- 考勤 -->
+    <div class="sidebar-flyout" id="flyout-attendance-menu">
+        <a href="/public/index.php?route=attendance-schedule" class="flyout-item">📅 排班管理</a>
+        <a href="/public/index.php?route=attendance-shift" class="flyout-item">📋 出勤管理</a>
+        <a href="/public/index.php?route=attendance-salary" class="flyout-item">💰 薪资计算</a>
+        <a href="/public/index.php?route=attendance-deduction" class="flyout-item">💸 扣款管理</a>
+        <a href="/public/index.php?route=attendance-social" class="flyout-item">🏛️ 社保公积金</a>
+        <a href="/public/index.php?route=attendance-performance" class="flyout-item">📊 绩效管理</a>
+    </div>
+
+    <!-- 娱乐 -->
+    <div class="sidebar-flyout" id="flyout-entertainment-menu">
+        <a href="/public/index.php?route=entertainment" class="flyout-item"><span class="menu-icon">📈</span>炒股</a>
+        <a href="/public/index.php?route=enterprise" class="flyout-item"><span class="menu-icon">🏢</span>我的企业</a>
+        <a href="/public/index.php?route=life" class="flyout-item"><span class="menu-icon">🎲</span>我的人生</a>
+    </div>
+
+    <!-- 项目 -->
+    <div class="sidebar-flyout" id="flyout-project-menu">
+        <a href="/public/index.php?route=project-list" class="flyout-item"><span class="menu-icon">📋</span>项目列表</a>
     </div>
 
     <!-- 工具箱 -->
@@ -304,6 +381,7 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
         <a href="/public/index.php?route=toolbox-morse" class="flyout-item"><span class="menu-icon">📡</span>摩斯电码编码解码</a>
         <a href="/public/index.php?route=toolbox-calendar" class="flyout-item"><span class="menu-icon">📅</span>万年历</a>
         <a href="/public/index.php?route=toolbox-forum-assistant" class="flyout-item"><span class="menu-icon">🌐</span>论坛助手</a>
+        <a href="/public/index.php?route=toolbox-today-do" class="flyout-item"><span class="menu-icon">🎲</span>今天干嘛</a>
         <a href="/public/index.php?route=naming" class="flyout-item"><span class="menu-icon">✍️</span>取名助手</a>
     </div>
 
@@ -317,9 +395,24 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
         <div style="border-top:1px solid rgba(148,163,184,0.15);margin:4px 12px;"></div>
         <a href="/public/index.php?route=system-icons" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="12" cy="12" r="3"/></svg>系统图标库</a>
         <a href="/public/index.php?route=backup" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>数据备份</a>
+        <a href="/public/index.php?route=license-activate" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>授权激活</a>
+        <a href="/public/index.php?route=license-admin-panel" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.66V20a2 2 0 01-2 2H4a2 2 0 01-2-2V14.66"/><path d="M8 12h8"/><rect x="8" y="2" width="8" height="8" rx="1"/></svg>授权管理</a>
         <a href="/public/index.php?route=license-admin" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>系统日志</a>
         <a href="/public/index.php?route=scheduler" class="flyout-item"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>定时任务</a>
         <?php endif; ?>
+    </div>
+
+    <!-- 正念 -->
+    <div class="sidebar-flyout" id="flyout-mindfulness-menu">
+        <a href="/public/index.php?route=mindfulness-checkin" class="flyout-item"><span class="menu-icon">💊</span>签到</a>
+        <a href="/public/index.php?route=mindfulness-treasure" class="flyout-item"><span class="menu-icon">🕳️</span>树洞</a>
+        <a href="/public/index.php?route=mindfulness-config" class="flyout-item"><span class="menu-icon">⚙️</span>配置</a>
+    </div>
+
+    <!-- 简历 -->
+    <div class="sidebar-flyout" id="flyout-resume-menu">
+        <a href="/public/index.php?route=resume-builder" class="flyout-item"><span class="menu-icon">📝</span>简历配置</a>
+        <a href="/public/index.php?route=resume-preview" class="flyout-item"><span class="menu-icon">👁️</span>简历预览</a>
     </div>
 
     <!-- 右侧主内容区域 -->
@@ -386,6 +479,16 @@ $themeTitle = $themeMode === 'dark' ? '切换为白天模式' : '切换为夜间
                     </div>
             </div>
         </header>
+        <?php if (!$licActivated && $licTrial <= 0 && $currentRoute !== 'license-activate'): ?>
+        <div style="background:#fef2f2;border-bottom:2px solid #fca5a5;padding:6px 16px;text-align:center;font-size:0.82rem;color:#dc2626">
+            🔒 试用已到期 · 部分功能受限 · <a href="/public/index.php?route=license-activate" style="color:#dc2626;font-weight:700;text-decoration:underline">激活授权</a>
+            <?php if ($licActivated): ?><?php else: ?><?php endif; ?>
+        </div>
+        <?php elseif (!$licActivated && $licTrial > 0): ?>
+        <div style="background:#fffbeb;border-bottom:2px solid #fcd34d;padding:6px 16px;text-align:center;font-size:0.82rem;color:#b45309">
+            ⏳ 试用期还剩 <?= $licTrial ?> 天 · <a href="/public/index.php?route=license-activate" style="color:#b45309;font-weight:700;text-decoration:underline">获取授权码</a>
+        </div>
+        <?php endif; ?>
         <main class="flex-grow-1 py-4 px-3 px-md-4">
             <div class="container-fluid">
                 <?php include __DIR__ . '/' . $view . '.php'; ?>
@@ -619,38 +722,31 @@ document.addEventListener('DOMContentLoaded', function () {
     var themeBtn = document.getElementById('themeToggleBtn');
     if (themeBtn) {
         themeBtn.addEventListener('click', function () {
+            if (themeBtn.disabled) return;
+            themeBtn.disabled = true;
             var current = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+            var nextMode = current === 'dark' ? 'light' : 'dark';
+            document.body.classList.remove('theme-light', 'theme-dark');
+            document.body.classList.add(nextMode === 'dark' ? 'theme-dark' : 'theme-light');
+            themeBtn.textContent = nextMode === 'dark' ? '☀' : '🌙';
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '/public/index.php?route=theme-toggle', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.timeout = 5000;
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        try {
-                            var data = JSON.parse(xhr.responseText || '{}');
-                            var mode = data.mode === 'dark' ? 'dark' : 'light';
-                            document.body.classList.remove('theme-light', 'theme-dark');
-                            document.body.classList.add(mode === 'dark' ? 'theme-dark' : 'theme-light');
-
-                            if (mode === 'dark') {
-                                themeBtn.textContent = '☀';
-                                themeBtn.title = '切换为白天模式';
-                                themeBtn.setAttribute('aria-label', '切换为白天模式');
-                            } else {
-                                themeBtn.textContent = '🌙';
-                                themeBtn.title = '切换为夜间模式';
-                                themeBtn.setAttribute('aria-label', '切换为夜间模式');
-                            }
-                        } catch (e) {
-                            // 如果解析失败，则回退为整页刷新
-                            window.location.href = '/public/index.php?route=theme-toggle';
-                        }
-                    } else {
-                        // 请求失败也回退为整页刷新
-                        window.location.href = '/public/index.php?route=theme-toggle';
+                    themeBtn.disabled = false;
+                    if (xhr.status !== 200) {
+                        document.body.classList.remove('theme-light', 'theme-dark');
+                        document.body.classList.add(current === 'dark' ? 'theme-dark' : 'theme-light');
+                        themeBtn.textContent = current === 'dark' ? '☀' : '🌙';
                     }
                 }
+            };
+            xhr.ontimeout = function () {
+                themeBtn.disabled = false;
+                window.location.reload();
             };
             xhr.send('current=' + encodeURIComponent(current));
         });

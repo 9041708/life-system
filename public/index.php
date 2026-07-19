@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', '1');
+ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 ini_set('error_log', '/volume1/web/ssjizhang.cn_ceshi/runtime/php_error.log');
 
@@ -8,8 +8,21 @@ ini_set('error_log', '/volume1/web/ssjizhang.cn_ceshi/runtime/php_error.log');
 // Front controller
 require __DIR__ . '/../src/bootstrap.php';
 
+// 根据站点 URL 生成唯一 Session 名称，确保不同安装之间隔离
+$sessionName = \App\Service\Config::get('app.session_name', null);
+if (!$sessionName) {
+    $siteUrl = \App\Service\Config::get('app.site_url', __DIR__);
+    $sessionName = 'SANSESS_' . substr(md5($siteUrl), 0, 10);
+}
+
 // Always start session for all routes
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_name($sessionName);
+    session_start();
+}
+
+// 移动端检测
+define('IS_MOBILE', (bool)preg_match('/(Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini|Mobile)/i', $_SERVER['HTTP_USER_AGENT'] ?? ''));
 
 // Default route
 $route = isset($_GET['route']) ? trim((string)$_GET['route'], '/') : 'dashboard';
@@ -37,6 +50,7 @@ $pageTitles = [
     'debt-config' => '负债配置',
     'reimbursement' => '报销情况',
     'reimbursements' => '报销情况',
+    'reimbursement-list' => '报销列表',
     'reimbursement-statistics' => '报销统计',
     'reimbursement-config' => '报销配置',
     'settings' => '系统设置',
@@ -58,7 +72,7 @@ $pageTitles = [
     'easytodo-tasks' => '待办管理',
     'easytodo-countdowns' => '倒计时',
     'easytodo-pomodoro' => '番茄钟',
-    'easytodo-memos' => '备忘录',
+    'easytodo-memos' => '笔记',
     'easytodo-statistics' => '统计看板',
     'easytodo-reports' => 'AI日报/周报',
     // Finance
@@ -82,6 +96,32 @@ $pageTitles = [
     'nav-my' => '我的导航',
     'nav-config' => '导航配置',
     'nav-detail' => '导航详情',
+    // 正念
+    'mindfulness-checkin' => '正念签到',
+    'mindfulness-treasure' => '正念树洞',
+    'mindfulness-config' => '正念配置',
+    // 项目
+    'project-list' => '项目列表',
+    'project-detail' => '项目详情',
+    // 知识库
+    'kb-editor' => '知识库编辑',
+    'kb-read' => '知识库',
+    'kb-share' => '知识库分享',
+    'license-activate' => '授权激活',
+    'license-admin-panel' => '授权管理',
+    'entertainment' => '炒股',
+    'enterprise' => '我的企业',
+    'enterprise-mall' => '企业商城',
+    'enterprise-products' => '产品订单',
+    'enterprise-rd' => '研发中心',
+    'enterprise-sales' => '市场销售',
+    'enterprise-guide' => '游戏说明',
+    'attendance-shift' => '出勤管理',
+    'attendance-salary' => '薪资',
+    'attendance-schedule' => '排班管理',
+    'attendance-deduction' => '扣款管理',
+    'attendance-social' => '社保公积金',
+    'attendance-performance' => '绩效管理',
 ];
 
 if (isset($pageTitles[$route])) {
@@ -124,6 +164,7 @@ if (empty($_SESSION['user_id']) && !in_array($route, [
     'source-download',
     'wechat_bind_callback',
     'wechat_self_bind_callback',
+    'kb-share',
 ])) {
     header('Location: ?route=login');
     exit;
@@ -293,6 +334,10 @@ switch ($route) {
     case 'reimbursements':
         $controller = new \App\Controller\ReimbursementController();
         $controller->pending();
+        break;
+    case 'reimbursement-list':
+        $controller = new \App\Controller\ReimbursementController();
+        $controller->list();
         break;
     case 'reimbursement-statistics':
         $controller = new \App\Controller\ReimbursementController();
@@ -504,6 +549,10 @@ switch ($route) {
         $controller = new \App\Controller\EasyTodoController();
         $controller->apiMemos();
         exit;
+    case 'easytodo-upload-image':
+        $controller = new \App\Controller\EasyTodoController();
+        $controller->uploadMemoImage();
+        exit;
     case 'easytodo-statistics':
         $controller = new \App\Controller\EasyTodoController();
         $controller->statistics();
@@ -594,6 +643,15 @@ switch ($route) {
         $controller->forumAssistantApi();
         break;
 
+    case 'toolbox-today-do':
+        $controller = new \App\Controller\ToolboxController();
+        $controller->todayDo();
+        break;
+    case 'toolbox-today-do-api':
+        $controller = new \App\Controller\ToolboxController();
+        $controller->todayDoApi();
+        break;
+
     // 取名助手
     case 'naming':
         $controller = new \App\Controller\NamingController();
@@ -620,6 +678,150 @@ switch ($route) {
     case 'nav-api':
         $controller = new \App\Controller\NavController();
         $controller->api();
+        break;
+
+    // 正念
+    case 'mindfulness-checkin':
+        $controller = new \App\Controller\MindfulnessController();
+        $controller->checkin();
+        break;
+    case 'mindfulness-treasure':
+        $controller = new \App\Controller\MindfulnessController();
+        $controller->treasure();
+        break;
+    case 'mindfulness-config':
+        $controller = new \App\Controller\MindfulnessController();
+        $controller->config();
+        break;
+    case 'mindfulness-api':
+        $controller = new \App\Controller\MindfulnessController();
+        $controller->api();
+        break;
+
+    // 项目
+    case 'project-list':
+        $controller = new \App\Controller\ProjectController();
+        $controller->list();
+        break;
+    case 'project-detail':
+        $controller = new \App\Controller\ProjectController();
+        $controller->detail();
+        break;
+    case 'project-api':
+        $controller = new \App\Controller\ProjectController();
+        $controller->api();
+        break;
+
+    case 'license-activate':
+        $view = 'license/activate';
+        $pageTitle = '授权激活';
+        $appName = \App\Service\Config::get('app.name');
+        $_SESSION['current_page_title'] = '授权激活';
+        include __DIR__ . '/../templates/layout_main.php';
+        exit;
+        break;
+
+    case 'license-admin-panel':
+        $controller = new \App\Controller\LicenseAdminController();
+        $controller->index();
+        break;
+
+    // 娱乐
+    case 'entertainment':
+        $controller = new \App\Controller\EntertainmentController();
+        $controller->index();
+        break;
+    case 'entertainment-api':
+        $controller = new \App\Controller\EntertainmentController();
+        $controller->api();
+        break;
+
+    // 娱乐·我的企业
+    case 'enterprise':
+        $controller = new \App\Controller\EnterpriseController();
+        $controller->index();
+        break;
+    case 'enterprise-api':
+        $controller = new \App\Controller\EnterpriseController();
+        $controller->api();
+        break;
+    case 'enterprise-mall':
+        $controller = new \App\Controller\EnterpriseController();
+        $controller->mall();
+        break;
+    case 'enterprise-products':
+        $controller = new \App\Controller\EnterpriseController();
+        $controller->products();
+        break;
+    case 'enterprise-rd':
+        $controller = new \App\Controller\EnterpriseController();
+        $controller->rd();
+        break;
+    case 'enterprise-sales':
+        $controller = new \App\Controller\EnterpriseController();
+        $controller->sales();
+        break;
+    case 'enterprise-guide':
+        $controller = new \App\Controller\EnterpriseController();
+        $controller->guide();
+        break;
+
+    // 娱乐·我的人生
+    case 'life':
+        $controller = new \App\Controller\LifeController();
+        $controller->index();
+        break;
+    case 'life-api':
+        $controller = new \App\Controller\LifeController();
+        $controller->api();
+        break;
+    case 'life-admin':
+        $controller = new \App\Controller\LifeController();
+        $controller->admin();
+        break;
+
+    // 考勤
+    case 'attendance-shift':
+        $controller = new \App\Controller\AttendanceController();
+        $controller->shift();
+        break;
+    case 'attendance-salary':
+        $controller = new \App\Controller\AttendanceController();
+        $controller->salary();
+        break;
+    case 'attendance-schedule':
+        $controller = new \App\Controller\AttendanceController();
+        $controller->schedule();
+        break;
+    case 'attendance-deduction':
+        $controller = new \App\Controller\AttendanceController();
+        $controller->deduction();
+        break;
+    case 'attendance-social':
+        $controller = new \App\Controller\AttendanceController();
+        $controller->social();
+        break;
+    case 'attendance-performance':
+        $controller = new \App\Controller\AttendanceController();
+        $controller->performance();
+        break;
+    case 'attendance-api':
+        $controller = new \App\Controller\AttendanceController();
+        $controller->api();
+        break;
+
+    case 'license-upload-key':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES['keyfile']['tmp_name']) && $_FILES['keyfile']['error'] === UPLOAD_ERR_OK) {
+            $target = __DIR__ . '/../data/key.php';
+            $dir = dirname($target);
+            if (!is_dir($dir)) @mkdir($dir, 0755, true);
+            if (move_uploaded_file($_FILES['keyfile']['tmp_name'], $target)) {
+                header('Location: /public/index.php?route=license-activate&uploaded=1');
+                exit;
+            }
+        }
+        header('Location: /public/index.php?route=license-activate&err=1');
+        exit;
         break;
 
     default:
